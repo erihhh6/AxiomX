@@ -1,0 +1,35 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Delete Topic - Scientists Collaboration Platform{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'discussions:forum_list' %}">Forums</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'discussions:forum_detail' topic.forum.id %}">{{ topic.forum.name }}</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'discussions:topic_detail' topic.id %}">{{ topic.title|truncatechars:30 }}</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Delete</li>
+        </ol>
+    </nav>
+    
+    <div class="card">
+        <div class="card-header bg-danger text-white">
+            <h2 class="mb-0">Delete Topic</h2>
+        </div>
+        <div class="card-body">
+            <p class="lead">Are you sure you want to delete the topic "{{ topic.title }}"?</p>
+            <p class="text-danger">This action cannot be undone. All replies to this topic will also be deleted.</p>
+            
+            <form method="post">
+                {% csrf_token %}
+                <div class="d-flex justify-content-between mt-4">
+                    <a href="{% url 'discussions:topic_detail' topic.id %}" class="btn btn-outline-secondary">Cancel</a>
+                    <button type="submit" class="btn btn-danger">Confirm Delete</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %} 

@@ -1,0 +1,82 @@
+{% extends 'base/base.html' %}
+
+{% block title %}{{ forum.name }} - Scientists Collaboration Platform{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'discussions:forum_list' %}">Forums</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ forum.name }}</li>
+        </ol>
+    </nav>
+    
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="mb-0">{{ forum.name }}</h1>
+        {% if user.is_authenticated %}
+        <a href="{% url 'discussions:topic_create_forum' forum.id %}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> New Topic
+        </a>
+        {% endif %}
+    </div>
+    
+    <div class="card mb-4">
+        <div class="card-body">
+            <p class="lead">{{ forum.description }}</p>
+        </div>
+    </div>
+    
+    {% if topics %}
+    <div class="card">
+        <div class="card-header bg-light">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5 class="mb-0">Topics</h5>
+                </div>
+                <div class="col-md-2 text-center d-none d-md-block">
+                    <h5 class="mb-0">Replies</h5>
+                </div>
+                <div class="col-md-2 text-center d-none d-md-block">
+                    <h5 class="mb-0">Created</h5>
+                </div>
+                <div class="col-md-2 text-center d-none d-md-block">
+                    <h5 class="mb-0">Last Updated</h5>
+                </div>
+            </div>
+        </div>
+        <ul class="list-group list-group-flush">
+            {% for topic in topics %}
+            <li class="list-group-item">
+                <div class="row align-items-center">
+                    <div class="col-md-6">
+                        <h5><a href="{% url 'discussions:topic_detail' topic.id %}">{{ topic.title }}</a></h5>
+                        <p class="mb-1 text-muted">By {{ topic.author.get_full_name|default:topic.author.username }}</p>
+                    </div>
+                    <div class="col-md-2 text-center">
+                        <span class="badge bg-secondary">{{ topic.replies.count }}</span>
+                    </div>
+                    <div class="col-md-2 text-center">
+                        <small>{{ topic.created_at|date:"M d, Y" }}</small>
+                    </div>
+                    <div class="col-md-2 text-center">
+                        <small>{{ topic.updated_at|date:"M d, Y" }}</small>
+                    </div>
+                </div>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% else %}
+    <div class="alert alert-info">
+        <p>No topics have been created in this forum yet. Be the first to start a discussion!</p>
+    </div>
+    {% endif %}
+    
+    <div class="mt-4">
+        <a href="{% url 'discussions:forum_list' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Forums
+        </a>
+    </div>
+</div>
+{% endblock %} 

@@ -1,0 +1,74 @@
+{% extends 'base/base.html' %}
+
+{% block title %}{% if form.instance.pk %}Edit Topic{% else %}Create New Topic{% endif %} - Scientists Collaboration Platform{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'discussions:forum_list' %}">Forums</a></li>
+            {% if form.instance.forum %}
+            <li class="breadcrumb-item"><a href="{% url 'discussions:forum_detail' form.instance.forum.id %}">{{ form.instance.forum.name }}</a></li>
+            {% endif %}
+            <li class="breadcrumb-item active" aria-current="page">{% if form.instance.pk %}Edit Topic{% else %}Create New Topic{% endif %}</li>
+        </ol>
+    </nav>
+    
+    <div class="card">
+        <div class="card-header {% if form.instance.pk %}bg-warning{% else %}bg-success{% endif %} text-white">
+            <h2 class="card-title mb-0">{% if form.instance.pk %}Edit Topic{% else %}Create New Topic{% endif %}</h2>
+        </div>
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+                
+                <div class="mb-3">
+                    <label for="{{ form.title.id_for_label }}" class="form-label">Title</label>
+                    {{ form.title }}
+                    {% if form.title.errors %}
+                    <div class="text-danger">{{ form.title.errors }}</div>
+                    {% endif %}
+                </div>
+                
+                <div class="mb-3">
+                    <label for="{{ form.forum.id_for_label }}" class="form-label">Forum</label>
+                    {{ form.forum }}
+                    {% if form.forum.errors %}
+                    <div class="text-danger">{{ form.forum.errors }}</div>
+                    {% endif %}
+                </div>
+                
+                <div class="mb-3">
+                    <label for="{{ form.content.id_for_label }}" class="form-label">Content</label>
+                    {{ form.content }}
+                    {% if form.content.errors %}
+                    <div class="text-danger">{{ form.content.errors }}</div>
+                    {% endif %}
+                </div>
+                
+                <div class="d-flex justify-content-between">
+                    <a href="{% if form.instance.pk %}{% url 'discussions:topic_detail' form.instance.pk %}{% else %}{% url 'discussions:forum_list' %}{% endif %}" class="btn btn-outline-secondary">Cancel</a>
+                    <button type="submit" class="btn {% if form.instance.pk %}btn-warning{% else %}btn-success{% endif %}">
+                        {% if form.instance.pk %}Update Topic{% else %}Create Topic{% endif %}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Add Bootstrap form-control class to all form inputs
+    const formControls = document.querySelectorAll('input, textarea, select');
+    formControls.forEach(element => {
+        if (!element.classList.contains('form-check-input') && !element.classList.contains('btn')) {
+            element.classList.add('form-control');
+        }
+    });
+});
+</script>
+{% endblock %}

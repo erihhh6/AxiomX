@@ -1,0 +1,144 @@
+{% extends 'base/base.html' %}
+
+{% block title %}
+{% if form.instance.pk %}
+Edit Publication - {{ form.instance.title }}
+{% else %}
+Upload New Publication
+{% endif %}
+- Scientists Collaboration Platform
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'publications:list' %}">Publications</a></li>
+            <li class="breadcrumb-item active" aria-current="page">
+                {% if form.instance.pk %}Edit Publication{% else %}Upload New Publication{% endif %}
+            </li>
+        </ol>
+    </nav>
+    
+    <div class="card">
+        <div class="card-header {% if form.instance.pk %}bg-warning{% else %}bg-success{% endif %} text-white">
+            <h2 class="card-title mb-0">
+                {% if form.instance.pk %}
+                Edit Publication
+                {% else %}
+                Upload New Publication
+                {% endif %}
+            </h2>
+        </div>
+        <div class="card-body">
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                
+                <div class="mb-3">
+                    <label for="{{ form.title.id_for_label }}" class="form-label">Title</label>
+                    {{ form.title }}
+                    {% if form.title.errors %}
+                    <div class="text-danger">
+                        {% for error in form.title.errors %}
+                        {{ error }}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="mb-3">
+                    <label for="{{ form.abstract.id_for_label }}" class="form-label">Abstract</label>
+                    {{ form.abstract }}
+                    {% if form.abstract.errors %}
+                    <div class="text-danger">
+                        {% for error in form.abstract.errors %}
+                        {{ error }}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="mb-3">
+                    <label for="{{ form.co_authors.id_for_label }}" class="form-label">Co-authors (comma-separated)</label>
+                    {{ form.co_authors }}
+                    {% if form.co_authors.errors %}
+                    <div class="text-danger">
+                        {% for error in form.co_authors.errors %}
+                        {{ error }}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    <div class="form-text">Enter co-authors' names separated by commas (e.g., "John Doe, Jane Smith")</div>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="{{ form.keywords.id_for_label }}" class="form-label">Keywords (comma-separated)</label>
+                    {{ form.keywords }}
+                    {% if form.keywords.errors %}
+                    <div class="text-danger">
+                        {% for error in form.keywords.errors %}
+                        {{ error }}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    <div class="form-text">Enter keywords separated by commas (e.g., "physics, quantum mechanics, relativity")</div>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="{{ form.publication_date.id_for_label }}" class="form-label">Publication Date</label>
+                    {{ form.publication_date }}
+                    {% if form.publication_date.errors %}
+                    <div class="text-danger">
+                        {% for error in form.publication_date.errors %}
+                        {{ error }}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="mb-3">
+                    <label for="{{ form.document.id_for_label }}" class="form-label">Document (PDF only)</label>
+                    {% if form.instance.document %}
+                    <p>Current file: <a href="{{ form.instance.document.url }}" target="_blank">{{ form.instance.document.name|cut:"publications/" }}</a></p>
+                    {% endif %}
+                    {{ form.document }}
+                    {% if form.document.errors %}
+                    <div class="text-danger">
+                        {% for error in form.document.errors %}
+                        {{ error }}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    <div class="form-text">Only PDF files up to 10MB are allowed.</div>
+                </div>
+                
+                <div class="d-flex justify-content-between">
+                    <a href="{% if form.instance.pk %}{% url 'publications:detail' form.instance.pk %}{% else %}{% url 'publications:list' %}{% endif %}" class="btn btn-outline-secondary">Cancel</a>
+                    <button type="submit" class="btn {% if form.instance.pk %}btn-warning{% else %}btn-success{% endif %}">
+                        {% if form.instance.pk %}
+                        Update Publication
+                        {% else %}
+                        Upload Publication
+                        {% endif %}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Add Bootstrap form-control class to all form inputs
+    const formControls = document.querySelectorAll('input, textarea, select');
+    formControls.forEach(element => {
+        if (!element.classList.contains('form-check-input') && !element.classList.contains('btn')) {
+            element.classList.add('form-control');
+        }
+    });
+});
+</script>
+{% endblock %} 

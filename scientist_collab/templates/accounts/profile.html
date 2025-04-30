@@ -1,0 +1,155 @@
+{% extends 'base/base.html' %}
+
+{% block title %}{{ user.username }}'s Profile - Scientists Collaboration Platform{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="profile-header text-center">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                {% if user.profile.profile_picture %}
+                <img src="{{ user.profile.profile_picture.url }}" alt="{{ user.username }}" class="profile-image mb-3">
+                {% else %}
+                <img src="/static/images/default-profile.png" alt="{{ user.username }}" class="profile-image mb-3">
+                {% endif %}
+                <h2>{{ user.get_full_name }}</h2>
+                <p class="lead">{{ user.profile.position }} {% if user.profile.institution %}at {{ user.profile.institution }}{% endif %}</p>
+                {% if user.profile.field_of_study %}
+                <p><strong>Field of Study:</strong> {{ user.profile.field_of_study }}</p>
+                {% endif %}
+                {% if user.profile.website %}
+                <p><a href="{{ user.profile.website }}" target="_blank" class="btn btn-outline-primary btn-sm">
+                    <i class="fas fa-globe"></i> Website
+                </a></p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <ul class="nav nav-tabs card-header-tabs" role="tablist">
+                        <li class="nav-item">
+                            <a class="nav-link active" id="profile-tab" data-bs-toggle="tab" href="#profile" role="tab" aria-controls="profile" aria-selected="true">Profile</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="edit-tab" data-bs-toggle="tab" href="#edit" role="tab" aria-controls="edit" aria-selected="false">Edit Profile</a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="card-body">
+                    <div class="tab-content">
+                        <div class="tab-pane fade show active" id="profile" role="tabpanel" aria-labelledby="profile-tab">
+                            <h5 class="card-title">About</h5>
+                            <p class="card-text">{{ user.profile.bio|linebreaks|default:"No bio provided yet." }}</p>
+                            
+                            <h5 class="mt-4">Contact Information</h5>
+                            <p><strong>Email:</strong> {{ user.email }}</p>
+                        </div>
+                        
+                        <div class="tab-pane fade" id="edit" role="tabpanel" aria-labelledby="edit-tab">
+                            <form method="post" enctype="multipart/form-data">
+                                {% csrf_token %}
+                                
+                                <h5 class="mb-3">Basic Information</h5>
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label for="{{ user_form.first_name.id_for_label }}" class="form-label">First Name</label>
+                                        {{ user_form.first_name }}
+                                        {% if user_form.first_name.errors %}
+                                        <div class="text-danger">{{ user_form.first_name.errors }}</div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="{{ user_form.last_name.id_for_label }}" class="form-label">Last Name</label>
+                                        {{ user_form.last_name }}
+                                        {% if user_form.last_name.errors %}
+                                        <div class="text-danger">{{ user_form.last_name.errors }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="{{ user_form.username.id_for_label }}" class="form-label">Username</label>
+                                    {{ user_form.username }}
+                                    {% if user_form.username.errors %}
+                                    <div class="text-danger">{{ user_form.username.errors }}</div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="{{ user_form.email.id_for_label }}" class="form-label">Email</label>
+                                    {{ user_form.email }}
+                                    {% if user_form.email.errors %}
+                                    <div class="text-danger">{{ user_form.email.errors }}</div>
+                                    {% endif %}
+                                </div>
+                                
+                                <h5 class="mt-4 mb-3">Profile Information</h5>
+                                <div class="mb-3">
+                                    <label for="{{ profile_form.profile_picture.id_for_label }}" class="form-label">Profile Picture</label>
+                                    {{ profile_form.profile_picture }}
+                                    {% if profile_form.profile_picture.errors %}
+                                    <div class="text-danger">{{ profile_form.profile_picture.errors }}</div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label for="{{ profile_form.institution.id_for_label }}" class="form-label">Institution</label>
+                                        {{ profile_form.institution }}
+                                        {% if profile_form.institution.errors %}
+                                        <div class="text-danger">{{ profile_form.institution.errors }}</div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="{{ profile_form.position.id_for_label }}" class="form-label">Position</label>
+                                        {{ profile_form.position }}
+                                        {% if profile_form.position.errors %}
+                                        <div class="text-danger">{{ profile_form.position.errors }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="{{ profile_form.field_of_study.id_for_label }}" class="form-label">Field of Study</label>
+                                    {{ profile_form.field_of_study }}
+                                    {% if profile_form.field_of_study.errors %}
+                                    <div class="text-danger">{{ profile_form.field_of_study.errors }}</div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="{{ profile_form.website.id_for_label }}" class="form-label">Website</label>
+                                    {{ profile_form.website }}
+                                    {% if profile_form.website.errors %}
+                                    <div class="text-danger">{{ profile_form.website.errors }}</div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="{{ profile_form.bio.id_for_label }}" class="form-label">Bio</label>
+                                    {{ profile_form.bio }}
+                                    {% if profile_form.bio.errors %}
+                                    <div class="text-danger">{{ profile_form.bio.errors }}</div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="d-grid gap-2">
+                                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                                </div>
+                            </form>
+                            
+                            <div class="mt-4">
+                                <a href="{% url 'accounts:password_change' %}" class="btn btn-outline-secondary">Change Password</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

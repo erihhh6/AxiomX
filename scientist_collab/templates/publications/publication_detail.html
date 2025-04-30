@@ -1,0 +1,102 @@
+{% extends 'base/base.html' %}
+
+{% block title %}{{ publication.title }} - Scientists Collaboration Platform{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'publications:list' %}">Publications</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ publication.title|truncatechars:50 }}</li>
+        </ol>
+    </nav>
+    
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <div class="d-flex justify-content-between align-items-center">
+                <h2 class="mb-0">{{ publication.title }}</h2>
+                {% if user == publication.author %}
+                <div>
+                    <a href="{% url 'publications:update' publication.id %}" class="btn btn-light btn-sm me-2">
+                        <i class="fas fa-edit"></i> Edit
+                    </a>
+                    <a href="{% url 'publications:delete' publication.id %}" class="btn btn-danger btn-sm">
+                        <i class="fas fa-trash"></i> Delete
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="row mb-4">
+                <div class="col-md-8">
+                    <h4>Abstract</h4>
+                    <p>{{ publication.abstract|linebreaks }}</p>
+                    
+                    {% if publication.get_keywords_list %}
+                    <h5 class="mt-4">Keywords</h5>
+                    <div>
+                        {% for keyword in publication.get_keywords_list %}
+                        <span class="badge bg-secondary me-1">{{ keyword }}</span>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-header">Publication Details</div>
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item">
+                                <strong>Author:</strong> 
+                                {{ publication.author.get_full_name }}
+                            </li>
+                            {% if publication.get_co_authors_list %}
+                            <li class="list-group-item">
+                                <strong>Co-authors:</strong>
+                                <ul class="mb-0">
+                                    {% for co_author in publication.get_co_authors_list %}
+                                    <li>{{ co_author }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </li>
+                            {% endif %}
+                            <li class="list-group-item">
+                                <strong>Publication Date:</strong> 
+                                {{ publication.publication_date }}
+                            </li>
+                            <li class="list-group-item">
+                                <strong>Uploaded On:</strong> 
+                                {{ publication.created_at|date:"F d, Y" }}
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="pdf-preview mb-4">
+                <h4>Document Preview</h4>
+                <div class="ratio ratio-16x9 mb-3" style="max-height: 500px; border: 1px solid #ddd;">
+                    <iframe src="{{ publication.document.url }}" frameborder="0" allowfullscreen></iframe>
+                </div>
+                <a href="{% url 'publications:download' publication.id %}" class="btn btn-primary">
+                    <i class="fas fa-download"></i> Download Full Document
+                </a>
+            </div>
+            
+            <hr class="my-4">
+            
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <a href="{% url 'publications:list' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left"></i> Back to Publications
+                    </a>
+                </div>
+                <div>
+                    <small class="text-muted">Last updated: {{ publication.updated_at|date:"F d, Y H:i" }}</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

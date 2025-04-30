@@ -1,0 +1,112 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Publications - Scientists Collaboration Platform{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="mb-0">Publications</h1>
+        {% if user.is_authenticated %}
+        <a href="{% url 'publications:create' %}" class="btn btn-primary">
+            <i class="fas fa-upload"></i> Upload Publication
+        </a>
+        {% endif %}
+    </div>
+    
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" action="{% url 'publications:list' %}" class="row g-3">
+                <div class="col-md-10">
+                    <div class="input-group">
+                        <input type="text" name="q" class="form-control" placeholder="Search by title, abstract, or keywords..." value="{{ query }}">
+                        <button type="submit" class="btn btn-outline-primary">Search</button>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <a href="{% url 'publications:list' %}" class="btn btn-outline-secondary w-100">Clear</a>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    {% if publications %}
+    <div class="row">
+        {% for publication in publications %}
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">{{ publication.title }}</h5>
+                    <p class="card-text">{{ publication.abstract|truncatechars:150 }}</p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <a href="{% url 'publications:detail' publication.id %}" class="btn btn-primary btn-sm">View Details</a>
+                        <small class="text-muted">{{ publication.publication_date }}</small>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <div class="d-flex justify-content-between">
+                        <small class="text-muted">Author: {{ publication.author.get_full_name }}</small>
+                        <small class="text-muted">
+                            <i class="fas fa-calendar"></i> {{ publication.created_at|date:"M d, Y" }}
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    {% if is_paginated %}
+    <nav aria-label="Page navigation">
+        <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page=1{% if query %}&q={{ query }}{% endif %}" aria-label="First">
+                    <span aria-hidden="true">&laquo;&laquo;</span>
+                </a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if query %}&q={{ query }}{% endif %}" aria-label="Previous">
+                    <span aria-hidden="true">&laquo;</span>
+                </a>
+            </li>
+            {% endif %}
+            
+            {% for num in page_obj.paginator.page_range %}
+                {% if page_obj.number == num %}
+                <li class="page-item active">
+                    <span class="page-link">{{ num }}</span>
+                </li>
+                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ num }}{% if query %}&q={{ query }}{% endif %}">{{ num }}</a>
+                </li>
+                {% endif %}
+            {% endfor %}
+            
+            {% if page_obj.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if query %}&q={{ query }}{% endif %}" aria-label="Next">
+                    <span aria-hidden="true">&raquo;</span>
+                </a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if query %}&q={{ query }}{% endif %}" aria-label="Last">
+                    <span aria-hidden="true">&raquo;&raquo;</span>
+                </a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+    
+    {% else %}
+    <div class="alert alert-info">
+        {% if query %}
+        <p>No publications found matching your search criteria.</p>
+        {% else %}
+        <p>No publications available yet. Be the first to upload one!</p>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %} 
