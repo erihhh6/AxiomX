@@ -4,6 +4,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
+from django.http import JsonResponse
 from .models import Forum, Topic, Reply
 from .forms import TopicForm, ReplyForm
 
@@ -31,6 +32,19 @@ class TopicDetailView(DetailView):
         context = super().get_context_data(**kwargs)
         context['replies'] = self.object.replies.all()
         context['reply_form'] = ReplyForm()
+        
+        # Check if user has liked/disliked this topic
+        if self.request.user.is_authenticated:
+            context['is_topic_liked'] = self.object.likes.filter(id=self.request.user.id).exists()
+            context['is_topic_disliked'] = self.object.dislikes.filter(id=self.request.user.id).exists()
+            
+            # Check if user has liked each reply
+            user_liked_replies = Reply.objects.filter(
+                id__in=[reply.id for reply in context['replies']], 
+                likes=self.request.user
+            ).values_list('id', flat=True)
+            context['user_liked_replies'] = user_liked_replies
+        
         return context
 
 class TopicCreateView(LoginRequiredMixin, CreateView):
@@ -107,3 +121,88 @@ class ReplyDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     def delete(self, request, *args, **kwargs):
         messages.success(self.request, 'Reply deleted successfully!')
         return super().delete(request, *args, **kwargs)
+
+@login_required
+def like_topic(request, pk):
+    topic = get_object_or_404(Topic, pk=pk)
+    
+    # Remove dislike if exists when liking
+    if topic.dislikes.filter(id=request.user.id).exists():
+        topic.dislikes.remove(request.user)
+    
+    # Check if the user already liked this topic
+    if topic.likes.filter(id=request.user.id).exists():
+        # Unlike
+        topic.likes.remove(request.user)
+        liked = False
+    else:
+        # Like
+        topic.likes.add(request.user)
+        liked = True
+    
+    # For AJAX requests
+    if request.method in ['POST', 'GET'] and request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        return JsonResponse({
+            'status': 'success',
+            'liked': liked,
+            'total_likes': topic.total_likes(),
+            'total_dislikes': topic.total_dislikes()
+        })
+    
+    # Redirect to topic detail page
+    return redirect('discussions:topic_detail', pk=topic.pk)
+
+@login_required
+def dislike_topic(request, pk):
+    topic = get_object_or_404(Topic, pk=pk)
+    
+    # Remove like if exists when disliking
+    if topic.likes.filter(id=request.user.id).exists():
+        topic.likes.remove(request.user)
+    
+    # Check if the user already disliked this topic
+    if topic.dislikes.filter(id=request.user.id).exists():
+        # Undislike
+        topic.dislikes.remove(request.user)
+        disliked = False
+    else:
+        # Dislike
+        topic.dislikes.add(request.user)
+        disliked = True
+    
+    # For AJAX requests
+    if request.method in ['POST', 'GET'] and request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        return JsonResponse({
+            'status': 'success',
+            'disliked': disliked,
+            'total_likes': topic.total_likes(),
+            'total_dislikes': topic.total_dislikes()
+        })
+    
+    # Redirect to topic detail page
+    return redirect('discussions:topic_detail', pk=topic.pk)
+
+@login_required
+def like_reply(request, pk):
+    reply = get_object_or_404(Reply, pk=pk)
+    
+    # Check if the user already liked this reply
+    if reply.likes.filter(id=request.user.id).exists():
+        # Unlike
+        reply.likes.remove(request.user)
+        liked = False
+    else:
+        # Like
+        reply.likes.add(request.user)
+        liked = True
+    
+    # For AJAX requests
+    if request.method in ['POST', 'GET'] and request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        return JsonResponse({
+            'status': 'success',
+            'liked': liked,
+            'total_likes': reply.total_likes()
+        })
+    
+    # Redirect to topic detail page
+    return redirect('discussions:topic_detail', pk=reply.topic.pk)

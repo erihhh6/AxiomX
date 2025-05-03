@@ -17,6 +17,17 @@
                 {% if user.profile.field_of_study %}
                 <p><strong>Field of Study:</strong> {{ user.profile.field_of_study }}</p>
                 {% endif %}
+                
+                <!-- Follow Stats -->
+                <div class="follow-stats mb-3">
+                    <a href="{% url 'accounts:followers' %}" class="text-decoration-none me-4">
+                        <span class="fw-bold">{{ followers_count }}</span> Followers
+                    </a>
+                    <a href="{% url 'accounts:following' %}" class="text-decoration-none">
+                        <span class="fw-bold">{{ following_count }}</span> Following
+                    </a>
+                </div>
+                
                 {% if user.profile.website %}
                 <p><a href="{{ user.profile.website }}" target="_blank" class="btn btn-outline-primary btn-sm">
                     <i class="fas fa-globe"></i> Website

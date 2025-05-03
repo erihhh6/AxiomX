@@ -12,6 +12,8 @@ class Publication(models.Model):
     publication_date = models.DateField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    likes = models.ManyToManyField(User, related_name='liked_publications', blank=True)
+    dislikes = models.ManyToManyField(User, related_name='disliked_publications', blank=True)
     
     class Meta:
         ordering = ['-publication_date']
@@ -31,3 +33,21 @@ class Publication(models.Model):
         if self.co_authors:
             return [author.strip() for author in self.co_authors.split(',')]
         return []
+    
+    def total_likes(self):
+        return self.likes.count()
+    
+    def total_dislikes(self):
+        return self.dislikes.count()
+
+
+class Favorite(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='favorites')
+    publication = models.ForeignKey(Publication, on_delete=models.CASCADE, related_name='favorited_by')
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        unique_together = ('user', 'publication')
+        
+    def __str__(self):
+        return f"{self.user.username} favorited {self.publication.title}"

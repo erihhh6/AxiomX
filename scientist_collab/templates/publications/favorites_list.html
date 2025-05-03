@@ -1,0 +1,96 @@
+{% extends 'base/base.html' %}
+
+{% block title %}My Favorite Publications - Scientists Collaboration Platform{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="mb-0">My Favorite Publications</h1>
+        <a href="{% url 'publications:list' %}" class="btn btn-outline-primary">
+            <i class="fas fa-search"></i> Browse All Publications
+        </a>
+    </div>
+    
+    {% if publications %}
+    <div class="row">
+        {% for publication in publications %}
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">{{ publication.title|truncatechars:40 }}</h5>
+                    <button class="btn btn-sm btn-outline-danger unfavorite-btn" 
+                            data-url="{% url 'publications:unfavorite_publication' publication.id %}">
+                        <i class="fas fa-star"></i> Remove
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex mb-2">
+                        <div class="badge bg-secondary me-1">{{ publication.publication_date|date:"M d, Y" }}</div>
+                        {% if publication.likes.count %}
+                        <div class="badge bg-primary">
+                            <i class="fas fa-thumbs-up"></i> {{ publication.likes.count }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    <p class="card-text">{{ publication.abstract|truncatechars:150 }}</p>
+                </div>
+                <div class="card-footer">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <small class="text-muted">By <a href="{% url 'accounts:public_profile' publication.author.id %}">{{ publication.author.get_full_name }}</a></small>
+                        <a href="{% url 'publications:detail' publication.id %}" class="btn btn-sm btn-primary">View</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="card">
+        <div class="card-body text-center py-5">
+            <i class="fas fa-star fa-3x text-warning mb-3"></i>
+            <h3>You haven't favorited any publications yet</h3>
+            <p class="mb-4">When you find interesting publications, mark them as favorites for easy access later.</p>
+            <a href="{% url 'publications:list' %}" class="btn btn-primary">Browse Publications</a>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Unfavorite Functionality
+        const unfavoriteButtons = document.querySelectorAll('.unfavorite-btn');
+        unfavoriteButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const url = this.dataset.url;
+                const card = this.closest('.col-md-6');
+                
+                fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        // Remove card with animation
+                        card.style.opacity = '0';
+                        setTimeout(() => {
+                            card.remove();
+                            
+                            // If no more cards, refresh page to show empty state
+                            if (document.querySelectorAll('.col-md-6').length === 0) {
+                                window.location.reload();
+                            }
+                        }, 300);
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+            });
+        });
+    });
+</script>
+{% endblock %}
+{% endblock %} 

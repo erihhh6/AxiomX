@@ -13,9 +13,34 @@ class Profile(models.Model):
     website = models.URLField(max_length=200, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    following = models.ManyToManyField('self', through='Follow', related_name='followers', symmetrical=False)
 
     def __str__(self):
         return f"{self.user.username}'s Profile"
+
+    def follow(self, profile):
+        """Follow another user's profile if not already following"""
+        follow, created = Follow.objects.get_or_create(follower=self, following=profile)
+        return created
+
+    def unfollow(self, profile):
+        """Unfollow another user's profile"""
+        Follow.objects.filter(follower=self, following=profile).delete()
+
+    def is_following(self, profile):
+        """Check if user is following another profile"""
+        return self.following.filter(pk=profile.pk).exists()
+
+class Follow(models.Model):
+    follower = models.ForeignKey(Profile, related_name='following_relationships', on_delete=models.CASCADE)
+    following = models.ForeignKey(Profile, related_name='follower_relationships', on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('follower', 'following')
+        
+    def __str__(self):
+        return f"{self.follower.user.username} follows {self.following.user.username}"
 
 @receiver(post_save, sender=User)
 def create_user_profile(sender, instance, created, **kwargs):

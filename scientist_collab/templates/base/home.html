@@ -33,7 +33,7 @@
                         <a href="{% url 'publications:detail' publication.id %}" class="btn btn-outline-primary btn-sm">Read More</a>
                     </div>
                     <div class="card-footer text-muted">
-                        By {{ publication.author.get_full_name }} | {{ publication.created_at|date:"M d, Y" }}
+                        By <a href="{% url 'accounts:public_profile' publication.author.id %}">{{ publication.author.get_full_name }}</a> | {{ publication.created_at|date:"M d, Y" }}
                     </div>
                 </div>
             </div>
@@ -53,7 +53,7 @@
                     <small>{{ discussion.created_at|date:"M d, Y" }}</small>
                 </div>
                 <p class="mb-1">{{ discussion.content|truncatechars:150 }}</p>
-                <small>By {{ discussion.author.get_full_name }} | {{ discussion.replies.count }} replies</small>
+                <small>By <a href="{% url 'accounts:public_profile' discussion.author.id %}">{{ discussion.author.get_full_name }}</a> | {{ discussion.replies.count }} replies</small>
             </a>
             {% endfor %}
         </div>
