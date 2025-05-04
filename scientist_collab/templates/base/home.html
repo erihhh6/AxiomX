@@ -1,20 +1,123 @@
 {% extends 'base/base.html' %}
 
-{% block title %}Home - Scientists Collaboration Platform{% endblock %}
+{% block title %}Home - AxiomX{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="/static/css/home.css">
+<style>
+    #landing-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100vh;
+        z-index: 10;
+        background-color: #000022;
+        transition: opacity 1s ease-in-out;
+    }
+    
+    .hidden {
+        opacity: 0;
+        pointer-events: none;
+    }
+    
+    #loading-indicator {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        color: white;
+        font-size: 24px;
+        text-align: center;
+    }
+    
+    #intro-skip {
+        position: absolute;
+        bottom: 30px;
+        right: 30px;
+        z-index: 20;
+        background: rgba(255, 255, 255, 0.3);
+        color: white;
+        border: 2px solid white;
+        padding: 10px 20px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-weight: bold;
+        font-size: 16px;
+        transition: background-color 0.3s;
+    }
+    
+    #intro-skip:hover {
+        background: rgba(255, 255, 255, 0.5);
+    }
+    
+    #intro-text {
+        position: absolute;
+        bottom: 30px;
+        left: 30px;
+        z-index: 20;
+        color: white;
+        font-size: 18px;
+        font-weight: 300;
+        opacity: 0;
+        transition: opacity 0.5s ease-in-out;
+    }
+    
+    #main-content {
+        opacity: 0;
+        transition: opacity 1.5s ease-in-out;
+    }
+    
+    .content-visible {
+        opacity: 1 !important;
+    }
+    
+    #debug-tools {
+        position: fixed;
+        bottom: 10px;
+        right: 10px;
+        z-index: 9999;
+        background: rgba(0, 0, 0, 0.7);
+        padding: 10px;
+        border-radius: 5px;
+        color: white;
+        font-size: 12px;
+        display: none;
+    }
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="container mt-5">
-    <div class="jumbotron text-center">
-        <h1 class="display-4">Welcome to the Scientists Collaboration Platform</h1>
+<!-- 3D Landing Animation Container -->
+<div id="landing-container">
+    <div id="loading-indicator">Loading 3D Experience...</div>
+    <canvas id="intro-canvas"></canvas>
+    <div id="intro-text">AxiomX</div>
+    <button id="intro-skip">Skip Intro</button>
+</div>
+
+<!-- Debug tools -->
+<div id="debug-tools">
+    <div>Debug Tools</div>
+    <button id="show-console">Show Console</button>
+    <button id="force-skip">Force Skip</button>
+    <button id="reset-intro">Reset Intro</button>
+    <button id="test-movement">Test Movement</button>
+</div>
+
+<!-- Main Content (Hidden initially) -->
+<div id="main-content" class="container mt-5">
+    <div class="jumbotron">
+        <h1 class="display-4">Welcome to AxiomX</h1>
         <p class="lead">Connect with other researchers, share your work, and collaborate on projects.</p>
         <hr class="my-4">
         <p>Join our community of scientists to make breakthroughs together!</p>
         <div class="d-flex justify-content-center mt-4">
             {% if user.is_authenticated %}
-                <a href="{% url 'publications:list' %}" class="btn btn-primary mr-3">View Publications</a>
+                <a href="{% url 'publications:list' %}" class="btn btn-primary">View Publications</a>
                 <a href="{% url 'discussions:forum_list' %}" class="btn btn-success">Join Discussions</a>
             {% else %}
-                <a href="{% url 'accounts:login' %}" class="btn btn-primary mr-3">Log In</a>
+                <a href="{% url 'accounts:login' %}" class="btn btn-primary">Log In</a>
                 <a href="{% url 'accounts:register' %}" class="btn btn-success">Register</a>
             {% endif %}
         </div>
@@ -23,17 +126,22 @@
     {% if recent_publications %}
     <div class="mt-5">
         <h2>Recent Publications</h2>
-        <div class="row">
+        <div class="publications-grid">
             {% for publication in recent_publications %}
-            <div class="col-md-4 mb-4">
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title">{{ publication.title }}</h5>
-                        <p class="card-text">{{ publication.abstract|truncatechars:100 }}</p>
-                        <a href="{% url 'publications:detail' publication.id %}" class="btn btn-outline-primary btn-sm">Read More</a>
+            <div class="publication-card">
+                <div class="card-content">
+                    <h3 class="card-title">{{ publication.title }}</h3>
+                    <p class="card-excerpt">{{ publication.abstract|truncatechars:100 }}</p>
+                    <div class="publication-meta">
+                        <div class="publication-author">
+                            <span>{{ publication.author.get_full_name }}</span>
+                        </div>
+                        <span>{{ publication.created_at|date:"M d, Y" }}</span>
                     </div>
-                    <div class="card-footer text-muted">
-                        By <a href="{% url 'accounts:public_profile' publication.author.id %}">{{ publication.author.get_full_name }}</a> | {{ publication.created_at|date:"M d, Y" }}
+                    <div class="publication-actions">
+                        <a href="{% url 'publications:detail' publication.id %}" class="pub-action-btn read-more-btn">
+                            <i class="fas fa-book-open me-1"></i> Read More
+                        </a>
                     </div>
                 </div>
             </div>
@@ -60,4 +168,178 @@
     </div>
     {% endif %}
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Debug tools setup
+    document.addEventListener('DOMContentLoaded', () => {
+        // Enhanced Read More button functionality
+        const readMoreButtons = document.querySelectorAll('.read-more-btn');
+        readMoreButtons.forEach(button => {
+            // Ensure the button is visible and has proper styling
+            button.style.display = 'block';
+            button.style.position = 'relative';
+            button.style.zIndex = '10';
+            
+            // Add a click event that prevents default only if there's an issue
+            button.addEventListener('click', function(e) {
+                const href = this.getAttribute('href');
+                if (!href || href === '#' || href === '') {
+                    e.preventDefault();
+                    console.error('Read More button has invalid href:', href);
+                } else {
+                    console.log('Navigating to:', href);
+                    // Allow normal navigation to proceed
+                }
+            });
+            
+            // Log button details to console for debugging
+            console.log('Read More button:', {
+                element: button,
+                href: button.getAttribute('href'),
+                styles: window.getComputedStyle(button)
+            });
+        });
+        
+        // Make publication cards clickable
+        const publicationCards = document.querySelectorAll('.publication-card');
+        publicationCards.forEach(card => {
+            const readMoreBtn = card.querySelector('.read-more-btn');
+            if (readMoreBtn) {
+                const url = readMoreBtn.getAttribute('href');
+                
+                // Make entire card clickable, but not on the button itself (to prevent double-clicks)
+                card.addEventListener('click', function(e) {
+                    // Don't trigger if clicking on the button directly (it has its own link)
+                    if (!e.target.closest('.read-more-btn')) {
+                        window.location.href = url;
+                    }
+                });
+                
+                // Add visual indication that card is clickable
+                card.style.cursor = 'pointer';
+            }
+        });
+        
+        // Reseteaza localStorage la refresh cu Ctrl+F5 sau când există parametrul showIntro
+        const urlParams = new URLSearchParams(window.location.search);
+        const showIntro = urlParams.get('showIntro') === '1';
+        const reset = urlParams.get('reset') === '1';
+        
+        // Detectează dacă e un hard reload (ctrl+F5)
+        if (performance && performance.navigation && performance.navigation.type === 1) {
+            // Este un refresh - vom reseta intro-ul
+            localStorage.removeItem('hasSeenIntro');
+            console.log('Page hard reloaded, intro reset');
+        }
+        
+        // Dacă e setat parametrul showIntro sau reset, resetează localStorage
+        if (showIntro || reset) {
+            localStorage.removeItem('hasSeenIntro');
+            console.log('showIntro/reset parameter detected, intro reset');
+        }
+        
+        // Enable debug mode with query param ?debug=1
+        const debugMode = urlParams.get('debug') === '1' || reset;
+        
+        if (debugMode) {
+            const debugTools = document.getElementById('debug-tools');
+            if (debugTools) {
+                debugTools.style.display = 'block';
+                
+                // Debug buttons
+                document.getElementById('show-console').addEventListener('click', () => {
+                    console.log('=== DEBUG INFO ===');
+                    console.log('THREE object:', typeof THREE);
+                    console.log('Local storage:', localStorage.getItem('hasSeenIntro'));
+                    console.log('DOM elements:', {
+                        landingContainer: !!document.getElementById('landing-container'),
+                        introCanvas: !!document.getElementById('intro-canvas'),
+                        skipButton: !!document.getElementById('intro-skip'),
+                        mainContent: !!document.getElementById('main-content')
+                    });
+                    
+                    // Check floating objects if available
+                    if (window.debugFloatingObjects) {
+                        console.log('Floating objects:', window.debugFloatingObjects.length);
+                        console.log('First object sample:', window.debugFloatingObjects[0]);
+                    }
+                });
+                
+                document.getElementById('force-skip').addEventListener('click', () => {
+                    const mainContent = document.getElementById('main-content');
+                    const landingContainer = document.getElementById('landing-container');
+                    
+                    mainContent.style.opacity = '1';
+                    mainContent.classList.add('content-visible');
+                    landingContainer.style.opacity = '0';
+                    landingContainer.style.pointerEvents = 'none';
+                    landingContainer.classList.add('hidden');
+                    
+                    console.log('Forced skip applied');
+                });
+                
+                document.getElementById('reset-intro').addEventListener('click', () => {
+                    localStorage.removeItem('hasSeenIntro');
+                    console.log('Intro reset. Reload the page to see intro again.');
+                    
+                    // Reload page with reset parameter
+                    window.location.href = window.location.pathname + '?reset=1';
+                });
+                
+                // Test movement button if available
+                const testMovementButton = document.getElementById('test-movement');
+                if (testMovementButton) {
+                    testMovementButton.addEventListener('click', () => {
+                        if (window.debugFloatingObjects) {
+                            // Try to manually move objects
+                            console.log('Testing object movement...');
+                            window.debugFloatingObjects.forEach((obj, index) => {
+                                if (obj && obj.mesh) {
+                                    console.log(`Moving object ${index}`);
+                                    obj.mesh.rotation.x += 0.5;
+                                    obj.mesh.rotation.y += 0.5;
+                                    obj.mesh.position.x += 1;
+                                    obj.orbitAngle = (obj.orbitAngle || 0) + 0.5;
+                                }
+                            });
+                            console.log('Movement test complete');
+                        } else {
+                            console.warn('Floating objects not available for testing');
+                        }
+                    });
+                }
+            }
+        }
+        
+        // If content is still not visible after 8 seconds, force show it
+        setTimeout(() => {
+            const mainContent = document.getElementById('main-content');
+            const landingContainer = document.getElementById('landing-container');
+            if (mainContent && !mainContent.classList.contains('content-visible')) {
+                console.log('Fallback: forcing content visibility');
+                mainContent.style.opacity = '1';
+                mainContent.classList.add('content-visible');
+                if (landingContainer) {
+                    landingContainer.style.opacity = '0';
+                    landingContainer.style.pointerEvents = 'none';
+                    landingContainer.classList.add('hidden');
+                }
+            }
+        }, 8000);
+    });
+</script>
+
+<!-- Three.js Library -->
+<script src="https://cdn.jsdelivr.net/npm/three@0.149.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.149.0/examples/js/controls/OrbitControls.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.149.0/examples/js/loaders/FontLoader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.149.0/examples/js/geometries/TextGeometry.js"></script>
+
+<!-- Versiune legacy pentru browsere vechi (care nu suportă module ES6) -->
+<script nomodule src="/static/js/intro3d-legacy.js"></script>
+
+<!-- Versiune modernă - module ES6 pentru browserele moderne -->
+<script type="module" src="/static/js/intro3d.js"></script>
 {% endblock %} 

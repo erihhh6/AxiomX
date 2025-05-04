@@ -1,4 +1,136 @@
-/* Main CSS styles for Scientists Collaboration Platform */
+/* Main CSS styles for AxiomX - Scientists Collaboration Platform */
+
+/* Import Variables and Base Layout */
+@import url("/static/css/variables.css");
+@import url("/static/css/base/layout.css");
+@import url("/static/css/base/navbar-override.css");
+@import url("/static/css/base/button-fixes.css");
+
+/* Import Section-specific Styles */
+@import url("/static/css/accounts/styles.css");
+@import url("/static/css/discussions/styles.css");
+@import url("/static/css/publications/styles.css");
+
+/* Home page styling */
+.jumbotron {
+    background-color: var(--white);
+    border-radius: var(--border-radius-lg);
+    padding: var(--spacing-xl) var(--spacing-lg);
+    margin-bottom: var(--spacing-xl);
+    box-shadow: var(--shadow-md);
+    text-align: center;
+}
+
+.jumbotron .display-4 {
+    color: var(--primary);
+    font-weight: 700;
+    margin-bottom: var(--spacing-md);
+}
+
+.jumbotron .lead {
+    color: var(--text-secondary);
+    font-size: 1.2rem;
+    margin-bottom: var(--spacing-md);
+}
+
+.jumbotron hr {
+    border-color: var(--gray);
+    margin: var(--spacing-md) 0;
+}
+
+.jumbotron .btn {
+    padding: var(--spacing-sm) var(--spacing-lg);
+    border-radius: var(--border-radius-md);
+    font-weight: 500;
+    transition: var(--transition-normal);
+    margin: 0 var(--spacing-sm);
+}
+
+.jumbotron .btn-primary {
+    background-color: var(--primary);
+    border-color: var(--primary);
+    color: var(--white);
+}
+
+.jumbotron .btn-primary:hover {
+    background-color: var(--neutral-purple);
+    border-color: var(--neutral-purple);
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-md);
+}
+
+.jumbotron .btn-success {
+    background-color: var(--accent);
+    border-color: var(--accent);
+    color: var(--white);
+}
+
+.jumbotron .btn-success:hover {
+    background-color: var(--neutral-dark);
+    border-color: var(--neutral-dark);
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-md);
+}
+
+/* Recent sections styling */
+.container h2 {
+    color: var(--primary);
+    font-weight: 600;
+    margin-bottom: var(--spacing-md);
+    position: relative;
+    padding-bottom: var(--spacing-sm);
+}
+
+.container h2::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 50px;
+    height: 3px;
+    background-color: var(--accent);
+}
+
+/* Recent discussions styling */
+.list-group-item-action {
+    border-radius: var(--border-radius-md) !important;
+    margin-bottom: var(--spacing-sm);
+    border: none;
+    box-shadow: var(--shadow-sm);
+    transition: var(--transition-normal);
+}
+
+.list-group-item-action:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+    border-left: 3px solid var(--primary);
+}
+
+.list-group-item-action h5 {
+    color: var(--primary);
+    font-weight: 500;
+}
+
+.list-group-item-action p {
+    color: var(--text-secondary);
+}
+
+.list-group-item-action small {
+    color: var(--text-secondary);
+}
+
+.list-group-item-action small a {
+    color: var(--secondary);
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.list-group-item-action small a:hover {
+    color: var(--primary);
+    text-decoration: underline;
+}
+
+/* Legacy styles below - will be phased out as we migrate to the new CSS architecture */
 
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;

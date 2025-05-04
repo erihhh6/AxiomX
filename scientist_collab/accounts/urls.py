@@ -21,4 +21,8 @@ urlpatterns = [
     path('profile/<int:user_id>/unfollow/', views.unfollow_user, name='unfollow_user'),
     path('profile/followers/', views.followers_list, name='followers'),
     path('profile/following/', views.following_list, name='following'),
+    
+    # Social Authentication URLs
+    path('login/google/', views.google_login, name='google_login'),
+    path('login/orcid/', views.orcid_login, name='orcid_login'),
 ]

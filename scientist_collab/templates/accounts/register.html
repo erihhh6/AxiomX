@@ -1,112 +1,144 @@
 {% extends 'base/base.html' %}
 
-{% block title %}Register - Scientists Collaboration Platform{% endblock %}
+{% block title %}Register - AxiomX Platform{% endblock %}
+
+{% block body_class %}auth-page{% endblock %}
 
 {% block content %}
-<div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-header bg-success text-white">
-                    <h3 class="card-title mb-0">Register</h3>
+<div class="container auth-container">
+    <div class="auth-logo">
+        <h2>AxiomX</h2>
+    </div>
+    
+    <div class="auth-card">
+        <div class="card-header">
+            <h3>Create Account</h3>
+            <p>Join our scientific community</p>
+        </div>
+        <div class="card-body">
+            {% if form.non_field_errors %}
+            <div class="alert alert-danger">
+                {% for error in form.non_field_errors %}
+                {{ error }}
+                {% endfor %}
+            </div>
+            {% endif %}
+            
+            {% if messages %}
+            <div class="messages">
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">
+                    {{ message }}
                 </div>
-                <div class="card-body">
-                    <form method="post">
-                        {% csrf_token %}
-                        
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="id_first_name" class="form-label">First Name</label>
-                                <input type="text" name="first_name" class="form-control" id="id_first_name" required>
-                                {% if form.first_name.errors %}
-                                <div class="text-danger">
-                                    {% for error in form.first_name.errors %}
-                                    {{ error }}
-                                    {% endfor %}
-                                </div>
-                                {% endif %}
-                            </div>
-                            
-                            <div class="col-md-6 mb-3">
-                                <label for="id_last_name" class="form-label">Last Name</label>
-                                <input type="text" name="last_name" class="form-control" id="id_last_name" required>
-                                {% if form.last_name.errors %}
-                                <div class="text-danger">
-                                    {% for error in form.last_name.errors %}
-                                    {{ error }}
-                                    {% endfor %}
-                                </div>
-                                {% endif %}
-                            </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            
+            <form method="post">
+                {% csrf_token %}
+                
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="id_first_name" class="form-label">First Name</label>
+                        <input type="text" name="first_name" class="form-control" id="id_first_name" required>
+                        {% if form.first_name.errors %}
+                        <div class="text-danger">
+                            {% for error in form.first_name.errors %}
+                            {{ error }}
+                            {% endfor %}
                         </div>
-                        
-                        <div class="mb-3">
-                            <label for="id_username" class="form-label">Username</label>
-                            <input type="text" name="username" class="form-control" id="id_username" required>
-                            {% if form.username.errors %}
-                            <div class="text-danger">
-                                {% for error in form.username.errors %}
-                                {{ error }}
-                                {% endfor %}
-                            </div>
-                            {% endif %}
+                        {% endif %}
+                    </div>
+                    
+                    <div class="col-md-6 mb-3">
+                        <label for="id_last_name" class="form-label">Last Name</label>
+                        <input type="text" name="last_name" class="form-control" id="id_last_name" required>
+                        {% if form.last_name.errors %}
+                        <div class="text-danger">
+                            {% for error in form.last_name.errors %}
+                            {{ error }}
+                            {% endfor %}
                         </div>
-                        
-                        <div class="mb-3">
-                            <label for="id_email" class="form-label">Email</label>
-                            <input type="email" name="email" class="form-control" id="id_email" required>
-                            {% if form.email.errors %}
-                            <div class="text-danger">
-                                {% for error in form.email.errors %}
-                                {{ error }}
-                                {% endfor %}
-                            </div>
-                            {% endif %}
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label for="id_password1" class="form-label">Password</label>
-                            <input type="password" name="password1" class="form-control" id="id_password1" required>
-                            {% if form.password1.errors %}
-                            <div class="text-danger">
-                                {% for error in form.password1.errors %}
-                                {{ error }}
-                                {% endfor %}
-                            </div>
-                            {% endif %}
-                            <div class="form-text">
-                                <ul>
-                                    <li>Your password can't be too similar to your other personal information.</li>
-                                    <li>Your password must contain at least 8 characters.</li>
-                                    <li>Your password can't be a commonly used password.</li>
-                                    <li>Your password can't be entirely numeric.</li>
-                                </ul>
-                            </div>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label for="id_password2" class="form-label">Confirm Password</label>
-                            <input type="password" name="password2" class="form-control" id="id_password2" required>
-                            {% if form.password2.errors %}
-                            <div class="text-danger">
-                                {% for error in form.password2.errors %}
-                                {{ error }}
-                                {% endfor %}
-                            </div>
-                            {% endif %}
-                        </div>
-                        
-                        <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-success">Register</button>
-                        </div>
-                    </form>
-                </div>
-                <div class="card-footer">
-                    <div class="text-center">
-                        <p class="mb-0">Already have an account? <a href="{% url 'accounts:login' %}">Login here</a></p>
+                        {% endif %}
                     </div>
                 </div>
+                
+                <div class="mb-3">
+                    <label for="id_username" class="form-label">Username</label>
+                    <input type="text" name="username" class="form-control" id="id_username" required>
+                    {% if form.username.errors %}
+                    <div class="text-danger">
+                        {% for error in form.username.errors %}
+                        {{ error }}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="mb-3">
+                    <label for="id_email" class="form-label">Email</label>
+                    <input type="email" name="email" class="form-control" id="id_email" required>
+                    {% if form.email.errors %}
+                    <div class="text-danger">
+                        {% for error in form.email.errors %}
+                        {{ error }}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="mb-3">
+                    <label for="id_password1" class="form-label">Password</label>
+                    <input type="password" name="password1" class="form-control" id="id_password1" required>
+                    {% if form.password1.errors %}
+                    <div class="text-danger">
+                        {% for error in form.password1.errors %}
+                        {{ error }}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    <div class="form-text">
+                        <ul>
+                            <li>Your password must contain at least 8 characters</li>
+                            <li>Your password can't be too similar to your personal information</li>
+                            <li>Your password can't be a commonly used password</li>
+                            <li>Your password can't be entirely numeric</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="mb-4">
+                    <label for="id_password2" class="form-label">Confirm Password</label>
+                    <input type="password" name="password2" class="form-control" id="id_password2" required>
+                    {% if form.password2.errors %}
+                    <div class="text-danger">
+                        {% for error in form.password2.errors %}
+                        {{ error }}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-primary">Create Account</button>
+                </div>
+            </form>
+            
+            <div class="social-divider">
+                <span>or register with</span>
             </div>
+            
+            <div class="social-login">
+                <a href="{% url 'accounts:google_login' %}" class="btn btn-outline-secondary">
+                    <i class="fab fa-google"></i> Google
+                </a>
+                <a href="{% url 'accounts:orcid_login' %}" class="btn btn-outline-secondary">
+                    <i class="fab fa-orcid"></i> ORCID
+                </a>
+            </div>
+        </div>
+        <div class="card-footer">
+            <p class="mb-0">Already have an account? <a href="{% url 'accounts:login' %}">Sign in</a></p>
         </div>
     </div>
 </div>

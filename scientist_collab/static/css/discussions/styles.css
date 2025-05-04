@@ -1,0 +1,8 @@
+/* 
+ * AxiomX - Discussions Styles
+ * Main imports file for discussions section styles
+ */
+
+@import url("forums.css");
+@import url("list.css");
+@import url("topic.css"); 

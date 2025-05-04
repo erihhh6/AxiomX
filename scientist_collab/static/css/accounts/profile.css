@@ -1,0 +1,121 @@
+/* 
+ * AxiomX - Profile Styles
+ */
+
+.profile-container {
+    background-color: var(--white);
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-md);
+    padding: var(--spacing-lg);
+    margin-bottom: var(--spacing-xl);
+}
+
+.profile-header {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-lg);
+    margin-bottom: var(--spacing-lg);
+    padding-bottom: var(--spacing-md);
+    border-bottom: 1px solid var(--gray);
+}
+
+.profile-avatar {
+    width: 120px;
+    height: 120px;
+    border-radius: var(--border-radius-circle);
+    object-fit: cover;
+    border: 4px solid var(--secondary);
+    box-shadow: var(--shadow-md);
+}
+
+.profile-info h1 {
+    color: var(--primary);
+    margin-bottom: var(--spacing-xs);
+}
+
+.profile-info p {
+    color: var(--text-secondary);
+    margin-bottom: var(--spacing-xs);
+}
+
+.profile-stats {
+    display: flex;
+    gap: var(--spacing-lg);
+    margin-top: var(--spacing-md);
+}
+
+.stat-box {
+    background-color: var(--primary-transparent);
+    padding: var(--spacing-md);
+    border-radius: var(--border-radius-md);
+    min-width: 100px;
+    text-align: center;
+}
+
+.stat-box h3 {
+    font-size: 1.8rem;
+    color: var(--primary);
+    margin: 0;
+}
+
+.stat-box p {
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+.profile-tabs {
+    margin-top: var(--spacing-lg);
+}
+
+.tab-nav {
+    display: flex;
+    border-bottom: 1px solid var(--gray);
+    margin-bottom: var(--spacing-md);
+}
+
+.tab-link {
+    padding: var(--spacing-md) var(--spacing-lg);
+    color: var(--text-secondary);
+    font-weight: 500;
+    text-decoration: none;
+    border-bottom: 3px solid transparent;
+    transition: var(--transition-fast);
+}
+
+.tab-link:hover, 
+.tab-link.active {
+    color: var(--primary);
+    border-bottom-color: var(--primary);
+}
+
+.profile-bio {
+    line-height: 1.6;
+    padding: var(--spacing-md) 0;
+}
+
+.edit-profile-btn {
+    background-color: var(--secondary);
+    color: var(--white);
+    padding: var(--spacing-sm) var(--spacing-md);
+    border-radius: var(--border-radius-md);
+    text-decoration: none;
+    transition: var(--transition-fast);
+    border: none;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.edit-profile-btn:hover {
+    background-color: var(--primary);
+}
+
+@media (max-width: 768px) {
+    .profile-header {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .profile-stats {
+        justify-content: center;
+    }
+} 

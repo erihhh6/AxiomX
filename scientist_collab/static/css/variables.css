@@ -1,0 +1,63 @@
+/* 
+ * AxiomX - Scientists Collaboration Platform
+ * Color scheme variables 
+ */
+
+:root {
+    /* Main color scheme */
+    --primary: #0010F4;     /* Primary blue */
+    --secondary: #05A9F0;   /* Light blue */
+    --accent: #F0A305;      /* Orange/Yellow accent */
+    --neutral-dark: #705F3A; /* Earthy brown */
+    --neutral-purple: #3A3E70; /* Dark purple */
+    --neutral-blue: #3A6070; /* Dark teal blue */
+
+    /* Supporting colors */
+    --white: #ffffff;
+    --black: #080820;
+    --light-gray: #f5f7fa;
+    --gray: #e0e4e8;
+    --dark-gray: #5a6474;
+
+    /* Functional colors */
+    --info: var(--secondary);
+    --success: #3AC170;
+    --warning: var(--accent);
+    --danger: #F04A3C;
+
+    /* Transparency variants */
+    --primary-transparent: rgba(0, 16, 244, 0.1);
+    --secondary-transparent: rgba(5, 169, 240, 0.1);
+    --accent-transparent: rgba(240, 163, 5, 0.1);
+
+    /* Text colors */
+    --text-primary: var(--black);
+    --text-secondary: var(--dark-gray);
+    --text-light: var(--white);
+    
+    /* Border radius values */
+    --border-radius-sm: 4px;
+    --border-radius-md: 8px;
+    --border-radius-lg: 12px;
+    --border-radius-xl: 24px;
+    --border-radius-circle: 50%;
+    
+    /* Spacing variables */
+    --spacing-xs: 0.25rem;
+    --spacing-sm: 0.5rem;
+    --spacing-md: 1rem;
+    --spacing-lg: 1.5rem;
+    --spacing-xl: 2rem;
+    --spacing-xxl: 3rem;
+    
+    /* Shadow variables */
+    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.1);
+    --shadow-xl: 0 12px 24px rgba(0, 0, 0, 0.15);
+    
+    /* Transition speeds */
+    --transition-fast: 0.15s ease-in-out;
+    --transition-normal: 0.3s ease-in-out;
+    --transition-slow: 0.5s ease-in-out;
+} 

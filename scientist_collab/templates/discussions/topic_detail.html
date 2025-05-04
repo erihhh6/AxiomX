@@ -2,6 +2,8 @@
 
 {% block title %}{{ topic.title }} - Scientists Collaboration Platform{% endblock %}
 
+{% block body_class %}topic-page{% endblock %}
+
 {% block content %}
 <div class="container mt-5">
     <nav aria-label="breadcrumb">
@@ -13,130 +15,153 @@
         </ol>
     </nav>
     
-    <div class="topic-header">
-        <div class="d-flex justify-content-between align-items-start">
-            <div>
-                <h1 class="mb-1">{{ topic.title }}</h1>
-                <p class="text-muted mb-0">
-                    Posted by {{ topic.author.get_full_name|default:topic.author.username }} 
-                    on {{ topic.created_at|date:"F d, Y" }}
-                </p>
+    <div class="topic-container">
+        <div class="topic-header">
+            <h1>{{ topic.title }}</h1>
+            <div class="topic-meta">
+                <span>Posted by {{ topic.author.get_full_name|default:topic.author.username }}</span>
+                <span>on {{ topic.created_at|date:"F d, Y" }}</span>
             </div>
+            
+            <div class="topic-badges">
+                <span class="topic-badge badge-category">{{ topic.forum.name }}</span>
+                {% if topic.is_sticky %}
+                <span class="topic-badge badge-sticky">Sticky</span>
+                {% endif %}
+                {% if topic.is_solved %}
+                <span class="topic-badge badge-solved">Solved</span>
+                {% endif %}
+            </div>
+            
             {% if user == topic.author %}
-            <div>
-                <a href="{% url 'discussions:topic_update' topic.id %}" class="btn btn-warning btn-sm me-2">
+            <div class="topic-actions mt-3">
+                <a href="{% url 'discussions:topic_update' topic.id %}" class="btn btn-warning">
                     <i class="fas fa-edit"></i> Edit
                 </a>
-                <a href="{% url 'discussions:topic_delete' topic.id %}" class="btn btn-danger btn-sm">
+                <a href="{% url 'discussions:topic_delete' topic.id %}" class="btn btn-danger">
                     <i class="fas fa-trash"></i> Delete
                 </a>
             </div>
             {% endif %}
         </div>
-    </div>
-    
-    <div class="card mb-4">
-        <div class="card-body">
-            <div class="d-flex">
-                <div class="flex-shrink-0 me-3">
-                    {% if topic.author.profile.profile_picture %}
-                    <img src="{{ topic.author.profile.profile_picture.url }}" class="rounded-circle" width="64" height="64" alt="{{ topic.author.username }}">
-                    {% else %}
-                    <img src="/static/images/default-profile.png" class="rounded-circle" width="64" height="64" alt="{{ topic.author.username }}">
-                    {% endif %}
+        
+        <div class="posts-container">
+            <!-- Original Post -->
+            <div class="post-card">
+                <div class="post-header">
+                    <div class="post-author">
+                        <div class="author-avatar">
+                            {% if topic.author.profile.profile_picture %}
+                            <img src="{{ topic.author.profile.profile_picture.url }}" alt="{{ topic.author.username }}">
+                            {% else %}
+                            <img src="/static/images/default-profile.png" alt="{{ topic.author.username }}">
+                            {% endif %}
+                        </div>
+                        <div class="author-info">
+                            <h5 class="author-name">{{ topic.author.get_full_name|default:topic.author.username }}</h5>
+                            <span class="author-role">Author</span>
+                        </div>
+                    </div>
+                    <div class="post-timestamp">
+                        {{ topic.created_at|date:"F d, Y, H:i" }}
+                    </div>
                 </div>
-                <div class="flex-grow-1">
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <h5 class="mb-0">{{ topic.author.get_full_name|default:topic.author.username }}</h5>
-                        <small class="text-muted">{{ topic.created_at|date:"F d, Y, H:i" }}</small>
-                    </div>
-                    <div class="topic-content">
-                        {{ topic.content|linebreaks }}
-                    </div>
-                    
-                    <!-- Like and Dislike Buttons for Topic -->
-                    {% if user.is_authenticated %}
-                    <div class="mt-3 d-flex">
-                        <button class="btn {% if is_topic_liked %}btn-primary{% else %}btn-outline-primary{% endif %} me-2 like-topic-btn" 
-                                data-url="{% url 'discussions:like_topic' topic.id %}">
-                            <i class="fas fa-thumbs-up"></i> 
+                <div class="post-content">
+                    {{ topic.content|linebreaks }}
+                </div>
+                <div class="post-footer">
+                    <div class="post-actions">
+                        {% if user.is_authenticated %}
+                        <button class="action-btn like-topic-btn" data-url="{% url 'discussions:like_topic' topic.id %}">
+                            <i class="fas fa-thumbs-up"></i>
                             <span class="like-text">{% if is_topic_liked %}Liked{% else %}Like{% endif %}</span>
                             <span class="badge bg-light text-dark ms-1 likes-count">{{ topic.total_likes }}</span>
                         </button>
                         
-                        <button class="btn {% if is_topic_disliked %}btn-danger{% else %}btn-outline-danger{% endif %} me-2 dislike-topic-btn" 
-                                data-url="{% url 'discussions:dislike_topic' topic.id %}">
-                            <i class="fas fa-thumbs-down"></i> 
+                        <button class="action-btn dislike-topic-btn" data-url="{% url 'discussions:dislike_topic' topic.id %}">
+                            <i class="fas fa-thumbs-down"></i>
                             <span class="dislike-text">{% if is_topic_disliked %}Disliked{% else %}Dislike{% endif %}</span>
                             <span class="badge bg-light text-dark ms-1 dislikes-count">{{ topic.total_dislikes }}</span>
                         </button>
-                    </div>
-                    {% else %}
-                    <div class="mt-3">
-                        <a href="{% url 'accounts:login' %}?next={{ request.path }}" class="btn btn-outline-primary me-2">
+                        {% else %}
+                        <a href="{% url 'accounts:login' %}?next={{ request.path }}" class="action-btn">
                             <i class="fas fa-thumbs-up"></i> Like ({{ topic.total_likes }})
                         </a>
-                        <a href="{% url 'accounts:login' %}?next={{ request.path }}" class="btn btn-outline-danger">
+                        <a href="{% url 'accounts:login' %}?next={{ request.path }}" class="action-btn">
                             <i class="fas fa-thumbs-down"></i> Dislike ({{ topic.total_dislikes }})
                         </a>
-                    </div>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <h3 class="mb-4">{{ replies.count }} Replies</h3>
-    
-    {% if replies %}
-    <div class="mb-4">
-        {% for reply in replies %}
-        <div class="card mb-3" id="reply-{{ reply.id }}">
-            <div class="card-body">
-                <div class="d-flex">
-                    <div class="flex-shrink-0 me-3">
-                        {% if reply.author.profile.profile_picture %}
-                        <img src="{{ reply.author.profile.profile_picture.url }}" class="rounded-circle" width="48" height="48" alt="{{ reply.author.username }}">
-                        {% else %}
-                        <img src="/static/images/default-profile.png" class="rounded-circle" width="48" height="48" alt="{{ reply.author.username }}">
                         {% endif %}
                     </div>
-                    <div class="flex-grow-1">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <h6 class="mb-0">{{ reply.author.get_full_name|default:reply.author.username }}</h6>
-                            <div>
-                                <small class="text-muted">{{ reply.created_at|date:"F d, Y, H:i" }}</small>
-                                {% if user == reply.author %}
-                                <a href="{% url 'discussions:reply_delete' reply.id %}" class="btn btn-danger btn-sm ms-2">
-                                    <i class="fas fa-trash"></i>
-                                </a>
+                </div>
+            </div>
+            
+            <!-- Replies -->
+            <h3 class="my-4">{{ replies.count }} Replies</h3>
+            
+            {% if replies %}
+                {% for reply in replies %}
+                <div class="post-card" id="reply-{{ reply.id }}">
+                    <div class="post-header">
+                        <div class="post-author">
+                            <div class="author-avatar">
+                                {% if reply.author.profile.profile_picture %}
+                                <img src="{{ reply.author.profile.profile_picture.url }}" alt="{{ reply.author.username }}">
+                                {% else %}
+                                <img src="/static/images/default-profile.png" alt="{{ reply.author.username }}">
                                 {% endif %}
                             </div>
+                            <div class="author-info">
+                                <h5 class="author-name">{{ reply.author.get_full_name|default:reply.author.username }}</h5>
+                                <span class="author-role">Member</span>
+                            </div>
                         </div>
-                        <div class="reply-content">
-                            {{ reply.content|linebreaks }}
+                        <div class="post-timestamp">
+                            {{ reply.created_at|date:"F d, Y, H:i" }}
+                        </div>
+                    </div>
+                    <div class="post-content">
+                        {% if reply.is_solution %}
+                        <div class="solution-marker">
+                            <i class="fas fa-check-circle"></i> Marked as Solution
+                        </div>
+                        {% endif %}
+                        {{ reply.content|linebreaks }}
+                    </div>
+                    <div class="post-footer">
+                        <div class="post-actions">
+                            {% if user == reply.author %}
+                            <a href="{% url 'discussions:reply_delete' reply.id %}" class="action-btn">
+                                <i class="fas fa-trash"></i> Delete
+                            </a>
+                            {% endif %}
+                            
+                            {% if user == topic.author and not topic.is_solved %}
+                            <form method="post" action="{% url 'discussions:mark_solution' reply.id %}" class="d-inline">
+                                {% csrf_token %}
+                                <button type="submit" class="action-btn">
+                                    <i class="fas fa-check-circle"></i> Mark as Solution
+                                </button>
+                            </form>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
+                {% endfor %}
+            {% else %}
+            <div class="empty-forum mb-4">
+                <i class="fas fa-comments"></i>
+                <p>No replies yet. Be the first to respond!</p>
             </div>
+            {% endif %}
         </div>
-        {% endfor %}
-    </div>
-    {% else %}
-    <div class="alert alert-info mb-4">
-        <p>No replies yet. Be the first to respond!</p>
-    </div>
-    {% endif %}
-    
-    {% if user.is_authenticated %}
-    <div class="card">
-        <div class="card-header bg-light">
-            <h4 class="mb-0">Post a Reply</h4>
-        </div>
-        <div class="card-body">
+        
+        <!-- Reply Form -->
+        {% if user.is_authenticated %}
+        <div class="reply-form">
+            <h4 class="mb-3">Post a Reply</h4>
             <form method="post" action="{% url 'discussions:add_reply' topic.id %}">
                 {% csrf_token %}
-                <div class="mb-3">
+                <div class="form-group">
                     {{ reply_form.content }}
                     {% if reply_form.content.errors %}
                     <div class="text-danger">
@@ -146,17 +171,15 @@
                     </div>
                     {% endif %}
                 </div>
-                <button type="submit" class="btn btn-primary">Post Reply</button>
+                <button type="submit" class="btn-primary">Post Reply</button>
             </form>
         </div>
-    </div>
-    {% else %}
-    <div class="card mb-4">
-        <div class="card-body text-center">
+        {% else %}
+        <div class="reply-form text-center">
             <p>Please <a href="{% url 'accounts:login' %}">login</a> to join the discussion.</p>
         </div>
+        {% endif %}
     </div>
-    {% endif %}
     
     <div class="mt-4">
         <a href="{% url 'discussions:forum_detail' topic.forum.id %}" class="btn btn-outline-secondary">
@@ -198,90 +221,43 @@ $(document).ready(function() {
     // Add Bootstrap form-control class to the reply textarea
     $('#id_content').addClass('form-control').attr('placeholder', 'Write your reply here...');
     
-    // Like Topic Functionality
-    $('.like-topic-btn').on('click', function(e) {
-        e.preventDefault();
-        var btn = $(this);
-        var url = btn.data('url');
+    // Handle like/dislike functionality
+    $('.like-topic-btn').click(function() {
+        const btn = $(this);
+        const url = btn.data('url');
         
-        $.ajax({
-            url: url,
-            type: 'POST',
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest'
-            },
-            success: function(data) {
-                if (data.status === 'success') {
-                    // Update like button appearance
-                    var likeText = btn.find('.like-text');
-                    var dislikeBtn = $('.dislike-topic-btn');
-                    
-                    if (data.liked) {
-                        btn.removeClass('btn-outline-primary').addClass('btn-primary');
-                        likeText.text('Liked');
-                        
-                        // If dislike was removed, update dislike button
-                        if (dislikeBtn.length) {
-                            dislikeBtn.removeClass('btn-danger').addClass('btn-outline-danger');
-                            dislikeBtn.find('.dislike-text').text('Dislike');
-                        }
-                    } else {
-                        btn.removeClass('btn-primary').addClass('btn-outline-primary');
-                        likeText.text('Like');
-                    }
-                    
-                    // Update counts
-                    $('.likes-count').text(data.total_likes);
-                    $('.dislikes-count').text(data.total_dislikes);
-                }
-            },
-            error: function(error) {
-                console.error('Error:', error);
-                alert('There was an error processing your request. Please try again.');
+        $.post(url, function(data) {
+            btn.find('.likes-count').text(data.total_likes);
+            btn.find('.like-text').text(data.liked ? 'Liked' : 'Like');
+            
+            if (data.liked) {
+                btn.removeClass('btn-outline-primary').addClass('btn-primary');
+                // If user likes, remove any dislike styling
+                $('.dislike-topic-btn').removeClass('btn-danger').addClass('btn-outline-danger');
+                $('.dislike-topic-btn').find('.dislike-text').text('Dislike');
+                $('.dislike-topic-btn').find('.dislikes-count').text(data.total_dislikes);
+            } else {
+                btn.removeClass('btn-primary').addClass('btn-outline-primary');
             }
         });
     });
     
-    // Dislike Topic Functionality
-    $('.dislike-topic-btn').on('click', function(e) {
-        e.preventDefault();
-        var btn = $(this);
-        var url = btn.data('url');
+    $('.dislike-topic-btn').click(function() {
+        const btn = $(this);
+        const url = btn.data('url');
         
-        $.ajax({
-            url: url,
-            type: 'POST',
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest'
-            },
-            success: function(data) {
-                if (data.status === 'success') {
-                    // Update dislike button appearance
-                    var dislikeText = btn.find('.dislike-text');
-                    var likeBtn = $('.like-topic-btn');
-                    
-                    if (data.disliked) {
-                        btn.removeClass('btn-outline-danger').addClass('btn-danger');
-                        dislikeText.text('Disliked');
-                        
-                        // If like was removed, update like button
-                        if (likeBtn.length) {
-                            likeBtn.removeClass('btn-primary').addClass('btn-outline-primary');
-                            likeBtn.find('.like-text').text('Like');
-                        }
-                    } else {
-                        btn.removeClass('btn-danger').addClass('btn-outline-danger');
-                        dislikeText.text('Dislike');
-                    }
-                    
-                    // Update counts
-                    $('.dislikes-count').text(data.total_dislikes);
-                    $('.likes-count').text(data.total_likes);
-                }
-            },
-            error: function(error) {
-                console.error('Error:', error);
-                alert('There was an error processing your request. Please try again.');
+        $.post(url, function(data) {
+            btn.find('.dislikes-count').text(data.total_dislikes);
+            btn.find('.dislike-text').text(data.disliked ? 'Disliked' : 'Dislike');
+            
+            if (data.disliked) {
+                btn.removeClass('btn-outline-danger').addClass('btn-danger');
+                // If user dislikes, remove any like styling
+                $('.like-topic-btn').removeClass('btn-primary').addClass('btn-outline-primary');
+                $('.like-topic-btn').find('.like-text').text('Like');
+                $('.like-topic-btn').find('.likes-count').text(data.total_likes);
+            } else {
+                btn.removeClass('btn-danger').addClass('btn-outline-danger');
             }
         });
     });

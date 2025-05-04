@@ -1,0 +1,39 @@
+/* 
+ * AxiomX - Global Button Fixes 
+ */
+
+/* Ensure all buttons are clickable by positioning them above other elements */
+.btn {
+    position: relative !important;
+    z-index: 10 !important;
+}
+
+/* Specific fix for primary buttons */
+.btn-primary, 
+.btn-outline-primary {
+    position: relative !important;
+    z-index: 10 !important;
+}
+
+/* Specific fix for card buttons */
+.card .btn {
+    position: relative !important;
+    z-index: 10 !important;
+}
+
+/* Forum and section headers */
+.card-header h5 {
+    position: relative !important;
+    z-index: 5 !important;
+    color: white !important;
+}
+
+/* Make sure cards don't prevent clicking */
+.card:before {
+    z-index: 0 !important;
+}
+
+/* Ensure entire cards are clickable if needed */
+.card {
+    cursor: pointer;
+} 

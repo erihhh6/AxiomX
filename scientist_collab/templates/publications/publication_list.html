@@ -1,6 +1,6 @@
 {% extends 'base/base.html' %}
 
-{% block title %}Publications - Scientists Collaboration Platform{% endblock %}
+{% block title %}Publications - AxiomX{% endblock %}
 
 {% block content %}
 <div class="container mt-5">
@@ -18,12 +18,17 @@
             <form method="get" action="{% url 'publications:list' %}" class="row g-3">
                 <div class="col-md-10">
                     <div class="input-group">
-                        <input type="text" name="q" class="form-control" placeholder="Search by title, abstract, or keywords..." value="{{ query }}">
+                        <span class="input-group-text bg-light border-end-0">
+                            <i class="fas fa-search text-primary"></i>
+                        </span>
+                        <input type="text" name="q" class="form-control border-start-0" placeholder="Search by title, abstract, or keywords..." value="{{ query }}">
                         <button type="submit" class="btn btn-outline-primary">Search</button>
                     </div>
                 </div>
                 <div class="col-md-2">
-                    <a href="{% url 'publications:list' %}" class="btn btn-outline-secondary w-100">Clear</a>
+                    <a href="{% url 'publications:list' %}" class="btn btn-outline-secondary w-100">
+                        <i class="fas fa-times"></i> Clear
+                    </a>
                 </div>
             </form>
         </div>
@@ -37,16 +42,32 @@
                 <div class="card-body">
                     <h5 class="card-title">{{ publication.title }}</h5>
                     <p class="card-text">{{ publication.abstract|truncatechars:150 }}</p>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <a href="{% url 'publications:detail' publication.id %}" class="btn btn-primary btn-sm">View Details</a>
-                        <small class="text-muted">{{ publication.publication_date }}</small>
+                    
+                    {% if publication.keywords %}
+                    <div class="publication-tags mb-3">
+                        {% for keyword in publication.get_keywords_list %}
+                        <span class="pub-tag">{{ keyword }}</span>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    
+                    <div class="d-flex justify-content-between align-items-center mt-auto">
+                        <a href="{% url 'publications:detail' publication.id %}" class="btn btn-primary btn-sm" style="position: relative; z-index: 5;">
+                            <i class="fas fa-book-open me-1"></i> View Details
+                        </a>
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-calendar-alt text-secondary me-1"></i>
+                            <small class="text-muted">{{ publication.publication_date }}</small>
+                        </div>
                     </div>
                 </div>
                 <div class="card-footer">
                     <div class="d-flex justify-content-between">
-                        <small class="text-muted">Author: {{ publication.author.get_full_name }}</small>
                         <small class="text-muted">
-                            <i class="fas fa-calendar"></i> {{ publication.created_at|date:"M d, Y" }}
+                            <i class="fas fa-user me-1"></i> {{ publication.author.get_full_name }}
+                        </small>
+                        <small class="text-muted">
+                            <i class="fas fa-clock me-1"></i> {{ publication.created_at|date:"M d, Y" }}
                         </small>
                     </div>
                 </div>
@@ -101,11 +122,16 @@
     
     {% else %}
     <div class="alert alert-info">
-        {% if query %}
-        <p>No publications found matching your search criteria.</p>
-        {% else %}
-        <p>No publications available yet. Be the first to upload one!</p>
-        {% endif %}
+        <i class="fas fa-info-circle fa-2x float-start me-3 mt-1"></i>
+        <div>
+            {% if query %}
+            <h5>No Results Found</h5>
+            <p>No publications found matching your search criteria.</p>
+            {% else %}
+            <h5>No Publications Yet</h5>
+            <p>No publications available yet. Be the first to upload one!</p>
+            {% endif %}
+        </div>
     </div>
     {% endif %}
 </div>

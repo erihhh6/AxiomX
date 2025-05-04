@@ -1,0 +1,186 @@
+/* 
+ * AxiomX - Discussions Forums List Styles
+ */
+
+/* Header styling */
+.container h1 {
+    color: var(--primary);
+    font-weight: 700;
+    position: relative;
+}
+
+.container h1:before {
+    content: '';
+    position: absolute;
+    top: -10px;
+    left: -20px;
+    width: 35px;
+    height: 35px;
+    background-color: var(--accent-transparent);
+    border-radius: var(--border-radius-circle);
+    z-index: -1;
+}
+
+/* Forum cards styling */
+.card.h-100 {
+    border: none;
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-md);
+    overflow: hidden;
+    transition: var(--transition-normal);
+    position: relative;
+}
+
+.card.h-100:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-lg);
+}
+
+.card.h-100:before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: inherit;
+    padding: 2px;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 50%, var(--accent) 100%);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: 0;
+}
+
+.card.h-100:hover:before {
+    opacity: 1;
+}
+
+/* Header styling */
+.card.h-100 .card-header {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--neutral-purple) 100%);
+    color: var(--white);
+    border: none;
+    padding: var(--spacing-md) var(--spacing-lg);
+    position: relative;
+    z-index: 1;
+}
+
+.card.h-100 .card-header h5 {
+    font-weight: 600;
+    margin: 0;
+    color: var(--white) !important;
+}
+
+/* Card body styling */
+.card.h-100 .card-body {
+    padding: var(--spacing-lg);
+    color: var(--text-secondary);
+    line-height: 1.5;
+    flex: 1;
+    position: relative;
+    z-index: 1;
+}
+
+/* Card footer styling */
+.card.h-100 .card-footer {
+    background-color: rgba(0, 0, 0, 0.02);
+    border-top: 1px solid var(--gray);
+    padding: var(--spacing-md) var(--spacing-lg);
+    position: relative;
+    z-index: 1;
+}
+
+.card.h-100 .badge {
+    font-size: 0.8rem;
+    padding: 0.4em 0.8em;
+    border-radius: var(--border-radius-md);
+}
+
+.card.h-100 .btn-outline-primary {
+    border-color: var(--primary);
+    color: var(--primary);
+    border-radius: var(--border-radius-md);
+    transition: var(--transition-fast);
+    font-weight: 500;
+    position: relative;
+    z-index: 2;
+    cursor: pointer;
+}
+
+.card.h-100 .btn-outline-primary:hover {
+    background-color: var(--primary);
+    color: var(--white);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-sm);
+}
+
+/* Guidelines card styling */
+.mt-4 .card {
+    border: none;
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-md);
+    overflow: hidden;
+    transition: var(--transition-normal);
+    position: relative;
+}
+
+.mt-4 .card:hover {
+    box-shadow: var(--shadow-lg);
+}
+
+.mt-4 .card-header {
+    background: linear-gradient(135deg, var(--secondary-transparent) 0%, rgba(245, 247, 250, 0.5) 100%);
+    border: none;
+    color: var(--primary);
+    padding: var(--spacing-md) var(--spacing-lg);
+    font-weight: 600;
+}
+
+.mt-4 .card-header:before {
+    content: '';
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    width: 20px;
+    height: 20px;
+    background-color: var(--accent-transparent);
+    border-radius: var(--border-radius-circle);
+    z-index: 0;
+}
+
+.mt-4 .card-header h5 {
+    position: relative;
+    z-index: 1;
+}
+
+.mt-4 .card-body {
+    padding: var(--spacing-lg);
+}
+
+.mt-4 .card-body p {
+    color: var(--text-secondary);
+    margin-bottom: var(--spacing-md);
+}
+
+.mt-4 .card-body ol {
+    color: var(--text-primary);
+    padding-left: var(--spacing-xl);
+}
+
+.mt-4 .card-body ol li {
+    margin-bottom: var(--spacing-sm);
+    line-height: 1.5;
+}
+
+/* Alert styling */
+.alert-info {
+    background-color: var(--secondary-transparent);
+    color: var(--neutral-blue);
+    border-color: var(--secondary);
+    border-radius: var(--border-radius-lg);
+    padding: var(--spacing-lg);
+    text-align: center;
+} 

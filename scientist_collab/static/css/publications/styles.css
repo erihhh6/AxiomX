@@ -1,0 +1,7 @@
+/* 
+ * AxiomX - Publications Styles
+ * Main imports file for publications section styles
+ */
+
+@import url("cards.css");
+@import url("list.css"); 

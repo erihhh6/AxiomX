@@ -1,6 +1,6 @@
 {% extends 'base/base.html' %}
 
-{% block title %}Discussion Forums - Scientists Collaboration Platform{% endblock %}
+{% block title %}Discussion Forums - AxiomX{% endblock %}
 
 {% block content %}
 <div class="container mt-5">
@@ -19,17 +19,21 @@
             <div class="col-md-6 mb-4">
                 <div class="card h-100">
                     <div class="card-header bg-primary text-white">
-                        <h5 class="card-title mb-0">{{ forum.name }}</h5>
+                        <h5 class="card-title mb-0" style="position: relative; z-index: 5; color: white !important;">
+                            <i class="fas fa-comments me-2"></i>{{ forum.name }}
+                        </h5>
                     </div>
                     <div class="card-body">
                         <p class="card-text">{{ forum.description }}</p>
                     </div>
                     <div class="card-footer d-flex justify-content-between align-items-center">
                         <div>
-                            <span class="badge bg-secondary">{{ forum.topics.count }} Topics</span>
+                            <span class="badge bg-secondary">
+                                <i class="fas fa-book me-1"></i> {{ forum.topics.count }} Topics
+                            </span>
                         </div>
-                        <a href="{% url 'discussions:forum_detail' forum.id %}" class="btn btn-outline-primary btn-sm">
-                            Browse Topics
+                        <a href="{% url 'discussions:forum_detail' forum.id %}" class="btn btn-outline-primary btn-sm" style="position: relative; z-index: 5;">
+                            <i class="fas fa-arrow-right me-1"></i> Browse Topics
                         </a>
                     </div>
                 </div>
@@ -38,7 +42,11 @@
         {% else %}
             <div class="col-12">
                 <div class="alert alert-info">
-                    No forums available at the moment. Please check back later.
+                    <i class="fas fa-info-circle fa-2x float-start me-3 mt-1"></i>
+                    <div>
+                        <h5>No Forums Available</h5>
+                        <p>No forums available at the moment. Please check back later.</p>
+                    </div>
                 </div>
             </div>
         {% endif %}
@@ -47,17 +55,24 @@
     <div class="mt-4">
         <div class="card">
             <div class="card-header bg-light">
-                <h5 class="mb-0">Discussion Guidelines</h5>
+                <h5 class="mb-0">
+                    <i class="fas fa-book me-2"></i>Discussion Guidelines
+                </h5>
             </div>
             <div class="card-body">
                 <p>Welcome to our scientific discussion forums. Please follow these guidelines:</p>
                 <ol>
-                    <li>Be respectful to fellow scientists and researchers.</li>
-                    <li>Provide references for scientific claims when possible.</li>
-                    <li>Stay on topic within each forum.</li>
-                    <li>Avoid sharing any proprietary or confidential information.</li>
-                    <li>Use constructive criticism and be open to feedback.</li>
+                    <li><strong>Respect</strong> - Be respectful to fellow scientists and researchers.</li>
+                    <li><strong>Evidence</strong> - Provide references for scientific claims when possible.</li>
+                    <li><strong>Relevance</strong> - Stay on topic within each forum.</li>
+                    <li><strong>Confidentiality</strong> - Avoid sharing any proprietary or confidential information.</li>
+                    <li><strong>Feedback</strong> - Use constructive criticism and be open to feedback.</li>
                 </ol>
+                <div class="text-center mt-4">
+                    <p class="mb-0 text-primary fw-bold">
+                        <i class="fas fa-lightbulb me-2"></i>Together we can advance scientific knowledge through open discussion and collaboration.
+                    </p>
+                </div>
             </div>
         </div>
     </div>

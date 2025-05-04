@@ -199,6 +199,7 @@ def follow_user(request, user_id):
             'followers_count': user_to_follow.profile.followers.count()
         })
     
+    # Return normal response if not AJAX
     return redirect('accounts:public_profile', user_id=user_id)
 
 @login_required
@@ -206,41 +207,72 @@ def unfollow_user(request, user_id):
     """Unfollow a user"""
     user_to_unfollow = get_object_or_404(User, id=user_id)
     
-    # Remove the follow relationship
-    request.user.profile.unfollow(user_to_unfollow.profile)
-    messages.success(request, f"You have unfollowed {user_to_unfollow.username}.")
+    # Dezurmărește utilizatorul
+    current_user_profile = request.user.profile
+    unfollowed = current_user_profile.unfollow(user_to_unfollow.profile)
+    
+    if unfollowed:
+        messages.success(request, f"You have unfollowed {user_to_unfollow.username}.")
+    else:
+        messages.info(request, f"You were not following {user_to_unfollow.username}.")
     
     # Handle AJAX request
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
         return JsonResponse({
             'status': 'success',
+            'unfollowed': unfollowed,
             'followers_count': user_to_unfollow.profile.followers.count()
         })
     
+    # Return normal response if not AJAX
     return redirect('accounts:public_profile', user_id=user_id)
 
 @login_required
 def followers_list(request):
-    """View list of followers"""
+    """View all followers of current user"""
     user_profile = request.user.profile
     followers = user_profile.followers.all()
     
     context = {
-        'followers': followers,
-        'user_profile': user_profile
+        'title': 'My Followers',
+        'users': followers,
     }
     
     return render(request, 'accounts/followers.html', context)
 
 @login_required
 def following_list(request):
-    """View list of users being followed"""
+    """View all users that current user follows"""
     user_profile = request.user.profile
-    following = user_profile.following.all()
+    
+    # Get the actual profiles of users being followed instead of the Follow relationships
+    following_profiles = Profile.objects.filter(followers=user_profile)
     
     context = {
-        'following': following,
-        'user_profile': user_profile
+        'following': following_profiles,
     }
     
     return render(request, 'accounts/following.html', context)
+
+# Social Authentication Views
+def google_login(request):
+    """Handle Google authentication"""
+    # This is a placeholder - in a real implementation, we would:
+    # 1. Initialize Google OAuth flow
+    # 2. Redirect user to Google's auth page
+    # 3. Handle callback after successful login
+    # 4. Create or get user and log them in
+    
+    messages.info(request, "Google login feature is coming soon! The integration is currently in development.")
+    return redirect('accounts:login')
+
+def orcid_login(request):
+    """Handle ORCID authentication"""
+    # This is a placeholder - in a real implementation, we would:
+    # 1. Initialize ORCID OAuth flow
+    # 2. Redirect user to ORCID's auth page
+    # 3. Handle callback after successful login
+    # 4. Create or get user and log them in
+    
+    messages.info(request, "ORCID login feature is coming soon! The integration is currently in development.")
+    return redirect('accounts:login')

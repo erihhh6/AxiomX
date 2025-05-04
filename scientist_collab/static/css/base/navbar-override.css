@@ -1,0 +1,58 @@
+/* 
+ * AxiomX - Navbar override styles
+ * Force override Bootstrap navbar styles with !important
+ */
+
+/* Navbar background color */
+.navbar {
+    background-color: var(--primary) !important;
+}
+
+/* Navbar links color */
+.navbar-dark .navbar-nav .nav-link {
+    color: var(--white) !important;
+}
+
+.navbar-dark .navbar-nav .nav-link:hover,
+.navbar-dark .navbar-nav .nav-link:focus {
+    color: var(--accent) !important;
+}
+
+/* Active link */
+.navbar-dark .navbar-nav .nav-link.active,
+.navbar-dark .navbar-nav .show > .nav-link {
+    color: var(--accent) !important;
+}
+
+/* Navbar brand */
+.navbar-dark .navbar-brand {
+    color: var(--white) !important;
+}
+
+.navbar-dark .navbar-brand:hover,
+.navbar-dark .navbar-brand:focus {
+    color: var(--accent) !important;
+}
+
+/* Navbar toggler */
+.navbar-dark .navbar-toggler {
+    color: var(--white) !important;
+    border-color: transparent !important;
+}
+
+/* Dropdown styling - only styling, no functionality overrides */
+.dropdown-menu {
+    border-radius: var(--border-radius-md) !important;
+    box-shadow: var(--shadow-md) !important;
+    border: none !important;
+}
+
+/* Dropdown item colors only */
+.dropdown-item:hover {
+    background-color: var(--primary-transparent);
+    color: var(--primary);
+}
+
+.dropdown-divider {
+    border-top-color: var(--gray);
+} 

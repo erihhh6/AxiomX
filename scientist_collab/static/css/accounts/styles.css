@@ -1,0 +1,7 @@
+/* 
+ * AxiomX - Accounts Styles
+ * Main imports file for accounts section styles
+ */
+
+@import url("profile.css");
+@import url("auth.css"); 
