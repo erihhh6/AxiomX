@@ -8,6 +8,10 @@ from django.http import JsonResponse
 from .models import Publication, Favorite
 from .forms import PublicationForm
 
+# Import notification utilities
+from notifications.utils import create_notification
+from notifications.models import Notification
+
 # Create your views here.
 
 class PublicationListView(ListView):
@@ -126,6 +130,14 @@ def like_publication(request, pk):
         # Like
         publication.likes.add(request.user)
         liked = True
+        
+        # Create a notification for the publication author
+        create_notification(
+            recipient=publication.author, 
+            sender=request.user, 
+            obj=publication, 
+            notification_type=Notification.LIKE
+        )
     
     # For AJAX requests
     if request.method in ['POST', 'GET'] and request.headers.get('x-requested-with') == 'XMLHttpRequest':
@@ -156,6 +168,14 @@ def dislike_publication(request, pk):
         # Dislike
         publication.dislikes.add(request.user)
         disliked = True
+        
+        # Create a notification for the publication author
+        create_notification(
+            recipient=publication.author, 
+            sender=request.user, 
+            obj=publication, 
+            notification_type=Notification.DISLIKE
+        )
     
     # For AJAX requests
     if request.method in ['POST', 'GET'] and request.headers.get('x-requested-with') == 'XMLHttpRequest':
@@ -181,6 +201,14 @@ def favorite_publication(request, pk):
     
     if created:
         messages.success(request, f'"{publication.title}" added to your favorites!')
+        
+        # Create a notification for the publication author
+        create_notification(
+            recipient=publication.author, 
+            sender=request.user, 
+            obj=publication, 
+            notification_type=Notification.FAVORITE
+        )
     else:
         messages.info(request, f'"{publication.title}" is already in your favorites!')
     

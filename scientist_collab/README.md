@@ -1,4 +1,4 @@
-# Scientists Collaboration Platform
+# AxiomX - Scientists Collaboration Platform
 
 A web platform for scientists to share research, upload publications, and collaborate through forum discussions.
 
@@ -108,4 +108,57 @@ docker run -p 8000:8000 scientist-collab
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details. 
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Badge System Installation
+
+We've implemented a badge system that rewards users for their activity on the platform. Here's how to set it up:
+
+1. Apply database migrations to create the badge tables:
+   ```
+   python manage.py makemigrations
+   python manage.py migrate
+   ```
+
+2. Load the initial badges data:
+   ```
+   python manage.py loaddata fixtures/badges.json
+   ```
+
+3. Update the badge progress for all users:
+   ```
+   python manage.py update_badges
+   ```
+
+## Available Badges
+
+The system comes with the following pre-configured badges:
+
+1. **Publication Master** - Published at least 5 scientific publications on the platform
+2. **Liked Author** - Received at least 10 likes on your publications
+3. **Favorite Creator** - Your publications were added to favorites 5 times
+4. **Active Replier** - Posted at least 15 replies in forum discussions
+5. **Popular Scientist** - Reached 10 followers on your profile
+6. **Complete Profile** - Filled out all profile information fields
+7. **Diverse Scientist** - Participated in discussions across all forums
+
+## Badge System Features
+
+- Users can see their badge progress on their profile page
+- Badge progress is updated when users perform relevant actions
+- Users can "equip" a badge to display it prominently on their profile
+- Each badge shows progress toward completion (e.g., "40% - Need 3 more likes")
+- Badges appear grayed out until earned
+
+## Theme Toggle Guide
+
+The platform supports both light and dark modes. The toggle switch is in the navbar.
+To style new components for dark mode, add CSS rules in this format:
+
+```css
+body[data-theme="dark"] .your-component,
+html[data-theme="dark"] .your-component {
+    background-color: #1e1e1e;
+    color: #e9ecef;
+}
+``` 

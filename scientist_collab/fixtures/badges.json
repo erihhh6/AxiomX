@@ -1,0 +1,79 @@
+[
+  {
+    "model": "accounts.badge",
+    "pk": 1,
+    "fields": {
+      "name": "Publication Master",
+      "description": "Published at least 5 scientific publications on the platform",
+      "image": "badges/publication_master.jpg",
+      "requirement_type": "publications_count",
+      "requirement_count": 5
+    }
+  },
+  {
+    "model": "accounts.badge",
+    "pk": 2,
+    "fields": {
+      "name": "Liked Author",
+      "description": "Received at least 10 likes on your publications",
+      "image": "badges/liked_author.jpg",
+      "requirement_type": "publication_likes",
+      "requirement_count": 10
+    }
+  },
+  {
+    "model": "accounts.badge",
+    "pk": 3,
+    "fields": {
+      "name": "Favorite Creator",
+      "description": "Your publications were added to favorites 5 times",
+      "image": "badges/favorite_creator.jpg",
+      "requirement_type": "publication_favorites",
+      "requirement_count": 5
+    }
+  },
+  {
+    "model": "accounts.badge",
+    "pk": 4,
+    "fields": {
+      "name": "Active Replier",
+      "description": "Posted at least 15 replies in forum discussions",
+      "image": "badges/active_replier.jpg",
+      "requirement_type": "forum_replies",
+      "requirement_count": 15
+    }
+  },
+  {
+    "model": "accounts.badge",
+    "pk": 5,
+    "fields": {
+      "name": "Popular Scientist",
+      "description": "Reached 10 followers on your profile",
+      "image": "badges/popular_scientist.jpg",
+      "requirement_type": "followers_count",
+      "requirement_count": 10
+    }
+  },
+  {
+    "model": "accounts.badge",
+    "pk": 6,
+    "fields": {
+      "name": "Complete Profile",
+      "description": "Filled out all profile information fields",
+      "image": "badges/complete_profile.jpg",
+      "requirement_type": "profile_completion",
+      "requirement_count": 100
+    }
+  },
+  {
+    "model": "accounts.badge",
+    "pk": 7,
+    "fields": {
+      "name": "Diverse Scientist",
+      "description": "Participated in discussions across all forums",
+      "image": "badges/diverse_scientist.jpg",
+      "requirement_type": "forums_diversity",
+      "requirement_count": 100
+    }
+  }
+] 

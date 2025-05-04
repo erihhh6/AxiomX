@@ -25,6 +25,8 @@ class Topic(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     likes = models.ManyToManyField(User, related_name='liked_topics', blank=True)
     dislikes = models.ManyToManyField(User, related_name='disliked_topics', blank=True)
+    solution = models.ForeignKey('Reply', on_delete=models.SET_NULL, null=True, blank=True, related_name='solved_topic')
+    is_solved = models.BooleanField(default=False)
     
     def __str__(self):
         return self.title

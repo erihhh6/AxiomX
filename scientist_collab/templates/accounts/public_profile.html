@@ -16,6 +16,18 @@
                     {% else %}
                         <img src="/static/images/default-profile.png" class="rounded-circle img-fluid mb-3" style="max-width: 150px;">
                     {% endif %}
+                    
+                    <!-- Show equipped badge if any -->
+                    {% if equipped_badge %}
+                    <div class="equipped-badge mb-2">
+                        <img src="{{ equipped_badge.badge.image.url }}" alt="{{ equipped_badge.badge.name }}" 
+                             style="width: 40px; height: 40px; border-radius: 50%; border: 2px solid var(--accent);">
+                        <div class="badge-tooltip mt-1">
+                            <small class="badge bg-primary">{{ equipped_badge.badge.name }}</small>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
                     <h5 class="card-title">{{ user_viewed.get_full_name }}</h5>
                     {% if profile.institution %}
                         <p class="text-muted mb-1">{{ profile.position }} at {{ profile.institution }}</p>

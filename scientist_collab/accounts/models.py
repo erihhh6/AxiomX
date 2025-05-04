@@ -14,6 +14,7 @@ class Profile(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     following = models.ManyToManyField('self', through='Follow', related_name='followers', symmetrical=False)
+    equipped_badge = models.ForeignKey('Badge', on_delete=models.SET_NULL, null=True, blank=True, related_name='equipped_by')
 
     def __str__(self):
         return f"{self.user.username}'s Profile"
@@ -41,6 +42,37 @@ class Follow(models.Model):
         
     def __str__(self):
         return f"{self.follower.user.username} follows {self.following.user.username}"
+
+class Badge(models.Model):
+    name = models.CharField(max_length=100)
+    description = models.TextField()
+    image = models.ImageField(upload_to='badges/', default='badges/default_badge.png')
+    requirement_type = models.CharField(max_length=100, choices=[
+        ('publications_count', 'Publications Count'),
+        ('publication_likes', 'Publication Likes'),
+        ('publication_favorites', 'Publication Favorites'),
+        ('forum_replies', 'Forum Replies'),
+        ('followers_count', 'Followers Count'),
+        ('profile_completion', 'Profile Completion'),
+        ('forums_diversity', 'Forums Diversity'),
+    ])
+    requirement_count = models.IntegerField(default=1)
+    
+    def __str__(self):
+        return self.name
+
+class UserBadge(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='badges')
+    badge = models.ForeignKey(Badge, on_delete=models.CASCADE)
+    earned_date = models.DateTimeField(auto_now_add=True)
+    progress = models.IntegerField(default=0)  # Progress toward earning the badge (0-100%)
+    is_equipped = models.BooleanField(default=False)  # Flag to mark badge as equipped/favorite
+    
+    def __str__(self):
+        return f"{self.user.username} - {self.badge.name}"
+    
+    class Meta:
+        unique_together = ('user', 'badge')
 
 @receiver(post_save, sender=User)
 def create_user_profile(sender, instance, created, **kwargs):

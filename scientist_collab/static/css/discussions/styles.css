@@ -6,3 +6,64 @@
 @import url("forums.css");
 @import url("list.css");
 @import url("topic.css"); 
+
+/* Discussions styling */
+
+/* Forum card headers - fix light background with white text */
+.card-header.bg-light,
+.card-header.bg-info, 
+.alert-info,
+div[style*="background-color: #info"] {
+    background-color: #0077b6 !important; /* Darker blue that ensures contrast */
+    color: white !important;
+}
+
+/* Guidelines section header fix */
+.card-header h5[style*="color: white"] {
+    color: white !important;
+}
+
+/* Discussion Guidelines box */
+.card-header:has(> h5:contains("Discussion Guidelines")),
+.card-header:has(> i.fas.fa-book) {
+    background-color: #0077b6 !important; /* Darker blue instead of light cyan */
+    color: white !important;
+}
+
+/* Fix info alerts style */
+.alert-info,
+.bg-info {
+    background-color: #0077b6 !important;
+    color: white !important;
+}
+
+/* Add some extra styles for better contrast in light mode */
+[data-theme="light"] .bg-info,
+[data-theme="light"] .bg-light.text-white,
+[data-theme="light"] .alert-info,
+[data-theme="light"] .card-header.bg-info {
+    background-color: #0077b6 !important; /* Darker blue for light mode */
+    color: white !important;
+}
+
+/* Ensure info colors are dark enough for light theme */
+:root {
+    --info: #0077b6; /* Darker info color for better contrast */
+}
+
+/* Discussion Guidelines title */
+.card-header h5 i.fas.fa-book {
+    color: white !important;
+}
+
+/* Forum headers should be consistently dark blue */
+.card-header,
+.card-header.bg-light {
+    background-color: #0077b6 !important; 
+    color: white !important;
+}
+
+/* Special case for forum title headers */
+.card-header.bg-primary {
+    background-color: var(--primary) !important;
+} 

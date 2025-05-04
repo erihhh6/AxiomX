@@ -11,9 +11,119 @@
 @import url("/static/css/discussions/styles.css");
 @import url("/static/css/publications/styles.css");
 
+/* Apply theme colors to the main elements */
+body {
+    font-family: 'Roboto', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    background-color: var(--body-bg);
+    color: var(--text-primary);
+    transition: background-color var(--transition-normal), color var(--transition-normal);
+}
+
+/* Direct theme overrides for essential elements to ensure dark mode works */
+body[data-theme="dark"],
+html[data-theme="dark"] {
+    background-color: #121212;
+    color: #e9ecef;
+}
+
+body[data-theme="dark"] .card,
+html[data-theme="dark"] .card {
+    background-color: #1e1e1e;
+    color: #e9ecef;
+    border-color: #343a40;
+}
+
+body[data-theme="dark"] .navbar,
+html[data-theme="dark"] .navbar {
+    background-color: #0d0d2d !important;
+}
+
+body[data-theme="dark"] .form-control,
+html[data-theme="dark"] .form-control {
+    background-color: #2c3035;
+    color: #e9ecef;
+    border-color: #343a40;
+}
+
+body[data-theme="dark"] footer,
+html[data-theme="dark"] footer {
+    background-color: #0d0d2d;
+    color: #e9ecef;
+}
+
+main {
+    flex: 1;
+}
+
+.card {
+    background-color: var(--card-bg);
+    color: var(--text-primary);
+    border-color: var(--border-color);
+    transition: transform 0.3s, box-shadow 0.3s, background-color var(--transition-normal), color var(--transition-normal);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-md);
+}
+
+.navbar {
+    background-color: var(--navbar-bg) !important;
+    box-shadow: var(--shadow-sm);
+}
+
+.navbar-brand, .nav-link {
+    color: var(--navbar-text) !important;
+}
+
+footer {
+    background-color: var(--footer-bg);
+    color: var(--footer-text);
+    box-shadow: var(--shadow-sm);
+}
+
+/* Input and form elements */
+.form-control {
+    background-color: var(--input-bg);
+    color: var(--input-text);
+    border-color: var(--border-color);
+}
+
+.form-control:focus {
+    background-color: var(--input-bg);
+    color: var(--input-text);
+    border-color: var(--primary);
+}
+
+/* Dropdown menu */
+.dropdown-menu {
+    background-color: var(--dropdown-bg);
+    color: var(--dropdown-text);
+    border-color: var(--border-color);
+}
+
+.dropdown-item {
+    color: var(--dropdown-text);
+}
+
+.dropdown-item:hover {
+    background-color: var(--dropdown-hover-bg);
+    color: var(--dropdown-text);
+}
+
+/* Alert styling */
+.alert {
+    border: none;
+}
+
 /* Home page styling */
 .jumbotron {
-    background-color: var(--white);
+    background-color: var(--card-bg);
     border-radius: var(--border-radius-lg);
     padding: var(--spacing-xl) var(--spacing-lg);
     margin-bottom: var(--spacing-xl);
@@ -34,7 +144,7 @@
 }
 
 .jumbotron hr {
-    border-color: var(--gray);
+    border-color: var(--border-color);
     margin: var(--spacing-md) 0;
 }
 
@@ -93,6 +203,8 @@
 
 /* Recent discussions styling */
 .list-group-item-action {
+    background-color: var(--card-bg);
+    color: var(--text-primary);
     border-radius: var(--border-radius-md) !important;
     margin-bottom: var(--spacing-sm);
     border: none;
@@ -104,6 +216,7 @@
     transform: translateY(-2px);
     box-shadow: var(--shadow-md);
     border-left: 3px solid var(--primary);
+    background-color: var(--dropdown-hover-bg);
 }
 
 .list-group-item-action h5 {
@@ -130,39 +243,36 @@
     text-decoration: underline;
 }
 
-/* Legacy styles below - will be phased out as we migrate to the new CSS architecture */
-
-body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+/* Theme toggler button */
+.theme-toggler {
+    cursor: pointer;
+    color: var(--navbar-text);
+    margin-right: 1rem;
+    border: none;
+    background: transparent;
+    font-size: 1.2rem;
+    width: 2.5rem;
+    height: 2.5rem;
     display: flex;
-    flex-direction: column;
-    min-height: 100vh;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.3s ease;
 }
 
-main {
-    flex: 1;
+.theme-toggler:hover {
+    background-color: rgba(255, 255, 255, 0.1);
 }
 
-/* Custom navbar styles */
-.navbar {
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+/* Modal styles */
+.modal-content {
+    background-color: var(--card-bg);
+    color: var(--text-primary);
+    border-color: var(--border-color);
 }
 
-.navbar-brand {
-    font-weight: bold;
-    font-size: 1.5rem;
-}
-
-/* Card styling */
-.card {
-    transition: transform 0.3s, box-shadow 0.3s;
-    border-radius: 8px;
-    overflow: hidden;
-}
-
-.card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+.modal-header, .modal-footer {
+    border-color: var(--border-color);
 }
 
 /* Profile page styles */
@@ -229,4 +339,924 @@ main {
 /* Footer styling */
 footer {
     box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* More dark theme overrides for UI components */
+body[data-theme="dark"] .dropdown-menu,
+html[data-theme="dark"] .dropdown-menu {
+    background-color: #2c3035;
+    color: #e9ecef;
+    border-color: #343a40;
+}
+
+body[data-theme="dark"] .dropdown-item,
+html[data-theme="dark"] .dropdown-item {
+    color: #e9ecef;
+}
+
+body[data-theme="dark"] .dropdown-item:hover,
+html[data-theme="dark"] .dropdown-item:hover {
+    background-color: #343a40;
+}
+
+body[data-theme="dark"] .jumbotron,
+html[data-theme="dark"] .jumbotron {
+    background-color: #1e1e1e;
+}
+
+body[data-theme="dark"] .list-group-item-action,
+html[data-theme="dark"] .list-group-item-action {
+    background-color: #1e1e1e;
+    color: #e9ecef;
+}
+
+body[data-theme="dark"] .list-group-item-action:hover,
+html[data-theme="dark"] .list-group-item-action:hover {
+    background-color: #2c3035;
+}
+
+body[data-theme="dark"] .modal-content,
+html[data-theme="dark"] .modal-content {
+    background-color: #1e1e1e;
+    color: #e9ecef;
+    border-color: #343a40;
+}
+
+body[data-theme="dark"] .btn-primary,
+html[data-theme="dark"] .btn-primary {
+    background-color: #0d0d2d;
+    border-color: #0d0d2d;
+}
+
+body[data-theme="dark"] h2,
+html[data-theme="dark"] h2 {
+    color: #05A9F0;
+}
+
+/* Corecții suplimentare pentru tematica întunecată */
+body[data-theme="dark"] .card-header,
+html[data-theme="dark"] .card-header {
+    background-color: #0d0d2d;
+    color: #e9ecef;
+    border-color: #343a40;
+}
+
+body[data-theme="dark"] .card-body,
+html[data-theme="dark"] .card-body {
+    background-color: #1e1e1e;
+    color: #e9ecef;
+}
+
+body[data-theme="dark"] .card-footer,
+html[data-theme="dark"] .card-footer {
+    background-color: #2c3035;
+    border-color: #343a40;
+}
+
+body[data-theme="dark"] .form-control,
+html[data-theme="dark"] .form-control {
+    background-color: #2c3035;
+    color: #e9ecef;
+    border-color: #343a40;
+}
+
+body[data-theme="dark"] .form-control:focus,
+html[data-theme="dark"] .form-control:focus {
+    background-color: #343a40;
+    color: #e9ecef;
+}
+
+body[data-theme="dark"] .list-group-item,
+html[data-theme="dark"] .list-group-item {
+    background-color: #1e1e1e;
+    color: #e9ecef;
+    border-color: #343a40;
+}
+
+body[data-theme="dark"] .table,
+html[data-theme="dark"] .table {
+    color: #e9ecef;
+}
+
+body[data-theme="dark"] .table th,
+html[data-theme="dark"] .table th {
+    background-color: #2c3035;
+    color: #e9ecef;
+    border-color: #343a40;
+}
+
+body[data-theme="dark"] .table td,
+html[data-theme="dark"] .table td {
+    border-color: #343a40;
+}
+
+body[data-theme="dark"] .table-hover tbody tr:hover,
+html[data-theme="dark"] .table-hover tbody tr:hover {
+    background-color: #343a40;
+    color: #e9ecef;
+}
+
+body[data-theme="dark"] input,
+html[data-theme="dark"] input,
+body[data-theme="dark"] textarea,
+html[data-theme="dark"] textarea,
+body[data-theme="dark"] select,
+html[data-theme="dark"] select {
+    background-color: #2c3035 !important;
+    color: #e9ecef !important;
+    border-color: #343a40 !important;
+}
+
+body[data-theme="dark"] .btn,
+html[data-theme="dark"] .btn {
+    border-color: #343a40;
+}
+
+body[data-theme="dark"] .btn-secondary,
+html[data-theme="dark"] .btn-secondary {
+    background-color: #343a40;
+    color: #e9ecef;
+}
+
+body[data-theme="dark"] .btn-outline-primary,
+html[data-theme="dark"] .btn-outline-primary {
+    color: #05A9F0;
+    border-color: #05A9F0;
+}
+
+body[data-theme="dark"] .btn-outline-primary:hover,
+html[data-theme="dark"] .btn-outline-primary:hover {
+    background-color: #05A9F0;
+    color: #1e1e1e;
+}
+
+body[data-theme="dark"] .badge,
+html[data-theme="dark"] .badge {
+    background-color: #343a40;
+    color: #e9ecef;
+}
+
+/* Stiluri specifice pentru pagini */
+body[data-theme="dark"] .jumbotron h1,
+html[data-theme="dark"] .jumbotron h1 {
+    color: #05A9F0;
+}
+
+body[data-theme="dark"] .jumbotron p,
+html[data-theme="dark"] .jumbotron p {
+    color: #e9ecef;
+}
+
+body[data-theme="dark"] .notification-list .list-group-item,
+html[data-theme="dark"] .notification-list .list-group-item {
+    background-color: #1e1e1e;
+    border-color: #343a40;
+}
+
+body[data-theme="dark"] .profile-header,
+html[data-theme="dark"] .profile-header {
+    background-color: #1e1e1e;
+}
+
+body[data-theme="dark"] .pdf-preview,
+html[data-theme="dark"] .pdf-preview {
+    background-color: #2c3035;
+    border-color: #343a40;
+}
+
+body[data-theme="dark"] .topic-header,
+html[data-theme="dark"] .topic-header {
+    background-color: #2c3035;
+}
+
+body[data-theme="dark"] .reply,
+html[data-theme="dark"] .reply {
+    border-left-color: #05A9F0;
+}
+
+body[data-theme="dark"] a,
+html[data-theme="dark"] a {
+    color: #05A9F0;
+}
+
+body[data-theme="dark"] a:hover,
+html[data-theme="dark"] a:hover {
+    color: #0d96d8;
+}
+
+body[data-theme="dark"] hr,
+html[data-theme="dark"] hr {
+    border-color: #343a40;
+}
+
+/* Stiluri pentru butoanele de acțiune (like, dislike, etc.) */
+body[data-theme="dark"] .btn-action,
+html[data-theme="dark"] .btn-action {
+    background-color: #2c3035;
+    color: #e9ecef;
+    border-color: #343a40;
+}
+
+body[data-theme="dark"] .search-form,
+html[data-theme="dark"] .search-form input {
+    background-color: #2c3035;
+    color: #e9ecef;
+}
+
+/* Stilul pentru bara de completare profil */
+body[data-theme="dark"] .progress,
+html[data-theme="dark"] .progress {
+    background-color: #343a40;
+}
+
+body[data-theme="dark"] .progress-bar,
+html[data-theme="dark"] .progress-bar {
+    background-color: #05A9F0;
+}
+
+/* Theme toggler styles */
+body[data-theme="dark"] .search-input,
+html[data-theme="dark"] .search-input,
+body[data-theme="dark"] input[type="search"],
+html[data-theme="dark"] input[type="search"],
+body[data-theme="dark"] input[type="text"],
+html[data-theme="dark"] input[type="text"],
+body[data-theme="dark"] input[type="email"],
+html[data-theme="dark"] input[type="email"],
+body[data-theme="dark"] input[type="password"],
+html[data-theme="dark"] input[type="password"] {
+    background-color: #2c3035 !important;
+    color: #e9ecef !important;
+    border-color: #343a40 !important;
+}
+
+body[data-theme="dark"] .publication-meta,
+html[data-theme="dark"] .publication-meta {
+    color: #adb5bd;
+}
+
+body[data-theme="dark"] .publication-details,
+html[data-theme="dark"] .publication-details {
+    background-color: #1e1e1e;
+    color: #e9ecef;
+    border-color: #343a40;
+}
+
+body[data-theme="dark"] .profile-image,
+html[data-theme="dark"] .profile-image {
+    border-color: #343a40;
+}
+
+body[data-theme="dark"] .navbar-toggler,
+html[data-theme="dark"] .navbar-toggler {
+    background-color: #2c3035;
+    color: #e9ecef;
+    border-color: #343a40;
+}
+
+body[data-theme="dark"] .breadcrumb,
+html[data-theme="dark"] .breadcrumb {
+    background-color: #1e1e1e;
+    color: #e9ecef;
+}
+
+body[data-theme="dark"] .breadcrumb-item,
+html[data-theme="dark"] .breadcrumb-item {
+    color: #adb5bd;
+}
+
+body[data-theme="dark"] .breadcrumb-item.active,
+html[data-theme="dark"] .breadcrumb-item.active {
+    color: #e9ecef;
+}
+
+body[data-theme="dark"] .breadcrumb-item+.breadcrumb-item::before,
+html[data-theme="dark"] .breadcrumb-item+.breadcrumb-item::before {
+    color: #adb5bd;
+}
+
+body[data-theme="dark"] .notification-unread,
+html[data-theme="dark"] .notification-unread {
+    background-color: rgba(5, 169, 240, 0.1);
+    border-left-color: #05A9F0;
+}
+
+body[data-theme="dark"] .btn-primary,
+html[data-theme="dark"] .btn-primary,
+body[data-theme="dark"] .btn-success,
+html[data-theme="dark"] .btn-success {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+    color: white;
+}
+
+body[data-theme="dark"] .btn-primary:hover,
+html[data-theme="dark"] .btn-primary:hover,
+body[data-theme="dark"] .btn-success:hover,
+html[data-theme="dark"] .btn-success:hover {
+    background-color: #0b5ed7;
+    border-color: #0a58ca;
+}
+
+body[data-theme="dark"] .btn-sm,
+html[data-theme="dark"] .btn-sm {
+    background-color: #0d6efd;
+    color: white;
+}
+
+body[data-theme="dark"] h1, 
+html[data-theme="dark"] h1,
+body[data-theme="dark"] h2, 
+html[data-theme="dark"] h2,
+body[data-theme="dark"] h3, 
+html[data-theme="dark"] h3 {
+    color: #05A9F0;
+}
+
+body[data-theme="dark"] .topic-title a,
+html[data-theme="dark"] .topic-title a {
+    color: #05A9F0;
+}
+
+body[data-theme="dark"] .publication-title a,
+html[data-theme="dark"] .publication-title a {
+    color: #05A9F0;
+}
+
+body[data-theme="dark"] .pagination .page-item .page-link,
+html[data-theme="dark"] .pagination .page-item .page-link {
+    background-color: #2c3035;
+    color: #e9ecef;
+    border-color: #343a40;
+}
+
+body[data-theme="dark"] .pagination .page-item.active .page-link,
+html[data-theme="dark"] .pagination .page-item.active .page-link {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+}
+
+body[data-theme="dark"] .pagination .page-item.disabled .page-link,
+html[data-theme="dark"] .pagination .page-item.disabled .page-link {
+    background-color: #1e1e1e;
+    color: #6c757d;
+}
+
+body[data-theme="dark"] .form-inline .form-control,
+html[data-theme="dark"] .form-inline .form-control {
+    background-color: #2c3035;
+    color: #e9ecef;
+    border-color: #343a40;
+}
+
+body[data-theme="dark"] .form-control::placeholder,
+html[data-theme="dark"] .form-control::placeholder {
+    color: #adb5bd;
+}
+
+/* Stiluri pentru bara de căutare din header */
+body[data-theme="dark"] .search-container,
+html[data-theme="dark"] .search-container {
+    background-color: #2c3035;
+    border-color: #343a40;
+}
+
+body[data-theme="dark"] .search-container input,
+html[data-theme="dark"] .search-container input {
+    background-color: #2c3035;
+    color: #e9ecef;
+    border-color: #343a40;
+}
+
+/* Stiluri pentru elementele din pagina publicațiilor */
+body[data-theme="dark"] .publication-list .card,
+html[data-theme="dark"] .publication-list .card {
+    background-color: #1e1e1e;
+    border-color: #343a40;
+}
+
+body[data-theme="dark"] .publication-author,
+html[data-theme="dark"] .publication-author,
+body[data-theme="dark"] .publication-date,
+html[data-theme="dark"] .publication-date {
+    color: #adb5bd;
+}
+
+/* Stil pentru câmpul de căutare din imagini */
+body[data-theme="dark"] .input-group .form-control,
+html[data-theme="dark"] .input-group .form-control {
+    background-color: #2c3035;
+    color: #e9ecef;
+    border-color: #343a40;
+}
+
+body[data-theme="dark"] .input-group-append .btn,
+html[data-theme="dark"] .input-group-append .btn,
+body[data-theme="dark"] .input-group-prepend .btn,
+html[data-theme="dark"] .input-group-prepend .btn {
+    background-color: #343a40;
+    color: #e9ecef;
+    border-color: #343a40;
+}
+
+/* Stiluri pentru butoanele de acțiune din publicații și discuții */
+body[data-theme="dark"] .like-btn,
+html[data-theme="dark"] .like-btn,
+body[data-theme="dark"] .dislike-btn,
+html[data-theme="dark"] .dislike-btn,
+body[data-theme="dark"] .favorite-btn,
+html[data-theme="dark"] .favorite-btn {
+    background-color: #2c3035;
+    color: #e9ecef;
+    border-color: #343a40;
+}
+
+body[data-theme="dark"] .like-btn:hover,
+html[data-theme="dark"] .like-btn:hover,
+body[data-theme="dark"] .dislike-btn:hover,
+html[data-theme="dark"] .dislike-btn:hover,
+body[data-theme="dark"] .favorite-btn:hover,
+html[data-theme="dark"] .favorite-btn:hover {
+    background-color: #343a40;
+}
+
+/* Stiluri pentru preview-ul documentului */
+body[data-theme="dark"] .document-preview,
+html[data-theme="dark"] .document-preview {
+    background-color: #1e1e1e;
+    border-color: #343a40;
+}
+
+/* Stiluri pentru culori specifice */
+body[data-theme="dark"] .text-primary,
+html[data-theme="dark"] .text-primary {
+    color: #05A9F0 !important;
+}
+
+body[data-theme="dark"] .text-muted,
+html[data-theme="dark"] .text-muted {
+    color: #adb5bd !important;
+}
+
+body[data-theme="dark"] .bg-light,
+html[data-theme="dark"] .bg-light {
+    background-color: #1e1e1e !important;
+}
+
+body[data-theme="dark"] .border,
+html[data-theme="dark"] .border {
+    border-color: #343a40 !important;
+}
+
+/* Stiluri pentru Welcome text din pagina principală */
+body[data-theme="dark"] .display-4,
+html[data-theme="dark"] .display-4 {
+    color: #05A9F0;
+}
+
+/* Stiluri pentru butoaele din pagina de decument */
+body[data-theme="dark"] .btn-action,
+html[data-theme="dark"] .btn-action,
+body[data-theme="dark"] #like-btn,
+html[data-theme="dark"] #like-btn,
+body[data-theme="dark"] #dislike-btn, 
+html[data-theme="dark"] #dislike-btn {
+    background-color: #2c3035;
+    color: #e9ecef;
+    border-color: #343a40;
+}
+
+/* Stiluri pentru tab-uri și navigare */
+body[data-theme="dark"] .nav-tabs,
+html[data-theme="dark"] .nav-tabs {
+    border-color: #343a40;
+}
+
+body[data-theme="dark"] .nav-tabs .nav-link,
+html[data-theme="dark"] .nav-tabs .nav-link {
+    color: #e9ecef;
+    background-color: #1e1e1e;
+    border-color: #343a40;
+}
+
+body[data-theme="dark"] .nav-tabs .nav-link.active,
+html[data-theme="dark"] .nav-tabs .nav-link.active {
+    color: #05A9F0;
+    background-color: #2c3035;
+    border-color: #343a40 #343a40 #2c3035;
+}
+
+/* Clear button style */
+body[data-theme="dark"] .btn-outline-secondary,
+html[data-theme="dark"] .btn-outline-secondary {
+    color: #adb5bd;
+    border-color: #343a40;
+}
+
+body[data-theme="dark"] .btn-outline-secondary:hover,
+html[data-theme="dark"] .btn-outline-secondary:hover {
+    color: #e9ecef;
+    background-color: #343a40;
+}
+
+/* Stil pentru câmpul de căutare pe publicații */
+body[data-theme="dark"] input[placeholder="Search by title, abstract, or keywords..."],
+html[data-theme="dark"] input[placeholder="Search by title, abstract, or keywords..."] {
+    background-color: #2c3035 !important;
+    color: #e9ecef !important;
+}
+
+/* Stiluri suplimentare pentru elementele care încă apar în alb */
+
+/* Card-urile de pe pagina principală */
+body[data-theme="dark"] .card,
+html[data-theme="dark"] .card {
+    background-color: #1e1e1e !important;
+    color: #e9ecef !important;
+    border-color: #343a40 !important;
+}
+
+/* Elementele din lista de discuții */
+body[data-theme="dark"] .forum-item,
+html[data-theme="dark"] .forum-item,
+body[data-theme="dark"] .topic-item,
+html[data-theme="dark"] .topic-item,
+body[data-theme="dark"] .reply-item,
+html[data-theme="dark"] .reply-item {
+    background-color: #1e1e1e !important;
+    color: #e9ecef !important;
+    border-color: #343a40 !important;
+}
+
+/* Fundalul pentru conținutul principal */
+body[data-theme="dark"] main,
+html[data-theme="dark"] main {
+    background-color: #121212 !important;
+    color: #e9ecef !important;
+}
+
+/* Override pentru container-ele din Bootstrap care ar putea avea bg-white */
+body[data-theme="dark"] .container,
+html[data-theme="dark"] .container,
+body[data-theme="dark"] .container-fluid,
+html[data-theme="dark"] .container-fluid {
+    background-color: transparent !important;
+}
+
+/* Overrides pentru elementele din forum și discuții */
+body[data-theme="dark"] .forum-list-item,
+html[data-theme="dark"] .forum-list-item,
+body[data-theme="dark"] .topic-list-item,
+html[data-theme="dark"] .topic-list-item,
+body[data-theme="dark"] .post-item,
+html[data-theme="dark"] .post-item {
+    background-color: #1e1e1e !important;
+    color: #e9ecef !important;
+    border-color: #343a40 !important;
+}
+
+/* Culoare de fundal pentru panouri care ar putea fi setate explicit ca albe */
+body[data-theme="dark"] .bg-white,
+html[data-theme="dark"] .bg-white,
+body[data-theme="dark"] [class*="bg-white"],
+html[data-theme="dark"] [class*="bg-white"] {
+    background-color: #1e1e1e !important;
+    color: #e9ecef !important;
+}
+
+/* Stiluri pentru fundalul cardurilor din lista de forum/topics */
+body[data-theme="dark"] .list-group-item,
+html[data-theme="dark"] .list-group-item {
+    background-color: #1e1e1e !important;
+    color: #e9ecef !important;
+    border-color: #343a40 !important;
+}
+
+/* Forum titluri și descrieri */
+body[data-theme="dark"] .forum-title,
+html[data-theme="dark"] .forum-title,
+body[data-theme="dark"] .forum-description,
+html[data-theme="dark"] .forum-description,
+body[data-theme="dark"] .topic-title,
+html[data-theme="dark"] .topic-title {
+    color: #e9ecef !important;
+}
+
+/* Forum headers și footers */
+body[data-theme="dark"] .forum-header,
+html[data-theme="dark"] .forum-header,
+body[data-theme="dark"] .forum-footer,
+html[data-theme="dark"] .forum-footer {
+    background-color: #2c3035 !important;
+    color: #e9ecef !important;
+    border-color: #343a40 !important;
+}
+
+/* Stiluri pentru post-uri și replies */
+body[data-theme="dark"] .post,
+html[data-theme="dark"] .post,
+body[data-theme="dark"] .reply,
+html[data-theme="dark"] .reply {
+    background-color: #1e1e1e !important;
+    color: #e9ecef !important;
+    border-color: #343a40 !important;
+}
+
+/* Stiluri pentru divizoare (hr) */
+body[data-theme="dark"] hr,
+html[data-theme="dark"] hr {
+    border-color: #343a40 !important;
+}
+
+/* Stiluri pentru elementele din paginile de discuții */
+body[data-theme="dark"] .discussion-item,
+html[data-theme="dark"] .discussion-item,
+body[data-theme="dark"] .comment-item,
+html[data-theme="dark"] .comment-item {
+    background-color: #1e1e1e !important;
+    color: #e9ecef !important;
+    border-color: #343a40 !important;
+}
+
+/* Elementele care conțin clasele specifice Bootstrap */
+body[data-theme="dark"] .bg-light,
+html[data-theme="dark"] .bg-light {
+    background-color: #1e1e1e !important;
+    color: #e9ecef !important;
+}
+
+/* Stiluri pentru containerele care pot avea un fundal alb explicit definit */
+body[data-theme="dark"] [style*="background-color: white"],
+html[data-theme="dark"] [style*="background-color: white"],
+body[data-theme="dark"] [style*="background-color: #fff"],
+html[data-theme="dark"] [style*="background-color: #fff"],
+body[data-theme="dark"] [style*="background-color:#fff"],
+html[data-theme="dark"] [style*="background-color:#fff"],
+body[data-theme="dark"] [style*="background-color:#ffffff"],
+html[data-theme="dark"] [style*="background-color:#ffffff"],
+body[data-theme="dark"] [style*="background-color: #ffffff"],
+html[data-theme="dark"] [style*="background-color: #ffffff"],
+body[data-theme="dark"] [style*="background:#fff"],
+html[data-theme="dark"] [style*="background:#fff"],
+body[data-theme="dark"] [style*="background: #fff"],
+html[data-theme="dark"] [style*="background: #fff"],
+body[data-theme="dark"] [style*="background:white"],
+html[data-theme="dark"] [style*="background:white"],
+body[data-theme="dark"] [style*="background: white"],
+html[data-theme="dark"] [style*="background: white"] {
+    background-color: #1e1e1e !important;
+    color: #e9ecef !important;
+}
+
+/* Stil pentru link-uri încă vizibile în albastru */
+body[data-theme="dark"] a:not(.btn):not(.nav-link),
+html[data-theme="dark"] a:not(.btn):not(.nav-link) {
+    color: #05A9F0 !important;
+}
+
+/* Stil pentru backgound-ul paginii de forum */
+body[data-theme="dark"] .forum-page,
+html[data-theme="dark"] .forum-page,
+body[data-theme="dark"] .topic-page,
+html[data-theme="dark"] .topic-page {
+    background-color: #121212 !important;
+}
+
+/* Stiluri specifice pentru cardurile albe din Home Page și lista de topic-uri */
+
+/* Cardurile de publicații recente și discuții */
+body[data-theme="dark"] .recent-publications .card,
+html[data-theme="dark"] .recent-publications .card,
+body[data-theme="dark"] .recent-discussions .card,
+html[data-theme="dark"] .recent-discussions .card,
+body[data-theme="dark"] [class*="recent-"] .card,
+html[data-theme="dark"] [class*="recent-"] .card {
+    background-color: #1e1e1e !important;
+    color: #e9ecef !important;
+    border-color: #343a40 !important;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Stil forțat pentru carduri și liste */
+body[data-theme="dark"] .card-body,
+html[data-theme="dark"] .card-body {
+    background-color: #1e1e1e !important;
+    color: #e9ecef !important;
+}
+
+body[data-theme="dark"] .list-group,
+html[data-theme="dark"] .list-group {
+    background-color: #1e1e1e !important;
+    color: #e9ecef !important;
+    border-color: #343a40 !important;
+}
+
+/* Forțare stil pentru carduri și containere */
+body[data-theme="dark"] div.card,
+html[data-theme="dark"] div.card,
+body[data-theme="dark"] div.bg-white,
+html[data-theme="dark"] div.bg-white,
+body[data-theme="dark"] div.bg-light,
+html[data-theme="dark"] div.bg-light {
+    background-color: #1e1e1e !important;
+    color: #e9ecef !important;
+    border-color: #343a40 !important;
+}
+
+/* Carduri din lista de topic-uri și forumuri */
+body[data-theme="dark"] #forum-list .card,
+html[data-theme="dark"] #forum-list .card,
+body[data-theme="dark"] #topic-list .card,
+html[data-theme="dark"] #topic-list .card,
+body[data-theme="dark"] .forum-list .card,
+html[data-theme="dark"] .forum-list .card,
+body[data-theme="dark"] .topic-list .card,
+html[data-theme="dark"] .topic-list .card {
+    background-color: #1e1e1e !important;
+    color: #e9ecef !important;
+    border-color: #343a40 !important;
+}
+
+/* Stiluri pentru forumuri și topic-uri */
+body[data-theme="dark"] .topic,
+html[data-theme="dark"] .topic,
+body[data-theme="dark"] .forum-topic,
+html[data-theme="dark"] .forum-topic,
+body[data-theme="dark"] .discussion-topic,
+html[data-theme="dark"] .discussion-topic {
+    background-color: #1e1e1e !important;
+    color: #e9ecef !important;
+    border-color: #343a40 !important;
+}
+
+/* Titlurile și textele din card-uri */
+body[data-theme="dark"] .card-title,
+html[data-theme="dark"] .card-title,
+body[data-theme="dark"] .card-text,
+html[data-theme="dark"] .card-text,
+body[data-theme="dark"] .card-subtitle,
+html[data-theme="dark"] .card-subtitle {
+    color: #e9ecef !important;
+}
+
+/* Stil pentru text muted și secundar în mode închis */
+body[data-theme="dark"] .text-muted,
+html[data-theme="dark"] .text-muted,
+body[data-theme="dark"] .text-secondary,
+html[data-theme="dark"] .text-secondary {
+    color: #adb5bd !important;
+}
+
+/* Stiluri pentru paginile și containerele cu clase generice */
+body[data-theme="dark"] .page-content,
+html[data-theme="dark"] .page-content,
+body[data-theme="dark"] .content-container,
+html[data-theme="dark"] .content-container,
+body[data-theme="dark"] .main-content,
+html[data-theme="dark"] .main-content {
+    background-color: #121212 !important;
+    color: #e9ecef !important;
+}
+
+/* Element selector foarte specific pentru cardurile din pagina principală */
+body[data-theme="dark"] main > .container > .row > .col > .card,
+html[data-theme="dark"] main > .container > .row > .col > .card,
+body[data-theme="dark"] main > .container > .card,
+html[data-theme="dark"] main > .container > .card,
+body[data-theme="dark"] main .card,
+html[data-theme="dark"] main .card {
+    background-color: #1e1e1e !important;
+    color: #e9ecef !important;
+    border-color: #343a40 !important;
+}
+
+/* Pentru elementele cu atribut style inline */
+body[data-theme="dark"] *[style*="background"],
+html[data-theme="dark"] *[style*="background"] {
+    background-color: #1e1e1e !important;
+    color: #e9ecef !important;
+}
+
+/* Forțează stilizarea dark mode pentru toate cardurile și containerele care ar putea fi problematice */
+
+/* Abordare generală și agresivă pentru elementele care pot apărea albe */
+body[data-theme="dark"] div,
+html[data-theme="dark"] div {
+    background-color: inherit;
+}
+
+/* Excepția pentru elementele cu fundal specific setat */
+body[data-theme="dark"] div.navbar,
+html[data-theme="dark"] div.navbar,
+body[data-theme="dark"] div.footer,
+html[data-theme="dark"] div.footer,
+body[data-theme="dark"] div.modal,
+html[data-theme="dark"] div.modal,
+body[data-theme="dark"] div.dropdown-menu,
+html[data-theme="dark"] div.dropdown-menu {
+    background-color: inherit; /* Păstrează stilizările specifice */
+}
+
+/* Mai specific pentru cardurile din home page */
+body[data-theme="dark"] .home-page .card,
+html[data-theme="dark"] .home-page .card {
+    background-color: #1e1e1e !important;
+    color: #e9ecef !important;
+    border-color: #343a40 !important;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Abordare cu specificitate mare pentru card-uri */
+body[data-theme="dark"] * > .card,
+html[data-theme="dark"] * > .card,
+body[data-theme="dark"] * * > .card,
+html[data-theme="dark"] * * > .card {
+    background-color: #1e1e1e !important;
+    color: #e9ecef !important;
+    border-color: #343a40 !important;
+}
+
+/* Selecție pentru toate elementele cu bg-white sau white (folosit în HTML) */
+body[data-theme="dark"] [class*="white"],
+html[data-theme="dark"] [class*="white"],
+body[data-theme="dark"] [class*="light"],
+html[data-theme="dark"] [class*="light"] {
+    background-color: #1e1e1e !important;
+    color: #e9ecef !important;
+}
+
+/* Stilizează elementele cu background în style inline */
+body[data-theme="dark"] [style*="background-color"],
+html[data-theme="dark"] [style*="background-color"],
+body[data-theme="dark"] [style*="background"],
+html[data-theme="dark"] [style*="background"] {
+    background-color: #1e1e1e !important;
+    background-image: none !important;
+    color: #e9ecef !important;
+}
+
+/* Stilizează containerele cu fundal potențial problematic */
+body[data-theme="dark"] section,
+html[data-theme="dark"] section,
+body[data-theme="dark"] article,
+html[data-theme="dark"] article,
+body[data-theme="dark"] aside,
+html[data-theme="dark"] aside {
+    background-color: inherit;
+    color: #e9ecef !important;
+}
+
+/* Stilizează casuțele de text care sunt frecvent problematice */
+body[data-theme="dark"] textarea,
+html[data-theme="dark"] textarea,
+body[data-theme="dark"] pre,
+html[data-theme="dark"] pre,
+body[data-theme="dark"] code,
+html[data-theme="dark"] code {
+    background-color: #2c3035 !important;
+    color: #e9ecef !important;
+    border-color: #343a40 !important;
+}
+
+/* Chiar și mai agresiv, abordăm toate elementele vizibile */
+body[data-theme="dark"] *:not(.navbar):not(.footer):visible,
+html[data-theme="dark"] *:not(.navbar):not(.footer):visible {
+    background-color: inherit;
+}
+
+/* Cu excepția elementelor specifice care trebuie să-și păstreze culorile */
+body[data-theme="dark"] .btn-primary,
+html[data-theme="dark"] .btn-primary,
+body[data-theme="dark"] .btn-success,
+html[data-theme="dark"] .btn-success,
+body[data-theme="dark"] .btn-info,
+html[data-theme="dark"] .btn-info,
+body[data-theme="dark"] .btn-warning,
+html[data-theme="dark"] .btn-warning,
+body[data-theme="dark"] .btn-danger,
+html[data-theme="dark"] .btn-danger {
+    background-color: inherit; /* Păstrează culorile specifice butoanelor */
+}
+
+/* Override specific elements colors for better contrast */
+.card-header:has(h5:contains("Discussion Guidelines")),
+.card:has(.card-header h5:contains("Discussion Guidelines")) .card-header,
+.card-header.bg-light:has(i.fas.fa-book) {
+    background-color: #0077b6 !important;
+    color: white !important;
+}
+
+.card-header.bg-light:has(i.fas.fa-book) i,
+.card-header:has(h5:contains("Discussion Guidelines")) h5,
+.card-header:has(h5:contains("Discussion Guidelines")) i {
+    color: white !important;
+}
+
+/* Ensure any bg-info has proper contrast with white text */
+.bg-info, 
+.alert-info,
+[class*="bg-info"],
+[class*="bg-light"][class*="text-white"] {
+    background-color: #0077b6 !important;
+    color: white !important;
 } 

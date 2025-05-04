@@ -135,13 +135,22 @@
                             </a>
                             {% endif %}
                             
-                            {% if user == topic.author and not topic.is_solved %}
-                            <form method="post" action="{% url 'discussions:mark_solution' reply.id %}" class="d-inline">
-                                {% csrf_token %}
-                                <button type="submit" class="action-btn">
-                                    <i class="fas fa-check-circle"></i> Mark as Solution
-                                </button>
-                            </form>
+                            {% if user == topic.author %}
+                                {% if not topic.is_solved %}
+                                <form method="post" action="{% url 'discussions:mark_solution' reply.id %}" class="d-inline">
+                                    {% csrf_token %}
+                                    <button type="submit" class="action-btn">
+                                        <i class="fas fa-check-circle"></i> Mark as Solution
+                                    </button>
+                                </form>
+                                {% elif reply.is_solution %}
+                                <form method="post" action="{% url 'discussions:unmark_solution' topic.id %}" class="d-inline">
+                                    {% csrf_token %}
+                                    <button type="submit" class="action-btn">
+                                        <i class="fas fa-times-circle"></i> Unmark as Solution
+                                    </button>
+                                </form>
+                                {% endif %}
                             {% endif %}
                         </div>
                     </div>

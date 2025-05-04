@@ -26,6 +26,7 @@ urlpatterns = [
     path('accounts/', include('accounts.urls')),
     path('publications/', include('publications.urls')),
     path('discussions/', include('discussions.urls')),
+    path('notifications/', include('notifications.urls')),
 ]
 
 # Add media URLs in development

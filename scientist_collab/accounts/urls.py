@@ -25,4 +25,6 @@ urlpatterns = [
     # Social Authentication URLs
     path('login/google/', views.google_login, name='google_login'),
     path('login/orcid/', views.orcid_login, name='orcid_login'),
+    path('badges/', views.user_badges, name='user_badges'),
+    path('badges/equip/<int:badge_id>/', views.equip_badge, name='equip_badge'),
 ]

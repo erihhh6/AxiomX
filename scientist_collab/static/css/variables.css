@@ -20,7 +20,7 @@
     --dark-gray: #5a6474;
 
     /* Functional colors */
-    --info: var(--secondary);
+    --info: #0077b6;       /* Darker blue for better contrast with white text */
     --success: #3AC170;
     --warning: var(--accent);
     --danger: #F04A3C;
@@ -60,4 +60,53 @@
     --transition-fast: 0.15s ease-in-out;
     --transition-normal: 0.3s ease-in-out;
     --transition-slow: 0.5s ease-in-out;
+    
+    /* Theme-specific variables */
+    --body-bg: var(--white);
+    --card-bg: var(--white);
+    --navbar-bg: var(--primary);
+    --navbar-text: var(--white);
+    --footer-bg: var(--primary);
+    --footer-text: var(--white);
+    --border-color: var(--gray);
+    --input-bg: var(--white);
+    --input-text: var(--text-primary);
+    --dropdown-bg: var(--white);
+    --dropdown-text: var(--text-primary);
+    --dropdown-hover-bg: var(--light-gray);
+}
+
+/* Dark theme variables */
+:root[data-theme="dark"],
+body[data-theme="dark"] {
+    /* Supporting colors */
+    --white: #ffffff;
+    --black: #080820;
+    --light-gray: #2c3035;
+    --gray: #343a40;
+    --dark-gray: #adb5bd;
+    
+    /* Text colors */
+    --text-primary: #e9ecef;
+    --text-secondary: #ced4da;
+    
+    /* Theme-specific variables */
+    --body-bg: #121212;
+    --card-bg: #1e1e1e;
+    --navbar-bg: #0d0d2d;
+    --navbar-text: #e9ecef;
+    --footer-bg: #0d0d2d;
+    --footer-text: #e9ecef;
+    --border-color: #343a40;
+    --input-bg: #2c3035;
+    --input-text: #e9ecef;
+    --dropdown-bg: #2c3035;
+    --dropdown-text: #e9ecef;
+    --dropdown-hover-bg: #343a40;
+    
+    /* Shadow variables - softer for dark mode */
+    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.2);
+    --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.3);
+    --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.4);
+    --shadow-xl: 0 12px 24px rgba(0, 0, 0, 0.5);
 } 

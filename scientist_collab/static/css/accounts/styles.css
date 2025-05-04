@@ -4,4 +4,61 @@
  */
 
 @import url("profile.css");
-@import url("auth.css"); 
+@import url("auth.css");
+
+/* Profiles styling */
+
+/* Fix light header colors for profile sections */
+.card-header.bg-info,
+.card-header.bg-light,
+.profile-header.bg-light,
+.alert-info {
+    background-color: #0077b6 !important; /* Darker blue for better contrast with white text */
+    color: white !important;
+}
+
+/* Ensure headings have proper contrast */
+.card-header h5,
+.card-header h6 {
+    color: white !important;
+}
+
+/* Make sure light backgrounds with white text have proper contrast in light theme */
+[data-theme="light"] .bg-info,
+[data-theme="light"] .bg-cyan,
+[data-theme="light"] .bg-light.text-white,
+[data-theme="light"] .text-white {
+    background-color: #0077b6 !important;
+    color: white !important;
+}
+
+/* Fix for Discussion Guidelines section */
+.card-header:has(> i.fas.fa-book),
+.card-header:has(> h5:contains("Discussion Guidelines")) {
+    background-color: #0077b6 !important;
+    color: white !important;
+}
+
+/* Badges with light background need better contrast */
+.badge.bg-info,
+.badge.bg-light {
+    background-color: #0077b6 !important;
+    color: white !important;
+}
+
+/* Profile card headers consistent styling */
+.card-header {
+    font-weight: bold;
+}
+
+/* Fix any specific card headers that need it */
+.card-header.bg-primary {
+    background-color: var(--primary) !important;
+}
+
+/* Fix public profile header */
+#eric-profile,
+[id$="-profile"] {
+    background-color: #0077b6 !important;
+    color: white !important;
+} 

@@ -84,10 +84,66 @@
         font-size: 12px;
         display: none;
     }
+    
+    /* Founder section styles */
+    #founder-section {
+        position: fixed;
+        top: 100px;
+        left: 20px;
+        z-index: 1000;
+        background: var(--light-container-bg);
+        border-radius: 10px;
+        padding: 15px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        width: 300px;
+        border: 2px solid var(--accent);
+        transition: all 0.3s ease;
+    }
+    
+    html[data-theme="dark"] #founder-section {
+        background: var(--dark-container-bg);
+        border-color: var(--accent);
+    }
+    
+    #founder-section:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+    }
+    
+    .founder-title {
+        font-size: 24px;
+        font-weight: bold;
+        margin-bottom: 10px;
+        color: var(--text-color);
+        text-align: center;
+    }
+    
+    .founder-name {
+        font-size: 20px;
+        color: var(--accent);
+        text-align: center;
+        margin-bottom: 15px;
+        font-weight: 600;
+    }
+    
+    .founder-badge {
+        width: 100%;
+        margin: 0 auto;
+        display: block;
+    }
 </style>
 {% endblock %}
 
 {% block content %}
+<!-- Founder Section -->
+<div id="founder-section">
+    <div class="founder-title">Founder</div>
+    <div class="founder-name">OPREA ERIC</div>
+    <div class="founder-badge">
+        <iframe src="https://tryhackme.com/api/v2/badges/public-profile?userPublicId=4599637" style='border:none; width:100%; height:150px;'></iframe>
+    </div>
+</div>
+
 <!-- 3D Landing Animation Container -->
 <div id="landing-container">
     <div id="loading-indicator">Loading 3D Experience...</div>

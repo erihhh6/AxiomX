@@ -1,0 +1,152 @@
+{% extends "base/base.html" %}
+{% load static %}
+
+{% block title %}My Badges - AxiomX{% endblock %}
+
+{% block extra_css %}
+<style>
+    .badge-card {
+        transition: all 0.3s ease;
+        border-radius: var(--border-radius-md);
+        overflow: hidden;
+        height: 100%;
+    }
+    
+    .badge-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-md);
+    }
+    
+    .badge-image {
+        width: 100px;
+        height: 100px;
+        margin: 0 auto;
+        display: block;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 3px solid var(--light-gray);
+    }
+    
+    .badge-earned {
+        border-color: var(--success);
+    }
+    
+    .badge-locked {
+        filter: grayscale(100%);
+        opacity: 0.5;
+        border-color: #aaa !important;
+        box-shadow: none !important;
+    }
+    
+    .badge-equipped {
+        border-color: var(--accent);
+        box-shadow: 0 0 10px var(--accent);
+    }
+    
+    .progress-container {
+        background-color: #e9ecef;
+        border-radius: 0.25rem;
+        height: 10px;
+        margin: 15px 0;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .progress-fill {
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 100%;
+        background-color: #0d6efd;
+    }
+    
+    .progress-fill.earned {
+        background-color: #198754;
+    }
+    
+    .progress-text {
+        text-align: center;
+        font-size: 0.75rem;
+        margin-top: 5px;
+    }
+    
+    .badge-actions {
+        margin-top: 15px;
+    }
+    
+    .badge-equipped-label {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background-color: var(--accent);
+        color: var(--white);
+        font-size: 0.7rem;
+        padding: 2px 8px;
+        border-radius: 10px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">My Badges</h1>
+    
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i> Badges reflect your achievements on the platform. Equip your favorite badge to display it on your profile!
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        {% for badge_data in badges_data %}
+        <div class="col-md-4 mb-4">
+            <div class="card badge-card">
+                {% if badge_data.is_equipped %}
+                <span class="badge-equipped-label">Equipped</span>
+                {% endif %}
+                
+                <div class="card-body text-center">
+                    <img src="{{ badge_data.badge.image.url }}" 
+                         class="badge-image mb-3 {% if badge_data.earned %}badge-earned{% else %}badge-locked{% endif %} {% if badge_data.is_equipped %}badge-equipped{% endif %}"
+                         alt="{{ badge_data.badge.name }}">
+                    
+                    <h5 class="card-title">{{ badge_data.badge.name }}</h5>
+                    <p class="card-text">{{ badge_data.badge.description }}</p>
+                    
+                    <div class="progress-container">
+                        <div class="progress-fill{% if badge_data.earned %} earned{% endif %}" style="width: {{ badge_data.progress }}%;"></div>
+                    </div>
+                    <div class="progress-text">{{ badge_data.progress }}%</div>
+                    
+                    <p class="text-muted small">{{ badge_data.remaining }}</p>
+                    
+                    {% if badge_data.earned %}
+                        <p class="text-success small">
+                            <i class="fas fa-check-circle"></i> Earned on {{ badge_data.earned_date|date:"M d, Y" }}
+                        </p>
+                        
+                        <div class="badge-actions">
+                            {% if badge_data.is_equipped %}
+                                <button class="btn btn-sm btn-secondary" disabled>Currently Equipped</button>
+                            {% else %}
+                                <a href="{% url 'accounts:equip_badge' badge_data.badge.id %}" class="btn btn-sm btn-primary">
+                                    <i class="fas fa-star"></i> Equip Badge
+                                </a>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="alert alert-warning">
+                No badges available yet. Check back later!
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %} 

@@ -8,6 +8,10 @@ from django.http import JsonResponse
 from .models import Forum, Topic, Reply
 from .forms import TopicForm, ReplyForm
 
+# Import notification utilities
+from notifications.utils import create_notification
+from notifications.models import Notification
+
 class ForumListView(ListView):
     model = Forum
     template_name = 'discussions/forum_list.html'
@@ -30,13 +34,14 @@ class TopicDetailView(DetailView):
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['replies'] = self.object.replies.all()
+        topic = self.get_object()
+        context['replies'] = topic.replies.all()
         context['reply_form'] = ReplyForm()
         
         # Check if user has liked/disliked this topic
         if self.request.user.is_authenticated:
-            context['is_topic_liked'] = self.object.likes.filter(id=self.request.user.id).exists()
-            context['is_topic_disliked'] = self.object.dislikes.filter(id=self.request.user.id).exists()
+            context['is_topic_liked'] = topic.likes.filter(id=self.request.user.id).exists()
+            context['is_topic_disliked'] = topic.dislikes.filter(id=self.request.user.id).exists()
             
             # Check if user has liked each reply
             user_liked_replies = Reply.objects.filter(
@@ -44,6 +49,10 @@ class TopicDetailView(DetailView):
                 likes=self.request.user
             ).values_list('id', flat=True)
             context['user_liked_replies'] = user_liked_replies
+        
+        # Add solution information to each reply
+        for reply in context['replies']:
+            reply.is_solution = (topic.solution and topic.solution.id == reply.id)
         
         return context
 
@@ -102,6 +111,15 @@ def add_reply(request, pk):
             reply.topic = topic
             reply.author = request.user
             reply.save()
+            
+            # Create a notification for the topic author
+            create_notification(
+                recipient=topic.author, 
+                sender=request.user, 
+                obj=topic, 
+                notification_type=Notification.REPLY
+            )
+            
             messages.success(request, 'Your reply has been posted!')
             return redirect('discussions:topic_detail', pk=topic.pk)
     
@@ -139,6 +157,14 @@ def like_topic(request, pk):
         # Like
         topic.likes.add(request.user)
         liked = True
+        
+        # Create a notification for the topic author
+        create_notification(
+            recipient=topic.author, 
+            sender=request.user, 
+            obj=topic, 
+            notification_type=Notification.LIKE
+        )
     
     # For AJAX requests
     if request.method in ['POST', 'GET'] and request.headers.get('x-requested-with') == 'XMLHttpRequest':
@@ -169,6 +195,14 @@ def dislike_topic(request, pk):
         # Dislike
         topic.dislikes.add(request.user)
         disliked = True
+        
+        # Create a notification for the topic author
+        create_notification(
+            recipient=topic.author, 
+            sender=request.user, 
+            obj=topic, 
+            notification_type=Notification.DISLIKE
+        )
     
     # For AJAX requests
     if request.method in ['POST', 'GET'] and request.headers.get('x-requested-with') == 'XMLHttpRequest':
@@ -195,6 +229,14 @@ def like_reply(request, pk):
         # Like
         reply.likes.add(request.user)
         liked = True
+        
+        # Create a notification for the reply author
+        create_notification(
+            recipient=reply.author, 
+            sender=request.user, 
+            obj=reply, 
+            notification_type=Notification.LIKE
+        )
     
     # For AJAX requests
     if request.method in ['POST', 'GET'] and request.headers.get('x-requested-with') == 'XMLHttpRequest':
@@ -206,3 +248,49 @@ def like_reply(request, pk):
     
     # Redirect to topic detail page
     return redirect('discussions:topic_detail', pk=reply.topic.pk)
+
+@login_required
+def mark_solution(request, pk):
+    """Mark a reply as the solution to a topic"""
+    reply = get_object_or_404(Reply, pk=pk)
+    topic = reply.topic
+    
+    # Only the topic author can mark a solution
+    if request.user != topic.author:
+        messages.error(request, "Only the topic author can mark a solution.")
+        return redirect('discussions:topic_detail', pk=topic.pk)
+    
+    # Mark this reply as the solution
+    topic.solution = reply
+    topic.is_solved = True
+    topic.save()
+    
+    # Create a notification for the solution author
+    if reply.author != request.user:
+        create_notification(
+            recipient=reply.author, 
+            sender=request.user, 
+            obj=reply, 
+            notification_type=Notification.SOLUTION
+        )
+    
+    messages.success(request, "Reply marked as solution!")
+    return redirect('discussions:topic_detail', pk=topic.pk)
+
+@login_required
+def unmark_solution(request, pk):
+    """Remove solution mark from a topic"""
+    topic = get_object_or_404(Topic, pk=pk)
+    
+    # Only the topic author can unmark a solution
+    if request.user != topic.author:
+        messages.error(request, "Only the topic author can remove a solution mark.")
+        return redirect('discussions:topic_detail', pk=topic.pk)
+    
+    # Remove solution mark
+    topic.solution = None
+    topic.is_solved = False
+    topic.save()
+    
+    messages.success(request, "Solution mark removed.")
+    return redirect('discussions:topic_detail', pk=topic.pk)

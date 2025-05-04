@@ -14,6 +14,8 @@ urlpatterns = [
     path('topic/<int:pk>/reply/', views.add_reply, name='add_reply'),
     path('topic/<int:pk>/like/', views.like_topic, name='like_topic'),
     path('topic/<int:pk>/dislike/', views.dislike_topic, name='dislike_topic'),
+    path('topic/<int:pk>/unmark-solution/', views.unmark_solution, name='unmark_solution'),
     path('reply/<int:pk>/delete/', views.ReplyDeleteView.as_view(), name='reply_delete'),
     path('reply/<int:pk>/like/', views.like_reply, name='like_reply'),
+    path('reply/<int:pk>/mark-solution/', views.mark_solution, name='mark_solution'),
 ] 
