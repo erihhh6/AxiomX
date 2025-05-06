@@ -94,4 +94,64 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
+    
+    // Custom event for AJAX loaded content
+    function triggerContentLoadedEvent() {
+        const event = new CustomEvent('content-loaded');
+        document.dispatchEvent(event);
+    }
+    
+    // Create a MutationObserver to watch for dynamically added content
+    const contentObserver = new MutationObserver(function(mutations) {
+        mutations.forEach(function(mutation) {
+            if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
+                // Check if any post content was added
+                let processVisualizers = false;
+                
+                mutation.addedNodes.forEach(function(node) {
+                    if (node.nodeType === 1) { // Element node
+                        if (node.classList && 
+                            (node.classList.contains('post-content') || 
+                             node.classList.contains('topic-content') ||
+                             node.querySelector('.post-content, .topic-content'))) {
+                            processVisualizers = true;
+                        }
+                    }
+                });
+                
+                if (processVisualizers) {
+                    triggerContentLoadedEvent();
+                }
+            }
+        });
+    });
+    
+    // Start observing the document body for added content
+    contentObserver.observe(document.body, { 
+        childList: true, 
+        subtree: true 
+    });
+    
+    // Handle forum topic/reply preview
+    const previewButtons = document.querySelectorAll('.preview-button');
+    previewButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            const contentTextarea = this.closest('form').querySelector('textarea');
+            const previewContainer = document.getElementById('content-preview');
+            
+            if (contentTextarea && previewContainer) {
+                // Display content with line breaks
+                previewContainer.innerHTML = contentTextarea.value
+                    .replace(/\n/g, '<br>')
+                    .replace(/\[wave\](.*?)\[\/wave\]/gs, '<div class="alert alert-info">Wave Simulator (will be rendered in the actual post)</div>')
+                    .replace(/\[dna.*?\](.*?)\[\/dna\]/gs, '<div class="alert alert-info">DNA/RNA Visualizer (will be rendered in the actual post)</div>')
+                    .replace(/\[datastructure.*?\](.*?)\[\/datastructure\]/gs, '<div class="alert alert-info">Data Structure Visualizer (will be rendered in the actual post)</div>');
+                
+                // Show the preview
+                previewContainer.style.display = 'block';
+            }
+        });
+    });
 }); 

@@ -4,6 +4,23 @@
 
 {% block body_class %}topic-page{% endblock %}
 
+{% block extra_css %}
+<style>
+    .visualizer-container {
+        width: 100%;
+        min-height: 300px;
+        border-radius: 4px;
+        overflow: hidden;
+    }
+    
+    .visualizer-help-text {
+        margin-top: 10px;
+        font-size: 0.9rem;
+        color: #6c757d;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="container mt-5">
     <nav aria-label="breadcrumb">
@@ -179,6 +196,15 @@
                         {% endfor %}
                     </div>
                     {% endif %}
+                    
+                    <div class="visualizer-help-text">
+                        <p><strong>Add interactive visualizations:</strong></p>
+                        <ul class="mb-0">
+                            <li><code>[wave]...[/wave]</code> - Add wave/oscillation simulator</li>
+                            <li><code>[dna sequence="ATGC..."]...[/dna]</code> - Add DNA/RNA visualizer</li>
+                            <li><code>[datastructure type="tree"]...[/datastructure]</code> - Add data structure visualizer</li>
+                        </ul>
+                    </div>
                 </div>
                 <button type="submit" class="btn-primary">Post Reply</button>
             </form>
@@ -199,8 +225,31 @@
 {% endblock %}
 
 {% block extra_js %}
+<!-- Visualizer scripts with improved loading order and cache busting -->
+<script src="/static/js/visualizers/fallback_visualizer.js?v={{ now.timestamp }}"></script>
+<script src="/static/js/visualizers/waves/wave_simulator.js?v={{ now.timestamp }}"></script>
+<script src="/static/js/visualizers/dna/dna_visualizer.js?v={{ now.timestamp }}"></script>
+<script src="/static/js/visualizers/simplified_post_parser.js?v={{ now.timestamp }}"></script>
+
 <script>
-$(document).ready(function() {
+// Add timestamp to force reload
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Loading DNA visualizer with timestamp to avoid cache');
+    // Force reload scripts if needed
+    function forceReload(scriptSrc) {
+        const oldScript = document.querySelector(`script[src^="${scriptSrc}"]`);
+        if (oldScript) {
+            const newScript = document.createElement('script');
+            newScript.src = scriptSrc + '?v=' + new Date().getTime();
+            oldScript.parentNode.replaceChild(newScript, oldScript);
+            console.log('Reloaded:', scriptSrc);
+        }
+    }
+    
+    // Force reload DNA visualizer if it's on the page
+    forceReload('/static/js/visualizers/dna/dna_visualizer.js');
+    
+    // The rest of the existing script remains the same
     // Setup CSRF token for AJAX requests
     function getCookie(name) {
         let cookieValue = null;

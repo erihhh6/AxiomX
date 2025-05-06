@@ -2,6 +2,38 @@
 
 {% block title %}{% if form.instance.pk %}Edit Topic{% else %}Create New Topic{% endif %} - Scientists Collaboration Platform{% endblock %}
 
+{% block extra_css %}
+<style>
+    .visualizer-container {
+        width: 100%;
+        min-height: 300px;
+        border-radius: 4px;
+        overflow: hidden;
+    }
+    
+    .visualizer-help-text {
+        margin-top: 10px;
+        font-size: 0.9rem;
+        color: #6c757d;
+    }
+    
+    #content-preview {
+        display: none;
+        border: 1px solid #dee2e6;
+        border-radius: 4px;
+        padding: 15px;
+        margin-top: 10px;
+        background-color: #f8f9fa;
+    }
+    
+    .preview-heading {
+        font-size: 1rem;
+        margin-bottom: 10px;
+        color: #6c757d;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="container mt-5">
     <nav aria-label="breadcrumb">
@@ -45,6 +77,24 @@
                     {% if form.content.errors %}
                     <div class="text-danger">{{ form.content.errors }}</div>
                     {% endif %}
+                    
+                    <div class="visualizer-help-text">
+                        <p><strong>Add interactive visualizations:</strong></p>
+                        <ul class="mb-0">
+                            <li><code>[wave]...[/wave]</code> - Add wave/oscillation simulator</li>
+                            <li><code>[dna sequence="ATGC..."]...[/dna]</code> - Add DNA/RNA visualizer</li>
+                            <li><code>[datastructure type="tree"]...[/datastructure]</code> - Add data structure visualizer</li>
+                        </ul>
+                    </div>
+                    
+                    <button type="button" class="btn btn-outline-secondary mt-2 preview-button">
+                        <i class="fas fa-eye"></i> Preview
+                    </button>
+                    
+                    <div id="content-preview">
+                        <div class="preview-heading">Content Preview</div>
+                        <div class="preview-content"></div>
+                    </div>
                 </div>
                 
                 <div class="d-flex justify-content-between">
@@ -60,15 +110,54 @@
 {% endblock %}
 
 {% block extra_js %}
+<!-- Load visualizer scripts with fixed absolute paths and cache busting -->
+<script src="/static/js/visualizers/fallback_visualizer.js?v={{ now.timestamp }}"></script>
+<script src="/static/js/visualizers/waves/wave_simulator.js?v={{ now.timestamp }}"></script>
+<script src="/static/js/visualizers/dna/dna_visualizer.js?v={{ now.timestamp }}"></script>
+<script src="/static/js/visualizers/simplified_post_parser.js?v={{ now.timestamp }}"></script>
+
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Add Bootstrap form-control class to all form inputs
-    const formControls = document.querySelectorAll('input, textarea, select');
-    formControls.forEach(element => {
-        if (!element.classList.contains('form-check-input') && !element.classList.contains('btn')) {
-            element.classList.add('form-control');
+    console.log('Topic form loaded, ensuring DNA visualizer is up to date');
+    
+    // Force reload scripts if needed
+    function forceReload(scriptSrc) {
+        const oldScript = document.querySelector(`script[src^="${scriptSrc}"]`);
+        if (oldScript) {
+            const newScript = document.createElement('script');
+            newScript.src = scriptSrc + '?v=' + new Date().getTime();
+            oldScript.parentNode.replaceChild(newScript, oldScript);
+            console.log('Reloaded:', scriptSrc);
         }
-    });
+    }
+    
+    // Force reload DNA visualizer
+    forceReload('/static/js/visualizers/dna/dna_visualizer.js');
+    
+    const contentTextarea = document.querySelector('textarea[name="content"]');
+    const previewContainer = document.getElementById('content-preview');
+    const previewContent = document.querySelector('.preview-content');
+    const previewButton = document.querySelector('.preview-button');
+    
+    if (contentTextarea && previewContainer && previewContent && previewButton) {
+        previewButton.addEventListener('click', function() {
+            // Display content with line breaks
+            previewContent.innerHTML = contentTextarea.value
+                .replace(/\n/g, '<br>')
+                .replace(/\[wave\](.*?)\[\/wave\]/gs, '<div class="alert alert-info">Wave Simulator (will be rendered in the actual post)</div>')
+                .replace(/\[dna.*?\](.*?)\[\/dna\]/gs, '<div class="alert alert-info">DNA/RNA Visualizer (will be rendered in the actual post)</div>')
+                .replace(/\[datastructure.*?\](.*?)\[\/datastructure\]/gs, '<div class="alert alert-info">Data Structure Visualizer (will be rendered in the actual post)</div>');
+            
+            // Toggle preview visibility
+            if (previewContainer.style.display === 'none' || previewContainer.style.display === '') {
+                previewContainer.style.display = 'block';
+                previewButton.innerHTML = '<i class="fas fa-eye-slash"></i> Hide Preview';
+            } else {
+                previewContainer.style.display = 'none';
+                previewButton.innerHTML = '<i class="fas fa-eye"></i> Preview';
+            }
+        });
+    }
 });
 </script>
 {% endblock %}
