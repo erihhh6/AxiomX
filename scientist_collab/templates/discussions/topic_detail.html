@@ -1,4 +1,5 @@
 {% extends 'base/base.html' %}
+{% load static %}
 
 {% block title %}{{ topic.title }} - Scientists Collaboration Platform{% endblock %}
 
@@ -225,47 +226,80 @@
 {% endblock %}
 
 {% block extra_js %}
-<!-- Visualizer scripts with improved loading order and cache busting -->
-<script src="/static/js/visualizers/fallback_visualizer.js?v={{ now.timestamp }}"></script>
-<script src="/static/js/visualizers/waves/wave_simulator.js?v={{ now.timestamp }}"></script>
-<script src="/static/js/visualizers/dna/dna_visualizer.js?v={{ now.timestamp }}"></script>
-<script src="/static/js/visualizers/simplified_post_parser.js?v={{ now.timestamp }}"></script>
+<!-- Load all visualizer scripts -->
+<script src="{% static 'js/visualizers/simplified_post_parser.js' %}?v={{ now.timestamp }}"></script>
+<script src="{% static 'js/visualizers/fallback_visualizer.js' %}?v={{ now.timestamp }}"></script>
+<script src="{% static 'js/visualizers/dna/dna_visualizer.js' %}?v={{ now.timestamp }}"></script>
+<script src="{% static 'js/visualizers/waves/fallback_wave.js' %}?v={{ now.timestamp }}"></script>
+<script src="{% static 'js/visualizers/waves/wave_3d.js' %}?v={{ now.timestamp }}"></script>
+<script src="{% static 'js/visualizers/datastructures/data_structure_visualizer.js' %}?v={{ now.timestamp }}"></script>
 
 <script>
-// Add timestamp to force reload
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('Loading DNA visualizer with timestamp to avoid cache');
-    // Force reload scripts if needed
-    function forceReload(scriptSrc) {
-        const oldScript = document.querySelector(`script[src^="${scriptSrc}"]`);
-        if (oldScript) {
-            const newScript = document.createElement('script');
-            newScript.src = scriptSrc + '?v=' + new Date().getTime();
-            oldScript.parentNode.replaceChild(newScript, oldScript);
-            console.log('Reloaded:', scriptSrc);
-        }
-    }
-    
-    // Force reload DNA visualizer if it's on the page
-    forceReload('/static/js/visualizers/dna/dna_visualizer.js');
-    
-    // The rest of the existing script remains the same
-    // Setup CSRF token for AJAX requests
-    function getCookie(name) {
-        let cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-            const cookies = document.cookie.split(';');
-            for (let i = 0; i < cookies.length; i++) {
-                const cookie = cookies[i].trim();
-                if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
+    // Force wave visualizer initialization after page load
+    window.addEventListener('load', function() {
+        setTimeout(function() {
+            console.log("Initializing visualizers from template");
+            // Try 3D first, then fallback if needed
+            if (typeof window.initAllWave3DVisualizers === 'function') {
+                window.initAllWave3DVisualizers();
+            } else if (typeof window.initAllWaveVisualizers === 'function') {
+                window.initAllWaveVisualizers();
+            }
+            
+            // Force any remaining uninitialized containers
+            document.querySelectorAll('.visualizer-container').forEach(function(container) {
+                if (container.innerHTML.includes('Loading')) {
+                    console.log('Found uninitialized container:', container.id);
+                    // Reset it
+                    container.innerHTML = '';
+                    
+                    // Identify type
+                    const type = container.getAttribute('data-visualizer-type');
+                    if (type === 'wave-visualizer' || type === 'wave-simulator') {
+                        if (typeof window.createSimpleWaveVisualizer === 'function') {
+                            window.createSimpleWaveVisualizer(container);
+                        }
+                    } else if (type === 'data-structure') {
+                        if (typeof initDataStructureVisualizer === 'function') {
+                            // Pass the container directly
+                            const configStr = container.getAttribute('data-visualizer-config') || '{}';
+                            let configObj = {};
+                            try {
+                                configObj = JSON.parse(configStr);
+                            } catch (e) {
+                                console.error('Error parsing config:', e);
+                            }
+                            
+                            initDataStructureVisualizer(container, {
+                                type: configObj.structureType || 'tree'
+                            });
+                        }
+                    }
                 }
+            });
+        }, 1000);
+    });
+</script>
+
+<!-- Other page functionality -->
+<script>
+// Setup CSRF token for AJAX requests
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
             }
         }
-        return cookieValue;
     }
-    
+    return cookieValue;
+}
+
+document.addEventListener('DOMContentLoaded', function() {
     const csrftoken = getCookie('csrftoken');
     
     $.ajaxSetup({

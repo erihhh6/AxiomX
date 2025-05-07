@@ -283,7 +283,7 @@ def followers_list(request):
     
     context = {
         'title': 'My Followers',
-        'users': followers,
+        'followers': followers,
     }
     
     return render(request, 'accounts/followers.html', context)

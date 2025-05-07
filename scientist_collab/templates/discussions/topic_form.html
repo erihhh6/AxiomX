@@ -1,4 +1,5 @@
 {% extends 'base/base.html' %}
+{% load static %}
 
 {% block title %}{% if form.instance.pk %}Edit Topic{% else %}Create New Topic{% endif %} - Scientists Collaboration Platform{% endblock %}
 
@@ -110,54 +111,45 @@
 {% endblock %}
 
 {% block extra_js %}
-<!-- Load visualizer scripts with fixed absolute paths and cache busting -->
-<script src="/static/js/visualizers/fallback_visualizer.js?v={{ now.timestamp }}"></script>
-<script src="/static/js/visualizers/waves/wave_simulator.js?v={{ now.timestamp }}"></script>
-<script src="/static/js/visualizers/dna/dna_visualizer.js?v={{ now.timestamp }}"></script>
-<script src="/static/js/visualizers/simplified_post_parser.js?v={{ now.timestamp }}"></script>
+<!-- Load all visualizer scripts -->
+<script src="{% static 'js/visualizers/simplified_post_parser.js' %}?v={{ now.timestamp }}"></script>
+<script src="{% static 'js/visualizers/fallback_visualizer.js' %}?v={{ now.timestamp }}"></script>
+<script src="{% static 'js/visualizers/dna/dna_visualizer.js' %}?v={{ now.timestamp }}"></script>
+<script src="{% static 'js/visualizers/waves/fallback_wave.js' %}?v={{ now.timestamp }}"></script>
+<script src="{% static 'js/visualizers/waves/wave_3d.js' %}?v={{ now.timestamp }}"></script>
+<script src="{% static 'js/visualizers/datastructures/data_structure_visualizer.js' %}?v={{ now.timestamp }}"></script>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('Topic form loaded, ensuring DNA visualizer is up to date');
-    
-    // Force reload scripts if needed
-    function forceReload(scriptSrc) {
-        const oldScript = document.querySelector(`script[src^="${scriptSrc}"]`);
-        if (oldScript) {
-            const newScript = document.createElement('script');
-            newScript.src = scriptSrc + '?v=' + new Date().getTime();
-            oldScript.parentNode.replaceChild(newScript, oldScript);
-            console.log('Reloaded:', scriptSrc);
-        }
-    }
-    
-    // Force reload DNA visualizer
-    forceReload('/static/js/visualizers/dna/dna_visualizer.js');
-    
-    const contentTextarea = document.querySelector('textarea[name="content"]');
-    const previewContainer = document.getElementById('content-preview');
-    const previewContent = document.querySelector('.preview-content');
-    const previewButton = document.querySelector('.preview-button');
-    
-    if (contentTextarea && previewContainer && previewContent && previewButton) {
-        previewButton.addEventListener('click', function() {
-            // Display content with line breaks
-            previewContent.innerHTML = contentTextarea.value
-                .replace(/\n/g, '<br>')
-                .replace(/\[wave\](.*?)\[\/wave\]/gs, '<div class="alert alert-info">Wave Simulator (will be rendered in the actual post)</div>')
-                .replace(/\[dna.*?\](.*?)\[\/dna\]/gs, '<div class="alert alert-info">DNA/RNA Visualizer (will be rendered in the actual post)</div>')
-                .replace(/\[datastructure.*?\](.*?)\[\/datastructure\]/gs, '<div class="alert alert-info">Data Structure Visualizer (will be rendered in the actual post)</div>');
-            
-            // Toggle preview visibility
-            if (previewContainer.style.display === 'none' || previewContainer.style.display === '') {
-                previewContainer.style.display = 'block';
-                previewButton.innerHTML = '<i class="fas fa-eye-slash"></i> Hide Preview';
-            } else {
-                previewContainer.style.display = 'none';
-                previewButton.innerHTML = '<i class="fas fa-eye"></i> Preview';
+    // Initialize visualizers after content changes
+    function initVisualizers() {
+        setTimeout(function() {
+            console.log("Initializing visualizers from form");
+            // Try 3D first, then fallback
+            if (typeof window.initAllWave3DVisualizers === 'function') {
+                window.initAllWave3DVisualizers();
+            } else if (typeof window.initAllWaveVisualizers === 'function') {
+                window.initAllWaveVisualizers();
             }
-        });
+        }, 500);
     }
-});
+
+    // Monitor preview area for changes
+    document.addEventListener('DOMContentLoaded', function() {
+        const previewArea = document.getElementById('preview-area');
+        if (previewArea) {
+            const observer = new MutationObserver(function(mutations) {
+                initVisualizers();
+            });
+            
+            observer.observe(previewArea, {
+                childList: true,
+                subtree: true,
+                characterData: true
+            });
+        }
+        
+        // Initialize on page load too
+        window.addEventListener('load', initVisualizers);
+    });
 </script>
 {% endblock %}
