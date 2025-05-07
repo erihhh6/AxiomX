@@ -1,21 +1,48 @@
-# AxiomX - Scientists Collaboration Platform
+# AxiomX - Scientific Collaboration Platform
 
-A web platform for scientists to share research, upload publications, and collaborate through forum discussions.
+A comprehensive web platform for scientists to share research, publish papers, and collaborate through structured discussions and forums.
 
 ## Features
 
-- **User Authentication**: Register, login, profile management
-- **Publication Sharing**: Upload and download PDF publications with metadata
+- **User Authentication**: Secure registration, login, and profile management
+- **Publication Sharing**: Upload and download scientific publications with metadata
 - **Discussion Forums**: Create topics and participate in scientific discussions
 - **Responsive Design**: Built with Bootstrap 5 for a clean, modern interface
+- **Badge System**: Gamification elements to reward user participation
+- **Theme Toggle**: Support for both light and dark modes
+- **Enhanced Security**: Comprehensive security measures to protect sensitive scientific data
 
 ## Technology Stack
 
-- **Backend**: Django 5.1
-- **Database**: MySQL
+- **Backend**: Django 5.1.7
+- **Database**: MySQL with PyMySQL connector
 - **Frontend**: HTML, CSS, JavaScript, Bootstrap 5
-- **File Storage**: Local file system (with easy migration to Azure Blob Storage)
+- **Security Features**:
+  - Custom Content Security Policy implementation
+  - Protection against brute force attacks (django-axes)
+  - Secure password hashing (Argon2)
+  - CSRF protection
+  - Security headers middleware
+- **File Storage**: Local file system (with migration path to cloud storage)
 - **Deployment**: Prepared for Docker and Azure deployment
+
+## Security Features
+
+AxiomX implements multiple layers of security:
+
+- **Content Security Policy (CSP)**: Custom middleware that adapts to the environment:
+  - Development mode: Permissive settings to facilitate development
+  - Production mode: Strict security settings to protect users
+- **Brute Force Protection**: Limits login attempts and implements account lockout
+- **Password Security**: Uses Argon2 (state-of-the-art hashing algorithm)
+- **HTTPS Enforcement**: Automatic HTTPS redirection in production
+- **Security Headers**: Implements recommended security headers:
+  - X-Content-Type-Options
+  - X-Frame-Options
+  - X-XSS-Protection
+  - Permissions-Policy
+  - Cross-Origin-Embedder-Policy
+  - Cross-Origin-Opener-Policy
 
 ## Setup Instructions
 
@@ -85,7 +112,46 @@ python manage.py runserver
 
 Access the site at http://localhost:8000
 
+## Security Testing
+
+AxiomX includes a comprehensive security testing script that checks:
+
+- Content Security Policy implementation
+- Security headers configuration
+- CSRF protection
+- Brute force attack protection
+
+### Running Security Tests
+
+```bash
+python security_test.py
+```
+
+For detailed security testing options:
+
+```bash
+python security_test.py --help
+```
+
+See the `SECURITY_TESTING.md` file for a complete guide to security testing.
+
 ## Preparing for Production
+
+### Environment Configuration for Production
+
+When deploying to production, set these environment variables:
+
+```
+DEBUG=False
+SECRET_KEY=your_secure_random_key
+ALLOWED_HOSTS=yourdomain.com,www.yourdomain.com
+```
+
+This will automatically enable:
+- Strict CSP settings
+- HTTPS redirection
+- HTTP Strict Transport Security
+- Secure cookie settings
 
 ### For Docker Deployment
 
@@ -96,7 +162,7 @@ docker build -t scientist-collab .
 
 2. Run the container:
 ```bash
-docker run -p 8000:8000 scientist-collab
+docker run -p 8000:8000 -e DEBUG=False -e SECRET_KEY=your_secure_key scientist-collab
 ```
 
 ### For Azure Deployment
@@ -106,17 +172,12 @@ docker run -p 8000:8000 scientist-collab
 3. Update environment variables
 4. Deploy using GitHub Actions or Azure DevOps
 
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
 ## Badge System Installation
 
-We've implemented a badge system that rewards users for their activity on the platform. Here's how to set it up:
+We've implemented a badge system that rewards users for their activity on the platform:
 
-1. Apply database migrations to create the badge tables:
+1. Apply database migrations:
    ```
-   python manage.py makemigrations
    python manage.py migrate
    ```
 
@@ -134,7 +195,7 @@ We've implemented a badge system that rewards users for their activity on the pl
 
 The system comes with the following pre-configured badges:
 
-1. **Publication Master** - Published at least 5 scientific publications on the platform
+1. **Publication Master** - Published at least 5 scientific publications
 2. **Liked Author** - Received at least 10 likes on your publications
 3. **Favorite Creator** - Your publications were added to favorites 5 times
 4. **Active Replier** - Posted at least 15 replies in forum discussions
@@ -142,18 +203,9 @@ The system comes with the following pre-configured badges:
 6. **Complete Profile** - Filled out all profile information fields
 7. **Diverse Scientist** - Participated in discussions across all forums
 
-## Badge System Features
+## Theme Toggle
 
-- Users can see their badge progress on their profile page
-- Badge progress is updated when users perform relevant actions
-- Users can "equip" a badge to display it prominently on their profile
-- Each badge shows progress toward completion (e.g., "40% - Need 3 more likes")
-- Badges appear grayed out until earned
-
-## Theme Toggle Guide
-
-The platform supports both light and dark modes. The toggle switch is in the navbar.
-To style new components for dark mode, add CSS rules in this format:
+The platform supports both light and dark modes. To style new components:
 
 ```css
 body[data-theme="dark"] .your-component,
@@ -161,4 +213,17 @@ html[data-theme="dark"] .your-component {
     background-color: #1e1e1e;
     color: #e9ecef;
 }
-``` 
+```
+
+## Visualizers
+
+AxiomX includes interactive data visualizers for scientific data:
+- Wave simulators
+- 3D data structure visualizers
+- Custom visualization components
+
+These components facilitate better understanding of complex scientific concepts through interactive visual representations.
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details. 

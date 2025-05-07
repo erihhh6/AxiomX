@@ -17,6 +17,9 @@ from notifications.models import Notification
 from publications.models import Publication
 from discussions.models import Topic
 
+# Import custom utils
+from .utils import log_security_event, require_secure_transport
+
 User = get_user_model()
 
 # Create your views here.
@@ -24,6 +27,42 @@ User = get_user_model()
 class CustomLoginView(LoginView):
     template_name = 'accounts/login.html'
     redirect_authenticated_user = True
+    
+    def form_valid(self, form):
+        """Log successful login attempts"""
+        import logging
+        logger = logging.getLogger('django.security')
+        user = form.get_user()
+        
+        # Log successful login
+        logger.info(
+            f"Successful login for user '{user.username}' from IP {self.request.META.get('REMOTE_ADDR')}"
+        )
+        
+        # Update last login time (already handled by Django's AuthenticationForm)
+        
+        # Add success message
+        messages.success(self.request, f'Welcome back, {user.get_full_name() or user.username}!')
+        
+        # Generate a new session key on login for security
+        self.request.session.create()
+        
+        return super().form_valid(form)
+    
+    def form_invalid(self, form):
+        """Log failed login attempts"""
+        import logging
+        logger = logging.getLogger('django.security')
+        
+        # Get attempted username
+        username = form.cleaned_data.get('username', 'unknown')
+        
+        # Log failed login attempt
+        logger.warning(
+            f"Failed login attempt for username '{username}' from IP {self.request.META.get('REMOTE_ADDR')}"
+        )
+        
+        return super().form_invalid(form)
 
 class RegisterView(CreateView):
     form_class = UserRegisterForm
@@ -42,9 +81,29 @@ class RegisterView(CreateView):
 
 @login_required
 def logout_view(request):
-    """Simple logout view that works with both GET and POST requests"""
+    """Enhanced logout view with security measures"""
+    import logging
+    logger = logging.getLogger('django.security')
+    
+    # Log logout action
+    if request.user.is_authenticated:
+        username = request.user.username
+        logger.info(f"User '{username}' logged out from IP {request.META.get('REMOTE_ADDR')}")
+    
+    # Get session key before logout to invalidate it properly
+    session_key = request.session.session_key
+    
+    # Perform logout
     logout(request)
+    
+    # Clear any session cookies by setting expiry to past
+    if session_key:
+        request.session.flush()
+        
+    # Add success message
     messages.success(request, 'You have been logged out successfully.')
+    
+    # Redirect to home page
     return redirect('home')
     
 class CustomPasswordChangeView(PasswordChangeView):
@@ -59,23 +118,80 @@ class CustomPasswordResetView(PasswordResetView):
     template_name = 'accounts/password_reset.html'
     email_template_name = 'accounts/password_reset_email.html'
     success_url = reverse_lazy('accounts:password_reset_done')
+    
+    @require_secure_transport
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
+    
+    def form_valid(self, form):
+        """Log password reset request"""
+        email = form.cleaned_data.get('email', '')
+        log_security_event(
+            'password_reset_request',
+            user=email,
+            request=self.request,
+            details={'email': email}
+        )
+        return super().form_valid(form)
 
 class CustomPasswordResetDoneView(PasswordResetDoneView):
     template_name = 'accounts/password_reset_done.html'
+    
+    @require_secure_transport
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
 
 class CustomPasswordResetConfirmView(PasswordResetConfirmView):
     template_name = 'accounts/password_reset_confirm.html'
     success_url = reverse_lazy('accounts:password_reset_complete')
+    
+    @require_secure_transport
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
+    
+    def form_valid(self, form):
+        """Log successful password reset"""
+        user = form.user
+        log_security_event(
+            'password_reset_success',
+            user=user,
+            request=self.request
+        )
+        
+        # Invalidate all sessions for this user for security
+        from django.contrib.sessions.models import Session
+        from django.utils import timezone
+        
+        for session in Session.objects.filter(expire_date__gt=timezone.now()):
+            session_data = session.get_decoded()
+            if session_data.get('_auth_user_id') == str(user.id):
+                session.delete()
+        
+        # Continue with default behavior
+        return super().form_valid(form)
 
 class CustomPasswordResetCompleteView(PasswordResetCompleteView):
     template_name = 'accounts/password_reset_complete.html'
+    
+    @require_secure_transport
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
 
 @login_required
+@require_secure_transport
 def profile(request):
     # Profil utilizator actual cu statistici de follow
     user_profile = request.user.profile
     followers_count = user_profile.followers.count()
     following_count = user_profile.following.count()
+    
+    # Log profile access
+    log_security_event(
+        'profile_access',
+        user=request.user,
+        request=request,
+        details={'access_type': 'self'}
+    )
     
     if request.method == 'POST':
         user_form = UserUpdateForm(request.POST, instance=request.user)
@@ -84,6 +200,14 @@ def profile(request):
         if user_form.is_valid() and profile_form.is_valid():
             user_form.save()
             profile_form.save()
+            
+            # Log profile update
+            log_security_event(
+                'profile_update',
+                user=request.user,
+                request=request
+            )
+            
             messages.success(request, 'Your profile has been updated!')
             return redirect('accounts:profile')
     else:
@@ -117,6 +241,7 @@ def profile(request):
     return render(request, 'accounts/profile.html', context)
 
 @login_required
+@require_secure_transport
 def edit_profile(request):
     if request.method == 'POST':
         user_form = UserUpdateForm(request.POST, instance=request.user)
@@ -125,6 +250,14 @@ def edit_profile(request):
         if user_form.is_valid() and profile_form.is_valid():
             user_form.save()
             profile_form.save()
+            
+            # Log edit profile
+            log_security_event(
+                'profile_edit',
+                user=request.user,
+                request=request
+            )
+            
             messages.success(request, 'Your profile has been updated!')
             return redirect('accounts:profile')
     else:

@@ -1,4 +1,16 @@
 Django==5.1.7
-PyMySQL==1.1.0
-Pillow==10.4.0
+pymysql==1.1.0
 python-dotenv==1.0.1
+Pillow==11.2.1
+
+# Security packages
+django-axes==6.4.0  # Advanced login security and rate limiting
+argon2-cffi==23.1.0  # Secure password hashing
+cryptography==42.0.8  # Modern cryptographic functions
+django-csp==4.0  # Content Security Policy implementation
+bcrypt==4.1.2  # Secure password storage
+
+# Optional packages
+python-magic==0.4.27  # For secure file upload validation
+secure==0.3.0  # Security headers utility
+pyjwt==2.8.0  # For secure tokens

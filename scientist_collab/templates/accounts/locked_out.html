@@ -1,0 +1,60 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Account Locked | {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-danger text-white">
+                    <h3 class="mb-0 text-center">
+                        <i class="fas fa-lock me-2"></i> Account Temporarily Locked
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning">
+                        <h5><i class="fas fa-exclamation-triangle me-2"></i> Too Many Failed Login Attempts</h5>
+                        <p>Your account has been temporarily locked due to too many failed login attempts.</p>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="text-center mb-4">
+                        <img src="{% static 'img/locked.svg' %}" alt="Account Locked" class="img-fluid mb-3" style="max-width: 200px;">
+                        <h4>For security reasons, your account has been temporarily locked</h4>
+                        <p class="text-muted">This is a security measure to protect your account from unauthorized access attempts.</p>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <h6><i class="fas fa-info-circle me-2"></i> What should I do?</h6>
+                        <ul>
+                            <li>Wait for {{ cooloff_time }} hour(s) before trying again</li>
+                            <li>Use the password reset link below if you've forgotten your password</li>
+                            <li>Contact support if you believe this is an error</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="d-grid gap-2 mt-4">
+                        <a href="{% url 'accounts:password_reset' %}" class="btn btn-primary">
+                            <i class="fas fa-key me-2"></i> Reset Your Password
+                        </a>
+                        <a href="{% url 'home' %}" class="btn btn-secondary">
+                            <i class="fas fa-home me-2"></i> Return to Homepage
+                        </a>
+                    </div>
+                </div>
+                <div class="card-footer bg-light">
+                    <p class="text-center mb-0">
+                        <small class="text-muted">
+                            If you continue to experience issues, please contact 
+                            <a href="mailto:support@axiomx.com">support@axiomx.com</a>
+                        </small>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

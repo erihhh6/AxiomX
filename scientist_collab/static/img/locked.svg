@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="200" height="200">
+  <!-- Background Circle -->
+  <circle cx="256" cy="256" r="230" fill="#f8f9fa" stroke="#dc3545" stroke-width="8"/>
+  
+  <!-- Lock Body -->
+  <rect x="156" y="210" width="200" height="170" rx="20" ry="20" fill="#dc3545"/>
+  
+  <!-- Lock Shackle -->
+  <path d="M336,210 L336,150 C336,94 304,50 256,50 C208,50 176,94 176,150 L176,210" 
+        fill="none" stroke="#dc3545" stroke-width="30" stroke-linecap="round"/>
+  
+  <!-- Keyhole -->
+  <circle cx="256" cy="270" r="25" fill="#f8f9fa"/>
+  <rect x="248" y="270" width="16" height="50" rx="8" ry="8" fill="#f8f9fa"/>
+  
+  <!-- Warning Exclamation Mark -->
+  <circle cx="380" cy="140" r="50" fill="#ffc107"/>
+  <text x="380" y="165" font-family="Arial" font-size="60" font-weight="bold" text-anchor="middle" fill="#212529">!</text>
+</svg> 
