@@ -55,3 +55,41 @@ WARNING 2025-05-07 19:03:19,953 database 6452 10524 AXES: Locking out {username:
 WARNING 2025-05-07 19:03:19,954 views 6452 10524 Failed login attempt for username 'eric' from IP 127.0.0.1
 INFO 2025-05-07 19:04:16,503 views 2280 13424 Successful login for user 'eric' from IP 127.0.0.1
 INFO 2025-05-07 19:17:12,302 views 2280 13424 User 'eric' logged out from IP 127.0.0.1
+INFO 2025-05-07 20:56:20,692 views 14324 14604 Successful login for user 'eric' from IP 127.0.0.1
+INFO 2025-05-07 20:56:25,811 utils 14324 17364 SECURITY EVENT: {'event_type': 'profile_access', 'username': 'eric', 'ip': '127.0.0.*', 'access_type': 'self'}
+INFO 2025-05-07 20:56:29,090 utils 14324 16124 SECURITY EVENT: {'event_type': 'profile_access', 'username': 'eric', 'ip': '127.0.0.*', 'access_type': 'self'}
+INFO 2025-05-07 20:56:30,876 utils 14324 14604 SECURITY EVENT: {'event_type': 'profile_access', 'username': 'eric', 'ip': '127.0.0.*', 'access_type': 'self'}
+INFO 2025-05-07 20:57:04,251 views 14324 7252 User 'eric' logged out from IP 127.0.0.1
+INFO 2025-05-07 20:59:31,332 utils 14324 14604 SECURITY EVENT: {'event_type': 'password_reset_request', 'username': 'opreaeric10@gmail.com', 'ip': '127.0.0.*', 'email': 'opreaeric10@gmail.com'}
+INFO 2025-05-07 21:16:30,708 utils 11440 2424 SECURITY EVENT: {'event_type': 'password_reset_request', 'username': 'x@c.com', 'ip': '127.0.0.*', 'email': 'x@c.com'}
+INFO 2025-05-07 21:18:53,252 views 9756 8608 Successful login for user 'eric' from IP 127.0.0.1
+INFO 2025-05-07 21:19:31,171 utils 9756 6184 SECURITY EVENT: {'event_type': 'profile_access', 'username': 'eric', 'ip': '127.0.0.*', 'access_type': 'self'}
+INFO 2025-05-07 21:20:01,716 utils 9756 6184 SECURITY EVENT: {'event_type': 'profile_access', 'username': 'eric', 'ip': '127.0.0.*', 'access_type': 'self'}
+INFO 2025-05-07 21:20:05,739 views 9756 6368 User 'eric' logged out from IP 127.0.0.1
+INFO 2025-05-07 21:20:18,433 views 9756 14880 Successful login for user 'eric' from IP 127.0.0.1
+INFO 2025-05-07 21:20:22,780 utils 9756 14880 SECURITY EVENT: {'event_type': 'profile_access', 'username': 'eric', 'ip': '127.0.0.*', 'access_type': 'self'}
+INFO 2025-05-07 21:41:09,318 views 9756 14880 User 'eric' logged out from IP 127.0.0.1
+WARNING 2025-05-07 21:41:44,579 database 9756 14880 AXES: New login failure by {username: "********************", ip_address: "********************", user_agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36", path_info: "/accounts/login/"}. Created new record in the database.
+WARNING 2025-05-07 21:41:44,588 views 9756 14880 Failed login attempt for username '' or 1=1 --' from IP 127.0.0.1
+WARNING 2025-05-07 21:41:51,434 database 9756 14880 AXES: New login failure by {username: "********************", ip_address: "********************", user_agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36", path_info: "/accounts/login/"}. Created new record in the database.
+WARNING 2025-05-07 21:41:51,439 views 9756 14880 Failed login attempt for username 'eric' from IP 127.0.0.1
+INFO 2025-05-07 21:41:59,371 views 9756 3976 Successful login for user 'eric' from IP 127.0.0.1
+INFO 2025-05-07 21:46:59,816 views 15276 8276 Successful login for user 'testuser' from IP 127.0.0.1
+INFO 2025-05-07 21:52:06,201 utils 1268 9484 SECURITY EVENT: {'event_type': 'insecure_access_attempt', 'username': 'testuser', 'ip': '127.0.0.*', 'path': '/accounts/profile/'}
+INFO 2025-05-07 21:52:06,552 utils 1268 9484 SECURITY EVENT: {'event_type': 'insecure_access_attempt', 'username': 'testuser', 'ip': '127.0.0.*', 'path': '/accounts/profile/'}
+INFO 2025-05-07 21:53:46,397 utils 1868 8768 SECURITY EVENT: {'event_type': 'insecure_access_attempt', 'username': 'testuser', 'ip': '127.0.0.*', 'path': '/accounts/profile/'}
+INFO 2025-05-07 21:53:46,682 utils 1868 8768 SECURITY EVENT: {'event_type': 'insecure_access_attempt', 'username': 'testuser', 'ip': '127.0.0.*', 'path': '/accounts/profile/'}
+INFO 2025-05-07 21:55:28,605 utils 1788 11168 SECURITY EVENT: {'event_type': 'insecure_access_attempt', 'username': 'testuser', 'ip': '127.0.0.*', 'path': '/accounts/profile/'}
+INFO 2025-05-07 21:55:28,889 utils 1788 11168 SECURITY EVENT: {'event_type': 'insecure_access_attempt', 'username': 'testuser', 'ip': '127.0.0.*', 'path': '/accounts/profile/'}
+INFO 2025-05-07 21:55:46,936 utils 8060 16848 SECURITY EVENT: {'event_type': 'insecure_access_attempt', 'username': 'testuser', 'ip': '127.0.0.*', 'path': '/accounts/profile/'}
+INFO 2025-05-07 21:55:47,284 utils 8060 16848 SECURITY EVENT: {'event_type': 'insecure_access_attempt', 'username': 'testuser', 'ip': '127.0.0.*', 'path': '/accounts/profile/'}
+INFO 2025-05-07 21:56:54,443 utils 7768 5688 SECURITY EVENT: {'event_type': 'profile_access', 'username': 'testuser', 'ip': '127.0.0.*', 'access_type': 'self'}
+INFO 2025-05-07 21:56:54,792 utils 7768 5688 SECURITY EVENT: {'event_type': 'profile_access', 'username': 'testuser', 'ip': '127.0.0.*', 'access_type': 'self'}
+INFO 2025-05-07 21:57:21,520 utils 16536 16644 SECURITY EVENT: {'event_type': 'profile_access', 'username': 'testuser', 'ip': '127.0.0.*', 'access_type': 'self'}
+INFO 2025-05-07 21:57:21,795 utils 16536 16644 SECURITY EVENT: {'event_type': 'profile_access', 'username': 'testuser', 'ip': '127.0.0.*', 'access_type': 'self'}
+INFO 2025-05-07 22:04:34,405 utils 17180 7752 SECURITY EVENT: {'event_type': 'profile_access', 'username': 'eric', 'ip': '127.0.0.*', 'access_type': 'self'}
+INFO 2025-05-07 22:04:45,119 utils 17180 7752 SECURITY EVENT: {'event_type': 'profile_access', 'username': 'eric', 'ip': '127.0.0.*', 'access_type': 'self'}
+INFO 2025-05-07 22:04:45,878 utils 17180 4772 SECURITY EVENT: {'event_type': 'profile_access', 'username': 'eric', 'ip': '127.0.0.*', 'access_type': 'self'}
+INFO 2025-05-07 22:04:46,837 utils 17180 12568 SECURITY EVENT: {'event_type': 'profile_access', 'username': 'eric', 'ip': '127.0.0.*', 'access_type': 'self'}
+INFO 2025-05-07 22:04:50,661 utils 17180 12568 SECURITY EVENT: {'event_type': 'profile_access', 'username': 'eric', 'ip': '127.0.0.*', 'access_type': 'self'}
+INFO 2025-05-08 21:33:43,347 views 9988 14836 Successful login for user 'eric' from IP 127.0.0.1

@@ -101,17 +101,25 @@ if not DEBUG:
     CSRF_COOKIE_HTTPONLY = True
 
 # Django-axes configuration for rate limiting
-AXES_FAILURE_LIMIT = 5  # Number of login attempts before lockout
-AXES_COOLOFF_TIME = 1  # Lockout time in hours
-AXES_LOCKOUT_TEMPLATE = 'accounts/locked_out.html'  # Template to show when locked out
-AXES_RESET_ON_SUCCESS = True  # Reset failed login attempts after successful login
-AXES_LOCKOUT_BY_COMBINATION_USER_AND_IP = True  # Lock out based on both username and IP
+AXES_ENABLED = os.getenv('AXES_ENABLED', 'True').lower() != 'false'
 
-# Use Axes as authentication backend
-AUTHENTICATION_BACKENDS = [
-    'axes.backends.AxesBackend',
-    'django.contrib.auth.backends.ModelBackend',
-]
+if AXES_ENABLED:
+    AXES_FAILURE_LIMIT = 5  # Number of login attempts before lockout
+    AXES_COOLOFF_TIME = 1  # Lockout time in hours
+    AXES_LOCKOUT_TEMPLATE = 'accounts/locked_out.html'  # Template to show when locked out
+    AXES_RESET_ON_SUCCESS = True  # Reset failed login attempts after successful login
+    AXES_LOCKOUT_BY_COMBINATION_USER_AND_IP = True  # Lock out based on both username and IP
+
+    # Use Axes as authentication backend
+    AUTHENTICATION_BACKENDS = [
+        'axes.backends.AxesBackend',
+        'django.contrib.auth.backends.ModelBackend',
+    ]
+else:
+    # Default authentication backend when axes is disabled
+    AUTHENTICATION_BACKENDS = [
+        'django.contrib.auth.backends.ModelBackend',
+    ]
 
 # Session settings
 SESSION_COOKIE_AGE = 3600  # Session expires after 1 hour of inactivity
@@ -143,21 +151,35 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': os.getenv('DB_NAME', 'scientist_collab'),
-        'USER': os.getenv('DB_USER', 'root'),
-        'PASSWORD': os.getenv('DB_PASSWORD', ''),
-        'HOST': os.getenv('DB_HOST', 'localhost'),
-        'PORT': os.getenv('DB_PORT', '3307'),
-        # Adăugăm configurări de securitate pentru baza de date
-        'OPTIONS': {
-            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
-            'ssl': not DEBUG,  # Activează SSL pentru conexiunea la bază de date în producție
-        },
+# Check if we're running tests and using test database settings
+TEST_DB_ENGINE = os.getenv('DJANGO_TEST_DB_ENGINE')
+TEST_DB_NAME = os.getenv('DJANGO_TEST_DB_NAME')
+
+if TEST_DB_ENGINE and TEST_DB_NAME:
+    # Use test database configuration
+    DATABASES = {
+        'default': {
+            'ENGINE': TEST_DB_ENGINE,
+            'NAME': TEST_DB_NAME,
+        }
     }
-}
+else:
+    # Use regular database configuration
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.mysql',
+            'NAME': os.getenv('DB_NAME', 'scientist_collab'),
+            'USER': os.getenv('DB_USER', 'root'),
+            'PASSWORD': os.getenv('DB_PASSWORD', ''),
+            'HOST': os.getenv('DB_HOST', 'localhost'),
+            'PORT': os.getenv('DB_PORT', '3307'),
+            # Adăugăm configurări de securitate pentru baza de date
+            'OPTIONS': {
+                'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+                'ssl': not DEBUG,  # Activează SSL pentru conexiunea la bază de date în producție
+            },
+        }
+    }
 
 
 # Password validation
