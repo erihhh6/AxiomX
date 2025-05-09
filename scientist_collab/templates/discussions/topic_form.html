@@ -83,7 +83,9 @@
                         <p><strong>Add interactive visualizations:</strong></p>
                         <ul class="mb-0">
                             <li><code>[wave]...[/wave]</code> - Add wave/oscillation simulator for physical energy analysis</li>
-                            <li><code>[dna sequence="ATGC..."]...[/dna]</code> - Add DNA/RNA visualizer for molecular energy analysis</li>
+                            <li><code>[dna sequence="CCCCHHHHOOOO" chainType="biofuel" energyEfficiency="0.85"]...[/dna]</code> - Add molecular energy chain visualizer</li>
+                            <li>Supported chain types: <code>hydrocarbon</code>, <code>biofuel</code>, <code>polymer</code></li>
+                            <li>Supported atoms: C (Carbon), H (Hydrogen), O (Oxygen), N (Nitrogen), etc.</li>
                         </ul>
                     </div>
                     
@@ -128,6 +130,22 @@
                 window.initAllWave3DVisualizers();
             } else if (typeof window.initAllWaveVisualizers === 'function') {
                 window.initAllWaveVisualizers();
+            }
+            
+            // Initialize molecular chain visualizers if any exist
+            if (typeof window.initMolecularEnergyChainVisualizer === 'function') {
+                const molContainers = document.querySelectorAll('.visualizer-container[data-visualizer-type="molecular-energy-chain"]');
+                console.log("Found molecular chain containers:", molContainers.length);
+                molContainers.forEach(container => {
+                    const id = container.id;
+                    const configStr = container.getAttribute('data-visualizer-config') || '{}';
+                    try {
+                        const config = JSON.parse(configStr);
+                        window.initMolecularEnergyChainVisualizer(id, config);
+                    } catch (e) {
+                        console.error("Error initializing molecular chain:", e);
+                    }
+                });
             }
         }, 500);
     }

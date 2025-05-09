@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-Testing script for checking AxiomX security measures.
+Testing script for checking ElectraX security measures.
 Runs various tests to verify the functionality of security measures.
 """
 
@@ -378,8 +378,8 @@ def test_password_policy(base_url):
 
 def main():
     """Main function to run the tests"""
-    parser = argparse.ArgumentParser(description='AxiomX security testing script')
-    parser.add_argument('--url', default=DEFAULT_BASE_URL, help='Base URL of the AxiomX site')
+    parser = argparse.ArgumentParser(description='ElectraX security testing script')
+    parser.add_argument('--url', default=DEFAULT_BASE_URL, help='Base URL of the ElectraX site')
     parser.add_argument('--username', default=DEFAULT_USERNAME, help='Test username')
     parser.add_argument('--password', default=DEFAULT_PASSWORD, help='Test password')
     parser.add_argument('--email', default=DEFAULT_EMAIL, help='Test email')
@@ -387,7 +387,7 @@ def main():
     
     args = parser.parse_args()
     
-    print_header("AxiomX Security Test")
+    print_header("ElectraX Security Test")
     print_info(f"Testing against: {args.url}")
     
     # Results tracking
@@ -420,12 +420,12 @@ def main():
     
     if all_passed:
         print_header("All Security Tests Passed!")
-        print_success("Your AxiomX instance has passed all basic security checks.")
+        print_success("Your ElectraX instance has passed all basic security checks.")
         print_info("Note: These tests are not comprehensive. Regular security audits are recommended.")
         return 0
     else:
         print_header("Some Security Tests Failed")
-        print_fail("Your AxiomX instance failed some security checks. Please review the issues above.")
+        print_fail("Your ElectraX instance failed some security checks. Please review the issues above.")
         return 1
 
 if __name__ == "__main__":

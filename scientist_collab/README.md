@@ -1,4 +1,4 @@
-# AxiomX - Scientific Collaboration Platform
+# ElectraX - Scientific Collaboration Platform
 
 A comprehensive web platform for scientists to share research, publish papers, and collaborate through structured discussions and forums.
 
@@ -28,7 +28,7 @@ A comprehensive web platform for scientists to share research, publish papers, a
 
 ## Security Features
 
-AxiomX implements multiple layers of security:
+ElectraX implements multiple layers of security:
 
 - **Content Security Policy (CSP)**: Custom middleware that adapts to the environment:
   - Development mode: Permissive settings to facilitate development
@@ -114,7 +114,7 @@ Access the site at http://localhost:8000
 
 ## Security Testing
 
-AxiomX includes a comprehensive security testing script that checks:
+ElectraX includes a comprehensive security testing script that checks:
 
 - Content Security Policy implementation
 - Security headers configuration
@@ -217,7 +217,7 @@ html[data-theme="dark"] .your-component {
 
 ## Visualizers
 
-AxiomX includes interactive data visualizers for scientific data:
+ElectraX includes interactive data visualizers for scientific data:
 - Wave simulators
 - 3D data structure visualizers
 - Custom visualization components

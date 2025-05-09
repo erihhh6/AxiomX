@@ -1,5 +1,5 @@
 /**
- * AxiomX - Main JavaScript
+ * ElectraX - Main JavaScript
  */
 
 // Wait for the DOM to be fully loaded

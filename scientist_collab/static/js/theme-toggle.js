@@ -1,4 +1,4 @@
-// Theme toggle functionality for AxiomX - Scientists Collaboration Platform
+// Theme toggle functionality for ElectraX - Scientists Collaboration Platform
 
 document.addEventListener('DOMContentLoaded', function() {
     // Get the theme toggle button

@@ -1,6 +1,6 @@
 {% extends 'base/base.html' %}
 
-{% block title %}Home - AxiomX{% endblock %}
+{% block title %}Home - ElectraX{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="/static/css/home.css">
@@ -12,7 +12,7 @@
         width: 100%;
         height: 100vh;
         z-index: 10;
-        background-color: #000022;
+        background-color: #151530; /* Darker stormy blue background */
         transition: opacity 1s ease-in-out;
     }
     
@@ -29,6 +29,7 @@
         color: white;
         font-size: 24px;
         text-align: center;
+        text-shadow: 0 0 10px rgba(100, 150, 255, 0.7); /* Light blue glow for lightning effect */
     }
     
     #intro-skip {
@@ -36,19 +37,21 @@
         bottom: 30px;
         right: 30px;
         z-index: 20;
-        background: rgba(255, 255, 255, 0.3);
+        background: rgba(50, 80, 150, 0.3); /* Blueish background */
         color: white;
-        border: 2px solid white;
+        border: 2px solid rgba(160, 200, 255, 0.5); /* Electric blue border */
         padding: 10px 20px;
         border-radius: 5px;
         cursor: pointer;
         font-weight: bold;
         font-size: 16px;
-        transition: background-color 0.3s;
+        transition: all 0.3s;
+        box-shadow: 0 0 15px rgba(100, 150, 255, 0.3); /* Blue glow */
     }
     
     #intro-skip:hover {
-        background: rgba(255, 255, 255, 0.5);
+        background: rgba(80, 120, 200, 0.5); /* Brighter blue when hovering */
+        box-shadow: 0 0 20px rgba(100, 180, 255, 0.5); /* Enhanced glow on hover */
     }
     
     #intro-text {
@@ -57,10 +60,12 @@
         left: 30px;
         z-index: 20;
         color: white;
-        font-size: 18px;
-        font-weight: 300;
+        font-size: 28px;
+        font-weight: 400;
         opacity: 0;
         transition: opacity 0.5s ease-in-out;
+        text-shadow: 0 0 15px rgba(120, 180, 255, 0.9); /* Electric blue glow */
+        letter-spacing: 2px;
     }
     
     #main-content {
@@ -148,7 +153,7 @@
 <div id="landing-container">
     <div id="loading-indicator">Loading 3D Experience...</div>
     <canvas id="intro-canvas"></canvas>
-    <div id="intro-text">AxiomX</div>
+    <div id="intro-text">ElectraX</div>
     <button id="intro-skip">Skip Intro</button>
 </div>
 
@@ -164,7 +169,7 @@
 <!-- Main Content (Hidden initially) -->
 <div id="main-content" class="container mt-5">
     <div class="jumbotron">
-        <h1 class="display-4">Welcome to AxiomX</h1>
+        <h1 class="display-4">Welcome to ElectraX</h1>
         <p class="lead">Connect with other energy researchers, share your work, and collaborate on projects.</p>
         <hr class="my-4">
         <p>Join our community of energy scientists to make breakthroughs together!</p>

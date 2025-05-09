@@ -1,6 +1,6 @@
-# Ghid de Testare a Securității pentru AxiomX
+# Ghid de Testare a Securității pentru ElectraX
 
-Acest document descrie cum poți testa și verifica funcționalitățile de securitate implementate în platforma AxiomX.
+Acest document descrie cum poți testa și verifica funcționalitățile de securitate implementate în platforma ElectraX.
 
 ## Scriptul de Testare Automată
 

@@ -189,3 +189,8 @@ WARNING 2025-05-09 11:34:09,884 views 14448 4948 Failed login attempt for userna
 INFO 2025-05-09 11:34:35,646 views 14448 11256 Successful login for user 'eric' from IP 127.0.0.1
 INFO 2025-05-09 11:37:10,074 utils 5540 6604 SECURITY EVENT: {'event_type': 'profile_access', 'username': 'testuser', 'ip': '127.0.0.*', 'access_type': 'self'}
 INFO 2025-05-09 11:37:10,383 utils 5540 6604 SECURITY EVENT: {'event_type': 'profile_access', 'username': 'testuser', 'ip': '127.0.0.*', 'access_type': 'self'}
+WARNING 2025-05-09 19:09:03,393 database 18416 3576 AXES: New login failure by {username: "********************", ip_address: "********************", user_agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36", path_info: "/accounts/login/"}. Created new record in the database.
+WARNING 2025-05-09 19:09:03,401 views 18416 3576 Failed login attempt for username 'eric' from IP 127.0.0.1
+INFO 2025-05-09 19:09:09,664 views 18416 22304 Successful login for user 'eric' from IP 127.0.0.1
+WARNING 2025-05-09 19:26:07,554 base 20896 3456 Session data corrupted
+INFO 2025-05-09 19:26:15,296 views 20896 3456 Successful login for user 'eric' from IP 127.0.0.1

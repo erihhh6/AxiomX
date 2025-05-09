@@ -65,7 +65,7 @@ function processContent(content) {
         },
         {
             type: 'dna',
-            pattern: /\[dna(?:\s+sequence="([^"]*)")?(?:\s+markers="([^"]*)")?\](.*?)\[\/dna\]/gs
+            pattern: /\[dna(?:\s+sequence="([^"]*)")?(?:\s+markers="([^"]*)")?(?:\s+chainType="([^"]*)")?(?:\s+energyEfficiency="([^"]*)")?\](.*?)\[\/dna\]/gs
         },
         {
             type: 'datastructure',
@@ -75,9 +75,9 @@ function processContent(content) {
     
     // Type mapping to standardize visualizer types
     const typeMap = {
-        'wave': 'wave-visualizer',
-        'dna': 'dna-visualizer',
-        'datastructure': 'data-structure'
+        'wave': 'energy-wave-simulator',
+        'dna': 'molecular-energy-chain',
+        'datastructure': 'energy-network'
     };
     
     // Process each tag type
@@ -85,8 +85,8 @@ function processContent(content) {
         let matches = [...processed.matchAll(pattern)];
         matchCount += matches.length;
         
-        if (type === 'wave' && matches.length > 0) {
-            console.log(`[WAVE] Found ${matches.length} wave tags in content. Matches:`, matches);
+        if (matches.length > 0) {
+            console.log(`[DEBUG] Found ${matches.length} ${type} tags in content. Matches:`, matches);
         }
         
         processed = processed.replace(pattern, (match, ...args) => {
@@ -94,7 +94,7 @@ function processContent(content) {
             const config = {};
             const visualizerType = typeMap[type] || type;
             
-            console.log(`Found ${type} tag, creating visualizer with ID ${id}`);
+            console.log(`Found ${type} tag, creating visualizer with ID ${id}. Match: ${match}`);
             
             // Extract parameters based on tag type
             switch (type) {
@@ -111,18 +111,26 @@ function processContent(content) {
                     break;
                     
                 case 'dna':
-                    const [sequence, markers] = args;
+                    const [sequence, markers, chainType, energyEfficiency] = args;
                     if (sequence) {
                         config.sequence = sequence;
-                        console.log(`DNA sequence length: ${sequence.length}`);
+                        console.log(`Molecular chain length: ${sequence.length}`);
                     }
                     if (markers) {
                         try {
                             config.markers = JSON.parse(markers);
-                            console.log(`DNA markers:`, config.markers);
+                            console.log(`Molecular markers:`, config.markers);
                         } catch (e) {
                             console.error('Invalid parameters for markers:', e);
                         }
+                    }
+                    if (chainType) {
+                        config.chainType = chainType;
+                        console.log(`Chain type: ${chainType}`);
+                    }
+                    if (energyEfficiency) {
+                        config.energyEfficiency = parseFloat(energyEfficiency);
+                        console.log(`Energy efficiency: ${energyEfficiency}`);
                     }
                     break;
                     
@@ -130,7 +138,7 @@ function processContent(content) {
                     const [structureType, data] = args;
                     if (structureType) {
                         config.structureType = structureType;
-                        console.log(`Data structure type: ${structureType}`);
+                        console.log(`Energy network type: ${structureType}`);
                         
                         // Set mode to 3D for better visualization
                         config.mode = '3d';
@@ -138,7 +146,7 @@ function processContent(content) {
                     if (data) {
                         try {
                             config.data = JSON.parse(data);
-                            console.log(`Data structure data:`, config.data);
+                            console.log(`Energy network data:`, config.data);
                         } catch (e) {
                             console.error('Invalid parameters for data:', e);
                         }
@@ -260,14 +268,17 @@ function initializeVisualizers(container) {
             switch(type) {
                 case 'wave-visualizer':
                 case 'wave-simulator': // Pentru compatibilitate cu postări vechi
+                case 'energy-wave-simulator': // Noul tip pentru Energy Wave Simulator
                     initializeWaveVisualizer(viz, id, config);
                     break;
                     
                 case 'dna-visualizer':
-                    initializeDNAVisualizer(viz, id, config);
+                case 'molecular-energy-chain': // New type for Molecular Energy Chain Visualizer
+                    initializeMolecularChainVisualizer(viz, id, config);
                     break;
                     
                 case 'data-structure':
+                case 'energy-network':
                     // Try to use the real data structure visualizer first
                     initializeDataStructureVisualizer(viz, id, config);
                     break;
@@ -289,32 +300,59 @@ function initializeVisualizers(container) {
 
 // Initialize wave visualizer with fallback implementation
 function initializeWaveVisualizer(container, id, config) {
-    console.log("Using direct fallback for wave visualizer");
+    console.log("Initializing Energy Wave Simulator");
     
     try {
-        // Verificăm dacă există funcția globală
-        if (typeof createSimpleWaveVisualizer === 'function') {
-            // Folosim direct funcția globală
-            createSimpleWaveVisualizer(container);
+        // Verificăm dacă există funcția globală noua de Energy Wave
+        if (typeof initEnergyWaveSimulator === 'function') {
+            // Folosim direct funcția Energy Wave Simulator
+            initEnergyWaveSimulator(container, config);
+            updateStatusIndicator(container, 'Energy Wave', true);
             return;
         }
         
-        // Altfel încărcăm scriptul și apoi inițializăm
-        loadScript('/static/js/visualizers/waves/fallback_wave.js')
+        // Verificăm funcția legacy
+        if (typeof initWave3DVisualizer === 'function') {
+            // Folosim funcția legacy care acum mapează la Energy Wave
+            initWave3DVisualizer(container, config);
+            updateStatusIndicator(container, 'Legacy → Energy', true);
+            return;
+        }
+        
+        // Încărcăm scriptul Energy Wave și apoi inițializăm
+        loadScript('/static/js/visualizers/waves/wave_3d.js')
             .then(() => {
-                console.log('Fallback wave visualizer loaded via script');
-                if (typeof createSimpleWaveVisualizer === 'function') {
-                    createSimpleWaveVisualizer(container);
+                console.log('Energy Wave Simulator loaded via script');
+                if (typeof initEnergyWaveSimulator === 'function') {
+                    initEnergyWaveSimulator(container, config);
+                    updateStatusIndicator(container, 'Energy Wave', true);
+                } else if (typeof initWave3DVisualizer === 'function') {
+                    initWave3DVisualizer(container, config);
+                    updateStatusIndicator(container, 'Legacy → Energy', true);
                 } else {
-                    throw new Error('Fallback wave visualizer loaded but function not found');
+                    throw new Error('Energy Wave Simulator loaded but function not found');
                 }
             })
             .catch(error => {
-                console.error('Failed to load wave visualizer:', error);
-                createFallbackVisualizer(container, 'Failed to load wave visualizer');
+                console.error('Failed to load Energy Wave Simulator:', error);
+                // Încercăm să folosim fallback-ul simplu
+                loadScript('/static/js/visualizers/waves/fallback_wave.js')
+                    .then(() => {
+                        if (typeof createSimpleWaveVisualizer === 'function') {
+                            console.log('Using fallback wave visualizer');
+                            createSimpleWaveVisualizer(container, config);
+                            updateStatusIndicator(container, 'Basic Energy', false);
+                        } else {
+                            throw new Error('Fallback visualizer loaded but function not found');
+                        }
+                    })
+                    .catch(err => {
+                        console.error('Failed to load any visualizer:', err);
+                        createFallbackVisualizer(container, 'Failed to load Energy Wave Simulator');
+                    });
             });
     } catch (error) {
-        console.error('Error in wave visualizer initialization:', error);
+        console.error('Error in Energy Wave Simulator initialization:', error);
         createFallbackVisualizer(container, error.message);
     }
 }
@@ -326,10 +364,11 @@ function createFallbackVisualizer(container, errorMessage) {
     // Simplu, dar garantat să funcționeze - o imagine SVG statică
     container.innerHTML = `
         <div style="padding:10px; background-color:#f8f9fa; border-radius:4px; text-align:center;">
-            <div style="margin-bottom:10px; font-weight:bold;">Wave Visualizer (Fallback)</div>
+            <div style="margin-bottom:10px; font-weight:bold;">Energy Wave Simulator (Fallback)</div>
             <div style="height:100px; overflow:hidden;">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 100" width="100%" height="100" preserveAspectRatio="none">
                     <path d="M0,50 Q250,0 500,50 T1000,50" stroke="#4285F4" stroke-width="3" fill="none" />
+                    <text x="500" y="80" text-anchor="middle" font-size="12" fill="#666">Energy Wave</text>
                 </svg>
             </div>
             <div style="font-size:12px; color:#666; margin-top:10px;">
@@ -385,128 +424,136 @@ function initializeDNAVisualizer(container, id, config) {
 // Initialize data structure visualizer
 function initializeDataStructureVisualizer(container, id, config) {
     try {
-        console.log(`Initializing data structure visualizer: ${id}`, config);
+        console.log(`Initializing energy network visualizer: ${id}`, config);
         
-        // Remove loading spinner from container
-        container.innerHTML = '';
+        // Check if container exists and is valid
+        if (!container || !(container instanceof HTMLElement)) {
+            console.error('Invalid container for energy network visualizer');
+            return false;
+        }
+        
+        // Store original content for fallback
+        const originalContent = container.innerHTML;
+        
+        // Safely clear the container
+        try {
+            // Remove loading spinner from container
+            container.innerHTML = '';
+        } catch (e) {
+            console.error('Error clearing container:', e);
+        }
         
         // Ensure structureType is passed to the visualizer
         const options = { ...config };
         
-        // Default to tree if no type specified
+        // Default to network if no type specified
         if (!options.structureType) {
-            options.structureType = 'tree';
+            options.structureType = 'network';
         }
         
-        console.log('Data structure configuration:', options);
+        console.log('Energy network configuration:', options);
         
         // Add progress status directly to container first
-        const statusDiv = document.createElement('div');
-        statusDiv.className = 'text-center mb-2';
-        statusDiv.innerHTML = '<small class="text-muted">Initializing visualizer...</small>';
-        container.appendChild(statusDiv);
-        
-        // Check if initDataStructureVisualizer function is available
-        if (typeof initDataStructureVisualizer === 'function') {
-            console.log('Using native data structure visualizer');
-            // Pass the container directly
-            initDataStructureVisualizer(container, options);
-            
-            // Remove temporary status message
-            if (statusDiv && statusDiv.parentNode) {
-                statusDiv.parentNode.removeChild(statusDiv);
-            }
-            
-            updateStatusIndicator(container, 'Active', true);
-            
-            // Update card status badge
-            const card = container.closest('.card');
-            if (card) {
-                const statusBadge = card.querySelector('.viz-status-indicator');
-                if (statusBadge) {
-                    statusBadge.textContent = 'Active';
-                    statusBadge.className = 'viz-status-indicator badge bg-success float-end';
-                }
-            }
-            
-            return;
+        try {
+            const statusDiv = document.createElement('div');
+            statusDiv.className = 'visualizer-status py-1 px-2 mb-2';
+            statusDiv.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Initializing Energy Network Visualizer...';
+            container.appendChild(statusDiv);
+        } catch (e) {
+            console.error('Error adding status message:', e);
         }
         
-        // Try to load the data structure visualizer script
-        statusDiv.innerHTML = '<small class="text-muted">Loading data structure visualizer...</small>';
+        // First check if Three.js is loaded - it should be from the template
+        const isThreeJsLoaded = (typeof THREE !== 'undefined' && THREE.REVISION);
+        if (!isThreeJsLoaded) {
+            console.warn('Three.js not detected, attempting to load it first');
+            // Try loading Three.js before initializing
+            const threeScript = document.createElement('script');
+            threeScript.src = 'https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js';
+            document.head.appendChild(threeScript);
+            
+            // Wait a moment to allow script to load
+            setTimeout(() => {
+                initializeEnergyNetwork();
+            }, 500);
+        } else {
+            // Three.js is already loaded, proceed
+            console.log('Three.js already loaded, version:', THREE.REVISION);
+            initializeEnergyNetwork();
+        }
         
-        // Try absolute path first, then relative path as fallback
-        const scriptPath = '/static/js/visualizers/datastructures/data_structure_visualizer.js';
-        const relativePath = '../datastructures/data_structure_visualizer.js';
-        
-        loadScript(scriptPath)
-            .catch(error => {
-                console.log(`Failed to load from ${scriptPath}, trying relative path ${relativePath}`);
-                return loadScript(relativePath);
-            })
-            .then(() => {
-                if (typeof initDataStructureVisualizer === 'function') {
-                    console.log('Data structure visualizer loaded via script');
-                    
-                    // Remove temporary status
-                    if (statusDiv && statusDiv.parentNode) {
-                        statusDiv.parentNode.removeChild(statusDiv);
-                    }
-                    
-                    // Check for global flag
-                    if (window.DATA_STRUCTURE_VISUALIZER_LOADED) {
-                        console.log("Confirmed data structure visualizer is loaded (global flag present)");
+        function initializeEnergyNetwork() {
+            try {
+                console.log('Using native energy network visualizer');
+                // Try using the energy network visualizer
+                if (typeof window.initEnergyNetworkVisualizer === 'function') {
+                    const result = window.initEnergyNetworkVisualizer(container, options);
+                    if (result) {
+                        return true;
                     } else {
-                        console.warn("Data structure visualizer function exists but global flag is missing");
-                    }
-                    
-                    // Pass the container directly
-                    initDataStructureVisualizer(container, options);
-                    updateStatusIndicator(container, 'Active', true);
-                    
-                    // Update card status badge
-                    const card = container.closest('.card');
-                    if (card) {
-                        const statusBadge = card.querySelector('.viz-status-indicator');
-                        if (statusBadge) {
-                            statusBadge.textContent = 'Active';
-                            statusBadge.className = 'viz-status-indicator badge bg-success float-end';
-                        }
+                        throw new Error('Initializer returned false');
                     }
                 } else {
-                    throw new Error('Data structure visualizer loaded but initialization function not found');
+                    throw new Error('Energy network visualizer not available');
                 }
-            })
-            .catch(error => {
-                console.error('Failed to load data structure visualizer:', error);
-                // Use fallback as last resort
-                FallbackVisualizer.create(container, 'data-structure', options);
-                updateStatusIndicator(container, 'Fallback', true);
+            } catch (error) {
+                console.warn('Failed to initialize energy network visualizer, falling back to simplified version', error);
                 
-                // Update card status badge
-                const card = container.closest('.card');
-                if (card) {
-                    const statusBadge = card.querySelector('.viz-status-indicator');
-                    if (statusBadge) {
-                        statusBadge.textContent = 'Fallback';
-                        statusBadge.className = 'viz-status-indicator badge bg-warning float-end';
-                    }
+                // Restore original content for clean slate
+                try {
+                    container.innerHTML = '';
+                } catch (e) {
+                    console.error('Error clearing container for fallback:', e);
                 }
-            });
-    } catch (error) {
-        console.error('Error initializing data structure visualizer:', error);
-        FallbackVisualizer.create(container, 'data-structure', config);
-        updateStatusIndicator(container, 'Fallback', true);
-        
-        // Update card status badge
-        const card = container.closest('.card');
-        if (card) {
-            const statusBadge = card.querySelector('.viz-status-indicator');
-            if (statusBadge) {
-                statusBadge.textContent = 'Fallback';
-                statusBadge.className = 'viz-status-indicator badge bg-warning float-end';
+                
+                // Try the fallback visualizer
+                try {
+                    // Fallback to the simplified visualizer
+                    if (typeof FallbackVisualizer !== 'undefined' && typeof FallbackVisualizer.create === 'function') {
+                        console.log('Using fallback visualizer for energy network');
+                        FallbackVisualizer.create(container, 'data-structure', options);
+                        return true;
+                    } else {
+                        throw new Error('Both main and fallback visualizers failed to initialize');
+                    }
+                } catch (fallbackError) {
+                    console.error('Fallback also failed:', fallbackError);
+                    
+                    // Last resort - show a basic error message
+                    try {
+                        container.innerHTML = `
+                            <div class="alert alert-danger">
+                                <h5 class="alert-heading">Error initializing Energy Network Visualizer</h5>
+                                <p>${error.message || 'Unknown error occurred'}</p>
+                                <p>Fallback also failed: ${fallbackError.message}</p>
+                            </div>
+                        `;
+                    } catch (e) {
+                        console.error('Complete failure in visualization initialization:', e);
+                    }
+                    
+                    return false;
+                }
             }
         }
+        
+        return true;
+    } catch (error) {
+        console.error('Error initializing data structure visualizer:', error);
+        
+        // Show error in container
+        try {
+            container.innerHTML = `
+                <div class="alert alert-danger">
+                    <h5 class="alert-heading">Error initializing Energy Network Visualizer</h5>
+                    <p>${error.message || 'Unknown error occurred'}</p>
+                </div>
+            `;
+        } catch (e) {
+            console.error('Could not display error message:', e);
+        }
+        
+        return false;
     }
 }
 
@@ -552,12 +599,68 @@ function updateStatusIndicator(container, statusText, success = true) {
 function getVisualizerTitle(type) {
     switch (type) {
         case 'wave':
-            return 'Wave Visualizer';
+            return 'Energy Wave Simulator';
         case 'dna':
-            return 'DNA/RNA Sequence Visualizer';
+            return 'Molecular Energy Chain Visualizer';
         case 'datastructure':
-            return 'Data Structure Visualizer';
+            return 'Energy Network Visualizer';
         default:
             return 'Interactive Visualizer';
+    }
+}
+
+// Initialize a DNA/Molecular Chain visualizer
+function initializeMolecularChainVisualizer(container, id, config) {
+    updateStatusIndicator(container, 'Loading Molecular Chain Visualizer');
+    
+    try {
+        // Check if specific molecular chain config is provided
+        if (config.chainType) {
+            // This is the new molecular chain visualizer
+            if (typeof window.initMolecularEnergyChainVisualizer === 'function') {
+                window.initMolecularEnergyChainVisualizer(id, config);
+                updateStatusIndicator(container, 'Ready', true);
+            } else {
+                // Load the molecular chain visualizer script - use the existing file that we transformed
+                loadScript('/static/js/visualizers/dna/dna_visualizer.js?v=' + Date.now(), () => {
+                    if (typeof window.initMolecularEnergyChainVisualizer === 'function') {
+                        window.initMolecularEnergyChainVisualizer(id, config);
+                        updateStatusIndicator(container, 'Ready', true);
+                    } else {
+                        updateStatusIndicator(container, 'Error: Could not initialize Molecular Chain Visualizer', false);
+                    }
+                });
+            }
+        } else {
+            // Try to use the Molecular Chain Visualizer for all scenarios
+            if (typeof window.initMolecularEnergyChainVisualizer === 'function') {
+                // Use the new visualizer if available
+                window.initMolecularEnergyChainVisualizer(id, {
+                    ...config,
+                    // Add default chain type for DNA/RNA sequences
+                    chainType: config.sequence && (config.sequence.includes('A') || config.sequence.includes('T') || 
+                              config.sequence.includes('G') || config.sequence.includes('C')) ? 'biofuel' : 'hydrocarbon'
+                });
+                updateStatusIndicator(container, 'Ready', true);
+            } else {
+                // Load the visualizer script
+                loadScript('/static/js/visualizers/dna/dna_visualizer.js?v=' + Date.now(), () => {
+                    if (typeof window.initMolecularEnergyChainVisualizer === 'function') {
+                        window.initMolecularEnergyChainVisualizer(id, {
+                            ...config,
+                            // Add default chain type for DNA/RNA sequences
+                            chainType: config.sequence && (config.sequence.includes('A') || config.sequence.includes('T') || 
+                                      config.sequence.includes('G') || config.sequence.includes('C')) ? 'biofuel' : 'hydrocarbon'
+                        });
+                        updateStatusIndicator(container, 'Ready', true);
+                    } else {
+                        updateStatusIndicator(container, 'Error: Could not initialize visualizer', false);
+                    }
+                });
+            }
+        }
+    } catch (error) {
+        console.error('Error initializing molecular chain visualizer:', error);
+        updateStatusIndicator(container, 'Error', false);
     }
 } 

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}AxiomX - Energy Scientists Collaboration Platform{% endblock %}</title>
+    <title>{% block title %}ElectraX - Energy Scientists Collaboration Platform{% endblock %}</title>
     <!-- Immediate theme application from URL parameter -->
     <script>
         // Check for theme parameter in URL and apply immediately
@@ -79,7 +79,7 @@
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
         <div class="container">
             <a class="navbar-brand" href="{% url 'home' %}">
-                <span class="brand-text">AxiomX</span>
+                <span class="brand-text">ElectraX</span>
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
                 aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
@@ -184,10 +184,10 @@
         <div class="container">
             <div class="row">
                 <div class="col-lg-6">
-                    <p>&copy; 2025 AxiomX - Scientists Collaboration Platform</p>
+                    <p>&copy; 2025 ElectraX - Scientists Collaboration Platform</p>
                 </div>
                 <div class="col-lg-6 text-lg-end">
-                    <p>Contact: support@axiomx.example.com</p>
+                    <p>Contact: support@electrax.example.com</p>
                 </div>
             </div>
         </div>
@@ -206,7 +206,7 @@
             // Check if we're on the home page by looking for specific elements
             if (document.querySelector('.jumbotron') && 
                 document.querySelector('h1.display-4') && 
-                document.querySelector('h1.display-4').textContent.includes('Welcome to AxiomX')) {
+                document.querySelector('h1.display-4').textContent.includes('Welcome to ElectraX')) {
                 document.body.classList.add('home-page');
             }
             

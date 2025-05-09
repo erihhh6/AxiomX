@@ -34,8 +34,13 @@ if (typeof MutationObserver !== 'undefined') {
 
 // Find all wave containers and initialize them
 function createAllWaveVisualizers() {
-    // Get all visualization containers
-    const containers = document.querySelectorAll('.visualizer-container[data-visualizer-type="wave-visualizer"]');
+    // Get all visualization containers - look for all possible type names
+    const containers = document.querySelectorAll([
+        '.visualizer-container[data-visualizer-type="wave-visualizer"]',
+        '.visualizer-container[data-visualizer-type="wave-simulator"]', 
+        '.visualizer-container[data-visualizer-type="energy-wave-simulator"]'
+    ].join(', '));
+    
     console.log('[WAVE] Found', containers.length, 'wave containers to initialize');
     
     // Initialize each container
@@ -44,245 +49,514 @@ function createAllWaveVisualizers() {
             initWaveVisualizer(container);
         }
     });
-    
-    // Look for old containers (for compatibility)
-    const oldContainers = document.querySelectorAll('.visualizer-container[data-visualizer-type="wave-simulator"]');
-    console.log('[WAVE] Found', oldContainers.length, 'old wave containers to initialize');
-    
-    oldContainers.forEach(function(container) {
-        if (!container.hasAttribute('data-viz-initialized')) {
-            initWaveVisualizer(container);
-        }
-    });
 }
 
 // Initialize visualizer with 3D or 2D fallback
 function initWaveVisualizer(container) {
-    // Check if 3D is available
-    if (typeof window.initWave3DVisualizer === 'function') {
-        console.log('[WAVE] Using 3D wave visualizer for container:', container.id);
-        window.initWave3DVisualizer(container);
-    } else {
-        console.log('[WAVE] 3D visualizer not available, using 2D fallback for container:', container.id);
-        createSimpleWaveVisualizer(container);
-    }
-}
-
-// Create simple 2D SVG wave visualizer (fallback)
-window.createSimpleWaveVisualizer = function(container, config = {}) {
-    // Check if container exists
-    if (!container) {
-        console.error('[WAVE] Wave container is missing');
+    // Check if the 3D Energy Wave Simulator is available
+    if (typeof window.initEnergyWaveSimulator === 'function') {
+        console.log('[WAVE] Using Energy Wave Simulator for container:', container.id);
+        window.initEnergyWaveSimulator(container);
         return;
     }
     
-    console.log('[WAVE] Creating simple wave visualizer in container:', container.id);
-    
-    // Get configuration from container
-    let containerConfig = {};
-    try {
-        const configStr = container.getAttribute('data-visualizer-config');
-        if (configStr) {
-            containerConfig = JSON.parse(configStr);
-        }
-    } catch (e) {
-        console.error('[WAVE] Error parsing config:', e);
+    // Try legacy 3D visualizer as fallback
+    if (typeof window.initWave3DVisualizer === 'function') {
+        console.log('[WAVE] Using legacy 3D wave visualizer for container:', container.id);
+        window.initWave3DVisualizer(container);
+        return;
     }
     
-    // Merge configs
-    const waveConfig = {
-        amplitude: config.amplitude || containerConfig.amplitude || 40,
-        frequency: config.frequency || containerConfig.frequency || 0.02,
-        speed: config.speed || containerConfig.speed || 0.05,
-        color: config.color || containerConfig.color || '#4285F4',
-        height: config.height || containerConfig.height || 180
+    // Last resort - use 2D canvas fallback
+    console.log('[WAVE] 3D visualizers not available, using 2D fallback for container:', container.id);
+    createSimpleWaveVisualizer(container);
+}
+
+// Main initialization function that can be called directly
+window.createSimpleWaveVisualizer = function(container, customConfig = {}) {
+    console.log('Creating Energy Wave Simulator (Fallback Version)');
+    
+    // Default configuration
+    const defaultConfig = {
+        width: container.clientWidth,
+        height: 200,
+        waveCount: 3,
+        amplitude: 40,
+        frequency: 0.02,
+        phase: 0,
+        speed: 0.05,
+        color: '#4285F4',
+        energyType: 'electromagnetic', // electromagnetic, thermal, pressure, sound
+        powerLevel: 5.0, // kW
+        efficiency: 0.85
     };
     
-    // Mark container as initialized
-    container.setAttribute('data-viz-initialized', 'true');
+    // Get config from container if available
+    let containerConfig = {};
+    try {
+        const configAttr = container.getAttribute('data-visualizer-config');
+        if (configAttr) {
+            containerConfig = JSON.parse(configAttr);
+        }
+    } catch (e) {
+        console.error('Error parsing container config:', e);
+    }
+    
+    // Merge configurations
+    const config = {...defaultConfig, ...containerConfig, ...customConfig};
+    
+    // Set color based on energy type
+    switch (config.energyType) {
+        case 'electromagnetic':
+            config.color = '#4285F4'; // Blue for electromagnetic
+            break;
+        case 'thermal':
+            config.color = '#EA4335'; // Red for thermal
+            break;
+        case 'pressure':
+            config.color = '#34A853'; // Green for pressure
+            break;
+        case 'sound':
+            config.color = '#FBBC05'; // Yellow for sound
+            break;
+    }
+    
+    // Create canvas element
+    const canvas = document.createElement('canvas');
+    canvas.width = config.width;
+    canvas.height = config.height;
+    canvas.style.display = 'block';
+    canvas.style.width = '100%';
+    canvas.style.height = `${config.height}px`;
     
     // Clear container
     container.innerHTML = '';
+    container.appendChild(canvas);
     
-    // Setup container styles
-    container.style.backgroundColor = '#f0f8ff';
-    container.style.overflow = 'hidden';
-    container.style.position = 'relative';
-    container.style.minHeight = '250px';
-    container.style.borderRadius = '4px';
-    container.style.border = '1px solid #4285F4';
-    container.style.boxShadow = '0 2px 6px rgba(0,0,0,0.1)';
+    // Add title bar
+    const titleBar = document.createElement('div');
+    titleBar.textContent = 'Energy Wave Simulator';
+    titleBar.style.position = 'absolute';
+    titleBar.style.top = '0';
+    titleBar.style.left = '0';
+    titleBar.style.right = '0';
+    titleBar.style.backgroundColor = 'rgba(0, 0, 0, 0.6)';
+    titleBar.style.color = 'white';
+    titleBar.style.padding = '5px 10px';
+    titleBar.style.fontSize = '14px';
+    titleBar.style.fontWeight = 'bold';
+    titleBar.style.zIndex = '5';
+    container.appendChild(titleBar);
     
-    // Add title
-    const title = document.createElement('div');
-    title.textContent = 'Wave Visualizer';
-    title.style.position = 'absolute';
-    title.style.top = '10px';
-    title.style.left = '15px'; 
-    title.style.fontSize = '14px';
-    title.style.fontWeight = 'bold';
-    title.style.color = '#333';
-    title.style.zIndex = '2';
-    container.appendChild(title);
+    // Add energy type indicator
+    const energyTypeIndicator = document.createElement('div');
     
-    // Add status indicator
-    const status = document.createElement('div');
-    status.textContent = 'Active';
-    status.style.position = 'absolute';
-    status.style.top = '10px';
-    status.style.right = '15px';
-    status.style.padding = '2px 8px';
-    status.style.fontSize = '12px';
-    status.style.backgroundColor = 'rgba(40, 167, 69, 0.7)';
-    status.style.color = 'white';
-    status.style.borderRadius = '3px';
-    status.style.zIndex = '2';
-    container.appendChild(status);
-    
-    // Add version badge
-    const badge = document.createElement('div');
-    badge.textContent = 'WAVE 2D v2.0';
-    badge.style.position = 'absolute';
-    badge.style.top = '40px';
-    badge.style.right = '15px';
-    badge.style.padding = '2px 6px';
-    badge.style.fontSize = '10px';
-    badge.style.backgroundColor = 'rgba(0,0,0,0.1)';
-    badge.style.color = '#666';
-    badge.style.borderRadius = '3px';
-    badge.style.zIndex = '2';
-    container.appendChild(badge);
-    
-    // Create SVG element for visualization
-    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    svg.setAttribute('width', '100%');
-    svg.setAttribute('height', waveConfig.height);
-    svg.setAttribute('viewBox', '0 0 1000 180');
-    svg.setAttribute('preserveAspectRatio', 'none');
-    svg.style.position = 'absolute';
-    svg.style.bottom = '0';
-    svg.style.left = '0';
-    container.appendChild(svg);
-    
-    // Add center line
-    const centerLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-    centerLine.setAttribute('x1', '0');
-    centerLine.setAttribute('y1', '90');
-    centerLine.setAttribute('x2', '1000');
-    centerLine.setAttribute('y2', '90');
-    centerLine.setAttribute('stroke', '#ddd');
-    centerLine.setAttribute('stroke-width', '1');
-    svg.appendChild(centerLine);
-    
-    // Add wave path - initially straight
-    const wavePath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-    wavePath.setAttribute('d', 'M0,90 L1000,90');
-    wavePath.setAttribute('stroke', waveConfig.color);
-    wavePath.setAttribute('stroke-width', '3');
-    wavePath.setAttribute('fill', 'none');
-    svg.appendChild(wavePath);
-    
-    // Add simple controls for parameters
-    if (containerConfig.interactive !== false) {
-        addSimpleControls(container, waveConfig);
+    let bgColor, label;
+    switch(config.energyType) {
+        case 'electromagnetic':
+            bgColor = 'rgba(66, 133, 244, 0.8)';
+            label = 'Electromagnetic';
+            break;
+        case 'thermal':
+            bgColor = 'rgba(234, 67, 53, 0.8)';
+            label = 'Thermal';
+            break;
+        case 'pressure':
+            bgColor = 'rgba(52, 168, 83, 0.8)';
+            label = 'Pressure';
+            break;
+        case 'sound':
+            bgColor = 'rgba(251, 188, 5, 0.8)';
+            label = 'Sound';
+            break;
+        default:
+            bgColor = 'rgba(66, 133, 244, 0.8)';
+            label = 'Electromagnetic';
     }
     
-    // Function to update the wave
-    function updateWave(timestamp) {
+    energyTypeIndicator.textContent = label + ' Wave';
+    energyTypeIndicator.style.position = 'absolute';
+    energyTypeIndicator.style.top = '10px';
+    energyTypeIndicator.style.right = '10px';
+    energyTypeIndicator.style.padding = '3px 8px';
+    energyTypeIndicator.style.backgroundColor = bgColor;
+    energyTypeIndicator.style.color = 'white';
+    energyTypeIndicator.style.fontSize = '12px';
+    energyTypeIndicator.style.fontWeight = 'bold';
+    energyTypeIndicator.style.borderRadius = '4px';
+    energyTypeIndicator.style.zIndex = '6';
+    container.appendChild(energyTypeIndicator);
+    
+    // Add energy info display
+    const energyInfoDisplay = document.createElement('div');
+    energyInfoDisplay.style.position = 'absolute';
+    energyInfoDisplay.style.left = '10px';
+    energyInfoDisplay.style.bottom = '10px';
+    energyInfoDisplay.style.padding = '5px';
+    energyInfoDisplay.style.backgroundColor = 'rgba(0, 0, 0, 0.6)';
+    energyInfoDisplay.style.color = 'white';
+    energyInfoDisplay.style.fontSize = '11px';
+    energyInfoDisplay.style.fontFamily = 'monospace';
+    energyInfoDisplay.style.borderRadius = '4px';
+    energyInfoDisplay.style.zIndex = '6';
+    container.appendChild(energyInfoDisplay);
+    
+    // Add power scale
+    const powerScaleContainer = document.createElement('div');
+    powerScaleContainer.style.position = 'absolute';
+    powerScaleContainer.style.left = '10px';
+    powerScaleContainer.style.right = '10px';
+    powerScaleContainer.style.bottom = '40px';
+    powerScaleContainer.style.height = '20px';
+    powerScaleContainer.style.zIndex = '5';
+    
+    const powerScale = document.createElement('div');
+    powerScale.style.position = 'relative';
+    powerScale.style.height = '4px';
+    powerScale.style.backgroundColor = 'rgba(255, 255, 255, 0.7)';
+    powerScale.style.marginBottom = '16px';
+    powerScaleContainer.appendChild(powerScale);
+    
+    // Add scale units
+    const units = ['0', 'kW', 'MW', 'GW'];
+    for (let i = 0; i < units.length; i++) {
+        const unit = document.createElement('div');
+        unit.textContent = units[i];
+        unit.style.position = 'absolute';
+        unit.style.left = `${i * 33.3}%`;
+        unit.style.top = '6px';
+        unit.style.color = 'white';
+        unit.style.fontSize = '10px';
+        unit.style.fontWeight = 'bold';
+        unit.style.textShadow = '1px 1px 1px rgba(0, 0, 0, 0.7)';
+        powerScale.appendChild(unit);
+    }
+    
+    // Add power indicator
+    const powerIndicator = document.createElement('div');
+    powerIndicator.style.position = 'absolute';
+    powerIndicator.style.width = '2px';
+    powerIndicator.style.height = '10px';
+    powerIndicator.style.backgroundColor = '#ff0000';
+    powerIndicator.style.top = '-3px';
+    powerIndicator.style.marginLeft = '-1px';
+    
+    // Calculate position based on power level
+    let indicatorPosition;
+    if (config.powerLevel < 10) {
+        indicatorPosition = (config.powerLevel / 10) * 33.3;
+    } else if (config.powerLevel < 1000) {
+        indicatorPosition = 33.3 + ((Math.log10(config.powerLevel) - 1) / 2) * 33.3;
+    } else {
+        indicatorPosition = 66.6 + (Math.log10(config.powerLevel / 1000) / 2) * 33.3;
+    }
+    
+    powerIndicator.style.left = `${indicatorPosition}%`;
+    powerScale.appendChild(powerIndicator);
+    
+    container.appendChild(powerScaleContainer);
+    
+    // Get drawing context
+    const ctx = canvas.getContext('2d');
+    
+    // Animation values
+    let phase = 0;
+    let animationId = null;
+    
+    // Start animation
+    function animate() {
         if (!container.isConnected) {
             // Container no longer in DOM, stop animation
+            cancelAnimationFrame(animationId);
             return;
         }
         
-        // Calculate wave points
-        let path = 'M0,90 ';
+        // Clear canvas
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
         
-        for (let x = 0; x <= 1000; x += 10) {
-            const y = 90 + Math.sin(x * waveConfig.frequency + timestamp * waveConfig.speed) * waveConfig.amplitude;
-            path += `L${x},${y} `;
+        // Draw background
+        ctx.fillStyle = '#f8f9fa';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        // Update phase
+        phase += config.speed;
+        if (phase > Math.PI * 2) {
+            phase -= Math.PI * 2;
         }
         
-        // Update wave path
-        wavePath.setAttribute('d', path);
+        // Draw multiple waves
+        for (let w = 0; w < config.waveCount; w++) {
+            // Calculate energy efficiency loss for each wave
+            const energyFactor = Math.pow(config.efficiency, w * 0.3 + 1);
+            
+            // Adjust opacity for each wave
+            const opacity = Math.max(0.1, 1 - (w * 0.2));
+            
+            // Draw the wave
+            ctx.beginPath();
+            
+            // Set line style based on wave index
+            ctx.strokeStyle = config.color;
+            ctx.globalAlpha = opacity;
+            ctx.lineWidth = 2;
+            
+            // Draw wave path differently based on energy type
+            for (let x = 0; x <= canvas.width; x += 5) {
+                const xNormalized = x / canvas.width * 10; // Normalize to 0-10 range
+                
+                let y = 0;
+                const centerY = canvas.height / 2;
+                
+                switch(config.energyType) {
+                    case 'electromagnetic':
+                        // Sine wave for electromagnetic
+                        y = centerY + Math.sin(xNormalized * config.frequency + phase + (w * 0.5)) * 
+                            (config.amplitude * energyFactor);
+                        break;
+                    case 'thermal':
+                        // Irregular wave for thermal
+                        y = centerY + 
+                            Math.sin(xNormalized * config.frequency + phase) * (config.amplitude * 0.7 * energyFactor) +
+                            Math.sin(xNormalized * config.frequency * 2 + phase * 1.5) * (config.amplitude * 0.3 * energyFactor);
+                        break;
+                    case 'pressure':
+                        // Pulse-like wave for pressure
+                        y = centerY + 
+                            Math.sin(xNormalized * config.frequency + phase) * 
+                            Math.cos(phase * 2) * 
+                            (config.amplitude * energyFactor);
+                        break;
+                    case 'sound':
+                        // Normalized decay wave for sound
+                        const distance = Math.abs(xNormalized - 5); // Distance from center
+                        y = centerY + 
+                            Math.sin(xNormalized * config.frequency + phase) * 
+                            (config.amplitude * energyFactor) * 
+                            (1 / (1 + distance * 0.2)); // Decay with distance
+                        break;
+                    default:
+                        y = centerY + Math.sin(xNormalized * config.frequency + phase) * 
+                            (config.amplitude * energyFactor);
+                }
+                
+                if (x === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+            }
+            
+            ctx.stroke();
+        }
+        
+        // Reset opacity
+        ctx.globalAlpha = 1;
+        
+        // Update energy info display
+        updateEnergyInfo(energyInfoDisplay, config);
         
         // Continue animation
-        requestAnimationFrame(updateWave);
+        animationId = requestAnimationFrame(animate);
     }
     
     // Start animation
-    requestAnimationFrame(updateWave);
+    animate();
     
-    // Update status in card header if it exists
-    const card = container.closest('.card');
-    if (card) {
-        const statusBadge = card.querySelector('.viz-status-indicator');
-        if (statusBadge) {
-            statusBadge.textContent = 'Active';
-            statusBadge.className = 'viz-status-indicator badge bg-success float-end';
+    // Add controls
+    addControls(container, config, canvas);
+    
+    // Mark as initialized
+    container.setAttribute('data-viz-initialized', 'true');
+    
+    return {
+        stop: function() {
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+            }
         }
+    };
+};
+
+// Function to update energy info
+function updateEnergyInfo(display, config) {
+    if (!display) return;
+    
+    // Calculate instantaneous power with variation
+    const basePower = config.powerLevel; // kW
+    const variation = Math.sin(Date.now() / 1000) * basePower * 0.1; // 10% variation
+    const instantPower = basePower + variation;
+    
+    // Scale to appropriate unit
+    let displayPower, unit;
+    if (instantPower < 1000) {
+        displayPower = instantPower.toFixed(2);
+        unit = 'kW';
+    } else if (instantPower < 1000000) {
+        displayPower = (instantPower / 1000).toFixed(2);
+        unit = 'MW';
+    } else {
+        displayPower = (instantPower / 1000000).toFixed(2);
+        unit = 'GW';
     }
     
-    console.log('[WAVE] Simple wave visualizer created successfully');
-    return true;
+    // Calculate output power with efficiency loss
+    const outputPower = instantPower * config.efficiency;
+    const outputDisplay = (outputPower / (instantPower < 1000 ? 1 : instantPower < 1000000 ? 1000 : 1000000)).toFixed(2);
+    
+    // Update display
+    display.innerHTML = `
+        <div>Power: ${displayPower} ${unit}</div>
+        <div>Frequency: ${(config.frequency * 500).toFixed(1)} Hz</div>
+        <div>Efficiency: ${(config.efficiency * 100).toFixed(1)}%</div>
+        <div>Output: ${outputDisplay} ${unit}</div>
+    `;
 }
 
-// Add simple parameter controls to 2D visualizer
-function addSimpleControls(container, config) {
-    const controlPanel = document.createElement('div');
-    controlPanel.className = 'wave-controls';
-    controlPanel.style.position = 'absolute';
-    controlPanel.style.bottom = '10px';
-    controlPanel.style.right = '10px';
-    controlPanel.style.backgroundColor = 'rgba(255,255,255,0.7)';
-    controlPanel.style.padding = '5px';
-    controlPanel.style.borderRadius = '4px';
-    controlPanel.style.fontSize = '10px';
-    controlPanel.style.zIndex = '3';
+// Function to add controls
+function addControls(container, config, canvas) {
+    // Create controls container
+    const controls = document.createElement('div');
+    controls.style.position = 'absolute';
+    controls.style.right = '10px';
+    controls.style.bottom = '10px';
+    controls.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+    controls.style.padding = '8px';
+    controls.style.borderRadius = '5px';
+    controls.style.zIndex = '5';
     
-    // Amplitude control
-    addSlider(controlPanel, 'Amplitude', config.amplitude, 5, 60, 1, (value) => {
-        config.amplitude = Number(value);
+    // Energy type select
+    const energyTypeSelect = document.createElement('select');
+    energyTypeSelect.style.display = 'block';
+    energyTypeSelect.style.marginBottom = '5px';
+    energyTypeSelect.style.width = '100%';
+    energyTypeSelect.style.backgroundColor = '#444';
+    energyTypeSelect.style.color = 'white';
+    energyTypeSelect.style.border = '1px solid #666';
+    energyTypeSelect.style.padding = '2px';
+    
+    const energyTypes = [
+        { value: 'electromagnetic', label: 'Electromagnetic' },
+        { value: 'thermal', label: 'Thermal' },
+        { value: 'pressure', label: 'Pressure' },
+        { value: 'sound', label: 'Sound' }
+    ];
+    
+    energyTypes.forEach(type => {
+        const option = document.createElement('option');
+        option.value = type.value;
+        option.textContent = type.label;
+        if (type.value === config.energyType) {
+            option.selected = true;
+        }
+        energyTypeSelect.appendChild(option);
     });
     
-    // Frequency control
-    addSlider(controlPanel, 'Frequency', config.frequency * 100, 1, 5, 0.1, (value) => {
-        config.frequency = Number(value) / 100;
+    energyTypeSelect.addEventListener('change', function() {
+        config.energyType = this.value;
+        
+        // Update energy type indicator
+        const indicator = container.querySelector('div[style*="position: absolute"][style*="top: 10px"][style*="right: 10px"]');
+        if (indicator) {
+            let bgColor, label;
+            switch(config.energyType) {
+                case 'electromagnetic':
+                    bgColor = 'rgba(66, 133, 244, 0.8)';
+                    label = 'Electromagnetic';
+                    config.color = '#4285F4';
+                    break;
+                case 'thermal':
+                    bgColor = 'rgba(234, 67, 53, 0.8)';
+                    label = 'Thermal';
+                    config.color = '#EA4335';
+                    break;
+                case 'pressure':
+                    bgColor = 'rgba(52, 168, 83, 0.8)';
+                    label = 'Pressure';
+                    config.color = '#34A853';
+                    break;
+                case 'sound':
+                    bgColor = 'rgba(251, 188, 5, 0.8)';
+                    label = 'Sound';
+                    config.color = '#FBBC05';
+                    break;
+            }
+            
+            indicator.style.backgroundColor = bgColor;
+            indicator.textContent = label + ' Wave';
+        }
     });
     
-    // Speed control
-    addSlider(controlPanel, 'Speed', config.speed * 100, 1, 10, 0.1, (value) => {
-        config.speed = Number(value) / 100;
+    const energyTypeLabel = document.createElement('div');
+    energyTypeLabel.textContent = 'Energy Type:';
+    energyTypeLabel.style.color = 'white';
+    energyTypeLabel.style.fontSize = '11px';
+    energyTypeLabel.style.marginBottom = '2px';
+    
+    controls.appendChild(energyTypeLabel);
+    controls.appendChild(energyTypeSelect);
+    
+    // Add slider for power
+    const powerLabel = document.createElement('div');
+    powerLabel.textContent = 'Power (kW):';
+    powerLabel.style.color = 'white';
+    powerLabel.style.fontSize = '11px';
+    powerLabel.style.marginTop = '5px';
+    powerLabel.style.marginBottom = '2px';
+    
+    const powerSlider = document.createElement('input');
+    powerSlider.type = 'range';
+    powerSlider.min = '0.1';
+    powerSlider.max = '1000';
+    powerSlider.step = '0.1';
+    powerSlider.value = config.powerLevel;
+    powerSlider.style.width = '100%';
+    powerSlider.style.marginBottom = '5px';
+    
+    powerSlider.addEventListener('input', function() {
+        config.powerLevel = parseFloat(this.value);
+        
+        // Update power indicator position
+        const indicator = container.querySelector('div[style*="position: absolute"][style*="width: 2px"][style*="height: 10px"]');
+        if (indicator) {
+            let position;
+            if (config.powerLevel < 10) {
+                position = (config.powerLevel / 10) * 33.3;
+            } else if (config.powerLevel < 1000) {
+                position = 33.3 + ((Math.log10(config.powerLevel) - 1) / 2) * 33.3;
+            } else {
+                position = 66.6 + (Math.log10(config.powerLevel / 1000) / 2) * 33.3;
+            }
+            indicator.style.left = `${position}%`;
+        }
     });
     
-    container.appendChild(controlPanel);
-}
-
-// Helper to create sliders
-function addSlider(parent, label, value, min, max, step, onChange) {
-    const container = document.createElement('div');
-    container.style.marginBottom = '5px';
+    controls.appendChild(powerLabel);
+    controls.appendChild(powerSlider);
     
-    const labelElem = document.createElement('label');
-    labelElem.textContent = label;
-    labelElem.style.display = 'block';
-    labelElem.style.marginBottom = '2px';
+    // Add slider for efficiency
+    const efficiencyLabel = document.createElement('div');
+    efficiencyLabel.textContent = 'Efficiency (%):';
+    efficiencyLabel.style.color = 'white';
+    efficiencyLabel.style.fontSize = '11px';
+    efficiencyLabel.style.marginTop = '5px';
+    efficiencyLabel.style.marginBottom = '2px';
     
-    const slider = document.createElement('input');
-    slider.type = 'range';
-    slider.min = min;
-    slider.max = max;
-    slider.step = step;
-    slider.value = value;
-    slider.style.width = '100%';
-    slider.style.display = 'block';
+    const efficiencySlider = document.createElement('input');
+    efficiencySlider.type = 'range';
+    efficiencySlider.min = '10';
+    efficiencySlider.max = '100';
+    efficiencySlider.step = '1';
+    efficiencySlider.value = config.efficiency * 100;
+    efficiencySlider.style.width = '100%';
     
-    slider.addEventListener('input', () => {
-        onChange(slider.value);
+    efficiencySlider.addEventListener('input', function() {
+        config.efficiency = parseFloat(this.value) / 100;
     });
     
-    container.appendChild(labelElem);
-    container.appendChild(slider);
-    parent.appendChild(container);
+    controls.appendChild(efficiencyLabel);
+    controls.appendChild(efficiencySlider);
+    
+    container.appendChild(controls);
 }
 
 // Global function to update all wave containers

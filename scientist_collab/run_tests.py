@@ -118,7 +118,7 @@ def generate_test_summary():
     report_file = os.path.join(report_dir, f"test_report_{timestamp}.txt")
     
     with open(report_file, "w") as f:
-        f.write("AxiomX - Test Report\n")
+        f.write("ElectraX - Test Report\n")
         f.write("=" * 50 + "\n")
         f.write(f"Generation date: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n")
         f.write(result.stdout)

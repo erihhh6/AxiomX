@@ -202,7 +202,11 @@
                         <p><strong>Add interactive visualizations:</strong></p>
                         <ul class="mb-0">
                             <li><code>[wave]...[/wave]</code> - Add wave/oscillation simulator for physical energy analysis</li>
-                            <li><code>[dna sequence="ATGC..."]...[/dna]</code> - Add DNA/RNA visualizer for molecular energy analysis</li>
+                            <li><code>[dna sequence="CCCCHHHHOOOO" chainType="biofuel" energyEfficiency="0.85"]...[/dna]</code> - Add molecular energy chain visualizer</li>
+                            <li>Supported chain types: <code>hydrocarbon</code>, <code>biofuel</code>, <code>polymer</code></li>
+                            <li>Supported atoms: C (Carbon), H (Hydrogen), O (Oxygen), N (Nitrogen), etc.</li>
+                            <li><code>[datastructure type="network"]...[/datastructure]</code> - Add energy network visualizer</li>
+                            <li>Supported network types: <code>network</code>, <code>grid</code>, <code>smartGrid</code>, <code>distribution</code>, <code>renewable</code></li>
                         </ul>
                     </div>
                 </div>
@@ -226,6 +230,8 @@
 
 {% block extra_js %}
 <!-- Load all visualizer scripts -->
+<script src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/controls/OrbitControls.js"></script>
 <script src="{% static 'js/visualizers/simplified_post_parser.js' %}?v={{ now.timestamp }}"></script>
 <script src="{% static 'js/visualizers/fallback_visualizer.js' %}?v={{ now.timestamp }}"></script>
 <script src="{% static 'js/visualizers/dna/dna_visualizer.js' %}?v={{ now.timestamp }}"></script>
@@ -246,37 +252,83 @@
             }
             
             // Force any remaining uninitialized containers
-            document.querySelectorAll('.visualizer-container').forEach(function(container) {
-                if (container.innerHTML.includes('Loading')) {
-                    console.log('Found uninitialized container:', container.id);
-                    // Reset it
-                    container.innerHTML = '';
-                    
-                    // Identify type
-                    const type = container.getAttribute('data-visualizer-type');
-                    if (type === 'wave-visualizer' || type === 'wave-simulator') {
-                        if (typeof window.createSimpleWaveVisualizer === 'function') {
-                            window.createSimpleWaveVisualizer(container);
-                        }
-                    } else if (type === 'data-structure') {
-                        if (typeof initDataStructureVisualizer === 'function') {
-                            // Pass the container directly
-                            const configStr = container.getAttribute('data-visualizer-config') || '{}';
-                            let configObj = {};
-                            try {
-                                configObj = JSON.parse(configStr);
-                            } catch (e) {
-                                console.error('Error parsing config:', e);
-                            }
-                            
-                            initDataStructureVisualizer(container, {
-                                type: configObj.structureType || 'tree'
-                            });
+            document.querySelectorAll('.visualizer-container:not([data-viz-initialized])').forEach(function(container) {
+                console.log("Force initializing container: " + container.id);
+                processPosts();
+            });
+            
+            // Initialize molecular chain visualizers explicitly
+            if (typeof window.initMolecularEnergyChainVisualizer === 'function') {
+                const molContainers = document.querySelectorAll('.visualizer-container[data-visualizer-type="molecular-energy-chain"]');
+                console.log("Found molecular chain containers:", molContainers.length);
+                molContainers.forEach(container => {
+                    const id = container.id;
+                    const configStr = container.getAttribute('data-visualizer-config') || '{}';
+                    try {
+                        const config = JSON.parse(configStr);
+                        window.initMolecularEnergyChainVisualizer(id, config);
+                    } catch (e) {
+                        console.error("Error initializing molecular chain:", e);
+                    }
+                });
+            }
+            
+            // Initialize energy network visualizers explicitly
+            if (typeof window.initEnergyNetworkVisualizer === 'function') {
+                const energyContainers = document.querySelectorAll('.visualizer-container[data-visualizer-type="energy-network"]');
+                console.log("Found energy network containers:", energyContainers.length);
+                energyContainers.forEach(container => {
+                    try {
+                        const configStr = container.getAttribute('data-visualizer-config') || '{}';
+                        const config = JSON.parse(configStr);
+                        window.initEnergyNetworkVisualizer(container, config);
+                        console.log("Initialized energy network visualizer:", container.id);
+                    } catch (e) {
+                        console.error("Error initializing energy network:", e);
+                        
+                        // Use fallback visualizer if available
+                        if (typeof FallbackVisualizer !== 'undefined' && typeof FallbackVisualizer.create === 'function') {
+                            console.log("Using fallback for energy network visualizer:", container.id);
+                            container.innerHTML = '';
+                            FallbackVisualizer.create(container, 'data-structure', JSON.parse(configStr));
+                        } else {
+                            // Simple error message fallback
+                            container.innerHTML = `
+                                <div class="alert alert-danger">
+                                    <h5>Energy Network Visualizer Error</h5>
+                                    <p>${e.message || 'Failed to initialize visualizer'}</p>
+                                </div>
+                            `;
                         }
                     }
+                });
+            } else {
+                // If the main initializer function is not available
+                const energyContainers = document.querySelectorAll('.visualizer-container[data-visualizer-type="energy-network"]');
+                if (energyContainers.length > 0) {
+                    console.warn("Energy Network Visualizer not available, trying fallback for", energyContainers.length, "containers");
+                    
+                    energyContainers.forEach(container => {
+                        const configStr = container.getAttribute('data-visualizer-config') || '{}';
+                        
+                        // Use fallback visualizer if available
+                        if (typeof FallbackVisualizer !== 'undefined' && typeof FallbackVisualizer.create === 'function') {
+                            console.log("Using fallback for energy network visualizer:", container.id);
+                            container.innerHTML = '';
+                            FallbackVisualizer.create(container, 'data-structure', JSON.parse(configStr));
+                        } else {
+                            // Simple error message fallback
+                            container.innerHTML = `
+                                <div class="alert alert-warning">
+                                    <h5>Energy Network Visualizer Not Available</h5>
+                                    <p>The energy network visualizer could not be loaded.</p>
+                                </div>
+                            `;
+                        }
+                    });
                 }
-            });
-        }, 1000);
+            }
+        }, 500);
     });
 </script>
 

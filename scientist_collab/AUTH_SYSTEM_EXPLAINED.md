@@ -1,6 +1,6 @@
-# AxiomX Authentication System - Detailed Explanation
+# ElectraX Authentication System - Detailed Explanation
 
-This document provides a comprehensive explanation of the authentication system implemented in the AxiomX scientific collaboration platform, detailing how user registration, login, password management, and security features work.
+This document provides a comprehensive explanation of the authentication system implemented in the ElectraX scientific collaboration platform, detailing how user registration, login, password management, and security features work.
 
 ## Table of Contents
 
@@ -18,7 +18,7 @@ This document provides a comprehensive explanation of the authentication system 
 
 ### Base User Model
 
-AxiomX uses Django's built-in `User` model from `django.contrib.auth.models`, which provides:
+ElectraX uses Django's built-in `User` model from `django.contrib.auth.models`, which provides:
 
 - Username (unique identifier)
 - Email address
@@ -68,7 +68,7 @@ All user data is stored in a MySQL database with these security measures:
 
 ### Password Hashing
 
-AxiomX uses a multi-layer approach to password security:
+ElectraX uses a multi-layer approach to password security:
 
 1. **Argon2 as primary hasher** - Argon2 won the Password Hashing Competition and is considered the most secure algorithm available:
 
@@ -266,7 +266,7 @@ The system provides a secure password reset flow:
 
 ## Brute Force Protection
 
-AxiomX uses django-axes to implement sophisticated brute force protection:
+ElectraX uses django-axes to implement sophisticated brute force protection:
 
 ```python
 # Django-axes configuration for rate limiting
@@ -351,7 +351,7 @@ LOGGING = {
 
 ## Additional Security Measures
 
-Beyond authentication, AxiomX implements several additional security features:
+Beyond authentication, ElectraX implements several additional security features:
 
 1. **Content Security Policy**
    - Custom middleware that sets appropriate CSP headers
@@ -375,4 +375,4 @@ Beyond authentication, AxiomX implements several additional security features:
    - X-XSS-Protection: 1; mode=block
    - Additional modern security headers
 
-By implementing these comprehensive security measures, AxiomX provides a robust and secure authentication system that protects sensitive scientific data and user accounts. 
+By implementing these comprehensive security measures, ElectraX provides a robust and secure authentication system that protects sensitive scientific data and user accounts. 

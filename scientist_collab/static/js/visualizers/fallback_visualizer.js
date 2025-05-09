@@ -157,7 +157,7 @@ function createFallbackDNAVisualizer(container, config = {}) {
 
 // Data Structure Fallback
 function createFallbackDataStructureVisualizer(container, config = {}) {
-    const type = config.structureType || 'tree';
+    const type = config.structureType || 'network';
     
     // Create wrapper
     container.innerHTML = '';
@@ -172,6 +172,13 @@ function createFallbackDataStructureVisualizer(container, config = {}) {
     
     // Draw simple visualization based on type
     switch (type.toLowerCase()) {
+        case 'network':
+        case 'grid':
+        case 'smartgrid':
+        case 'distribution':
+        case 'renewable':
+            drawSimpleEnergyNetwork(ctx, canvas.width / 2, canvas.height / 2, Math.min(canvas.width, canvas.height) * 0.4, type.toLowerCase());
+            break;
         case 'tree':
             drawSimpleTree(ctx, canvas.width / 2, 40, canvas.width * 0.8);
             break;
@@ -187,8 +194,8 @@ function createFallbackDataStructureVisualizer(container, config = {}) {
             drawSimpleArray(ctx, 50, canvas.height / 2, canvas.width - 100);
             break;
         default:
-            // Default to tree
-            drawSimpleTree(ctx, canvas.width / 2, 40, canvas.width * 0.8);
+            // Default to energy network
+            drawSimpleEnergyNetwork(ctx, canvas.width / 2, canvas.height / 2, Math.min(canvas.width, canvas.height) * 0.4, 'network');
     }
     
     // Add message
@@ -199,8 +206,8 @@ function createFallbackDataStructureVisualizer(container, config = {}) {
     message.style.borderRadius = '5px';
     message.style.fontSize = '14px';
     message.innerHTML = `
-        <p><strong>Fallback Data Structure Visualizer</strong></p>
-        <p class="text-muted">The full data structure visualizer could not be loaded. This is a simplified representation.</p>
+        <p><strong>Fallback Energy Network Visualizer</strong></p>
+        <p class="text-muted">The full energy network visualizer could not be loaded. This is a simplified representation of a ${type} network.</p>
     `;
     container.appendChild(message);
 }
@@ -433,6 +440,416 @@ function drawEdge(ctx, x1, y1, x2, y2) {
     ctx.fill();
 }
 
+// Draw a simple energy network (fallback)
+function drawSimpleEnergyNetwork(ctx, centerX, centerY, radius, type = 'network') {
+    // Clear canvas
+    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    
+    // Background
+    ctx.fillStyle = '#f8f9fa';
+    ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    
+    // Draw based on network type
+    switch(type.toLowerCase()) {
+        case 'grid':
+            drawPowerGrid(ctx, centerX, centerY, radius);
+            break;
+        case 'smartgrid':
+        case 'smartGrid':
+            drawSmartGrid(ctx, centerX, centerY, radius);
+            break;
+        case 'renewable':
+            drawRenewableNetwork(ctx, centerX, centerY, radius);
+            break;
+        case 'distribution':
+            drawDistributionNetwork(ctx, centerX, centerY, radius);
+            break;
+        default:
+            drawBasicNetwork(ctx, centerX, centerY, radius);
+    }
+}
+
+// Draw a basic energy network
+function drawBasicNetwork(ctx, centerX, centerY, radius) {
+    // Draw generator node
+    ctx.fillStyle = '#ffcc00';
+    ctx.beginPath();
+    ctx.arc(centerX - radius/2, centerY - radius/2, radius/6, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#333';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    ctx.fillStyle = '#333';
+    ctx.font = '12px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('Generator', centerX - radius/2, centerY - radius/2 + radius/4 + 15);
+    
+    // Draw distribution node
+    ctx.fillStyle = '#4285F4';
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, radius/5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = '#333';
+    ctx.fillText('Distributor', centerX, centerY + radius/4 + 15);
+    
+    // Draw consumer nodes
+    ctx.fillStyle = '#34a853';
+    ctx.beginPath();
+    ctx.arc(centerX + radius/2, centerY - radius/3, radius/8, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = '#333';
+    ctx.fillText('Consumer 1', centerX + radius/2, centerY - radius/3 + radius/6 + 15);
+    
+    ctx.fillStyle = '#34a853';
+    ctx.beginPath();
+    ctx.arc(centerX + radius/3, centerY + radius/3, radius/8, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = '#333';
+    ctx.fillText('Consumer 2', centerX + radius/3, centerY + radius/3 + radius/6 + 15);
+    
+    // Draw connections
+    ctx.strokeStyle = '#666';
+    ctx.lineWidth = 2;
+    
+    // Generator to distributor
+    ctx.beginPath();
+    ctx.moveTo(centerX - radius/2 + radius/6, centerY - radius/2);
+    ctx.lineTo(centerX - radius/5, centerY);
+    ctx.stroke();
+    
+    // Distributor to consumers
+    ctx.beginPath();
+    ctx.moveTo(centerX + radius/5, centerY);
+    ctx.lineTo(centerX + radius/2 - radius/8, centerY - radius/3);
+    ctx.stroke();
+    
+    ctx.beginPath();
+    ctx.moveTo(centerX + radius/5, centerY);
+    ctx.lineTo(centerX + radius/3 - radius/8, centerY + radius/3);
+    ctx.stroke();
+    
+    // Add title
+    ctx.fillStyle = '#333';
+    ctx.font = 'bold 16px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('Basic Energy Network', centerX, 30);
+}
+
+// Draw a power grid
+function drawPowerGrid(ctx, centerX, centerY, radius) {
+    // Draw power plant
+    ctx.fillStyle = '#ff6b6b';
+    ctx.beginPath();
+    ctx.arc(centerX, centerY - radius/2, radius/5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#333';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    ctx.fillStyle = '#333';
+    ctx.font = '12px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('Power Plant', centerX, centerY - radius/2 + radius/4 + 15);
+    
+    // Draw substations
+    ctx.fillStyle = '#4dabf7';
+    for (let i = 0; i < 4; i++) {
+        const angle = i * Math.PI / 2;
+        const x = centerX + Math.cos(angle) * radius/2;
+        const y = centerY + Math.sin(angle) * radius/2;
+        
+        ctx.beginPath();
+        ctx.arc(x, y, radius/8, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        ctx.fillStyle = '#333';
+        ctx.fillText(`Substation ${i+1}`, x, y + radius/6 + 15);
+        ctx.fillStyle = '#4dabf7';
+    }
+    
+    // Draw connections
+    ctx.strokeStyle = '#666';
+    ctx.lineWidth = 2;
+    
+    // Power plant to substations
+    for (let i = 0; i < 4; i++) {
+        const angle = i * Math.PI / 2;
+        const x = centerX + Math.cos(angle) * radius/2;
+        const y = centerY + Math.sin(angle) * radius/2;
+        
+        ctx.beginPath();
+        ctx.moveTo(centerX, centerY - radius/2 + radius/5);
+        ctx.lineTo(x, y);
+        ctx.stroke();
+    }
+    
+    // Add title
+    ctx.fillStyle = '#333';
+    ctx.font = 'bold 16px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('Power Grid', centerX, 30);
+}
+
+// Draw a smart grid
+function drawSmartGrid(ctx, centerX, centerY, radius) {
+    // Draw renewable sources
+    ctx.fillStyle = '#20c997';
+    ctx.beginPath();
+    ctx.arc(centerX - radius/2, centerY - radius/2, radius/7, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#333';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    ctx.fillStyle = '#333';
+    ctx.font = '12px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('Solar', centerX - radius/2, centerY - radius/2 + radius/5 + 15);
+    
+    ctx.fillStyle = '#20c997';
+    ctx.beginPath();
+    ctx.arc(centerX + radius/2, centerY - radius/2, radius/7, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = '#333';
+    ctx.fillText('Wind', centerX + radius/2, centerY - radius/2 + radius/5 + 15);
+    
+    // Draw storage
+    ctx.fillStyle = '#ff922b';
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, radius/6, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = '#333';
+    ctx.fillText('Storage', centerX, centerY + radius/4 + 15);
+    
+    // Draw smart consumers
+    ctx.fillStyle = '#339af0';
+    ctx.beginPath();
+    ctx.arc(centerX - radius/3, centerY + radius/3, radius/8, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = '#333';
+    ctx.fillText('Smart Home', centerX - radius/3, centerY + radius/3 + radius/6 + 15);
+    
+    ctx.fillStyle = '#339af0';
+    ctx.beginPath();
+    ctx.arc(centerX + radius/3, centerY + radius/3, radius/8, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = '#333';
+    ctx.fillText('Smart Building', centerX + radius/3, centerY + radius/3 + radius/6 + 15);
+    
+    // Draw connections (smart grid has more connections)
+    ctx.strokeStyle = '#666';
+    ctx.lineWidth = 2;
+    
+    // Connect all nodes in a mesh network
+    const nodes = [
+        {x: centerX - radius/2, y: centerY - radius/2}, // Solar
+        {x: centerX + radius/2, y: centerY - radius/2}, // Wind
+        {x: centerX, y: centerY},                       // Storage
+        {x: centerX - radius/3, y: centerY + radius/3}, // Smart Home
+        {x: centerX + radius/3, y: centerY + radius/3}  // Smart Building
+    ];
+    
+    for (let i = 0; i < nodes.length; i++) {
+        for (let j = i + 1; j < nodes.length; j++) {
+            ctx.beginPath();
+            ctx.moveTo(nodes[i].x, nodes[i].y);
+            ctx.lineTo(nodes[j].x, nodes[j].y);
+            ctx.stroke();
+        }
+    }
+    
+    // Add title
+    ctx.fillStyle = '#333';
+    ctx.font = 'bold 16px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('Smart Grid', centerX, 30);
+}
+
+// Draw a distribution network
+function drawDistributionNetwork(ctx, centerX, centerY, radius) {
+    // Draw main power source
+    ctx.fillStyle = '#e03131';
+    ctx.beginPath();
+    ctx.arc(centerX, centerY - radius/2, radius/5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#333';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    ctx.fillStyle = '#333';
+    ctx.font = '12px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('Main Source', centerX, centerY - radius/2 + radius/4 + 15);
+    
+    // Draw primary distributors
+    ctx.fillStyle = '#5c7cfa';
+    const primaryDist = [];
+    for (let i = 0; i < 3; i++) {
+        const angle = (i - 1) * Math.PI / 4;
+        const x = centerX + Math.cos(angle) * radius/2;
+        const y = centerY + Math.sin(angle) * radius/3;
+        
+        primaryDist.push({x, y});
+        
+        ctx.beginPath();
+        ctx.arc(x, y, radius/8, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        ctx.fillStyle = '#333';
+        ctx.fillText(`Primary ${i+1}`, x, y + radius/6 + 15);
+        ctx.fillStyle = '#5c7cfa';
+    }
+    
+    // Draw secondary distributors
+    ctx.fillStyle = '#748ffc';
+    const secondaryDist = [];
+    for (let i = 0; i < primaryDist.length; i++) {
+        for (let j = 0; j < 2; j++) {
+            const angle = (i - 1) * Math.PI / 4 + (j - 0.5) * Math.PI / 8;
+            const x = primaryDist[i].x + Math.cos(angle) * radius/3;
+            const y = primaryDist[i].y + Math.sin(angle) * radius/3;
+            
+            secondaryDist.push({x, y, parent: i});
+            
+            ctx.beginPath();
+            ctx.arc(x, y, radius/10, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+            ctx.fillStyle = '#333';
+            ctx.fillText(`S${i+1}-${j+1}`, x, y + radius/8 + 15);
+            ctx.fillStyle = '#748ffc';
+        }
+    }
+    
+    // Draw connections
+    ctx.strokeStyle = '#666';
+    ctx.lineWidth = 2;
+    
+    // Main to primary
+    for (let i = 0; i < primaryDist.length; i++) {
+        ctx.beginPath();
+        ctx.moveTo(centerX, centerY - radius/2 + radius/5);
+        ctx.lineTo(primaryDist[i].x, primaryDist[i].y);
+        ctx.stroke();
+    }
+    
+    // Primary to secondary
+    for (let i = 0; i < secondaryDist.length; i++) {
+        ctx.beginPath();
+        ctx.moveTo(primaryDist[secondaryDist[i].parent].x, primaryDist[secondaryDist[i].parent].y);
+        ctx.lineTo(secondaryDist[i].x, secondaryDist[i].y);
+        ctx.stroke();
+    }
+    
+    // Add title
+    ctx.fillStyle = '#333';
+    ctx.font = 'bold 16px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('Distribution Network', centerX, 30);
+}
+
+// Draw a renewable energy network
+function drawRenewableNetwork(ctx, centerX, centerY, radius) {
+    // Draw renewable sources
+    // Solar
+    ctx.fillStyle = '#fcc419';
+    ctx.beginPath();
+    ctx.arc(centerX - radius/2, centerY - radius/3, radius/7, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#333';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    ctx.fillStyle = '#333';
+    ctx.font = '12px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('Solar', centerX - radius/2, centerY - radius/3 + radius/5 + 15);
+    
+    // Wind
+    ctx.fillStyle = '#a5d8ff';
+    ctx.beginPath();
+    ctx.arc(centerX, centerY - radius/2, radius/7, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = '#333';
+    ctx.fillText('Wind', centerX, centerY - radius/2 + radius/5 + 15);
+    
+    // Hydro
+    ctx.fillStyle = '#15aabf';
+    ctx.beginPath();
+    ctx.arc(centerX + radius/2, centerY - radius/3, radius/7, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = '#333';
+    ctx.fillText('Hydro', centerX + radius/2, centerY - radius/3 + radius/5 + 15);
+    
+    // Draw storage
+    ctx.fillStyle = '#ff922b';
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, radius/6, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = '#333';
+    ctx.fillText('Storage', centerX, centerY + radius/4 + 15);
+    
+    // Draw consumers
+    ctx.fillStyle = '#40c057';
+    ctx.beginPath();
+    ctx.arc(centerX - radius/3, centerY + radius/3, radius/8, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = '#333';
+    ctx.fillText('Green Home', centerX - radius/3, centerY + radius/3 + radius/6 + 15);
+    
+    ctx.fillStyle = '#40c057';
+    ctx.beginPath();
+    ctx.arc(centerX + radius/3, centerY + radius/3, radius/8, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = '#333';
+    ctx.fillText('Community', centerX + radius/3, centerY + radius/3 + radius/6 + 15);
+    
+    // Draw connections
+    ctx.strokeStyle = '#666';
+    ctx.lineWidth = 2;
+    
+    // Connect renewables to storage
+    ctx.beginPath();
+    ctx.moveTo(centerX - radius/2, centerY - radius/3);
+    ctx.lineTo(centerX, centerY);
+    ctx.stroke();
+    
+    ctx.beginPath();
+    ctx.moveTo(centerX, centerY - radius/2);
+    ctx.lineTo(centerX, centerY);
+    ctx.stroke();
+    
+    ctx.beginPath();
+    ctx.moveTo(centerX + radius/2, centerY - radius/3);
+    ctx.lineTo(centerX, centerY);
+    ctx.stroke();
+    
+    // Connect storage to consumers
+    ctx.beginPath();
+    ctx.moveTo(centerX, centerY);
+    ctx.lineTo(centerX - radius/3, centerY + radius/3);
+    ctx.stroke();
+    
+    ctx.beginPath();
+    ctx.moveTo(centerX, centerY);
+    ctx.lineTo(centerX + radius/3, centerY + radius/3);
+    ctx.stroke();
+    
+    // Add title
+    ctx.fillStyle = '#333';
+    ctx.font = 'bold 16px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('Renewable Energy Network', centerX, 30);
+}
+
 // Fallback visualizer factory
 const FallbackVisualizer = {
     create: function(container, type, config = {}) {
@@ -473,7 +890,8 @@ const FallbackVisualizer = {
             
             'datastructure': 'data-structure',
             'data-structure': 'data-structure',
-            'data_structure': 'data-structure'
+            'data_structure': 'data-structure',
+            'energy-network': 'data-structure'
         };
         
         // If type is found in map, return the normalized version, otherwise return original

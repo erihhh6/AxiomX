@@ -1,15 +1,16 @@
 /**
- * Advanced Data Structure Visualizer
+ * Advanced Energy Network Visualizer
  * 
  * Supports both 2D (Canvas API) and 3D (Three.js) visualizations
+ * for energy network modeling, distribution nodes, and energy flows
  * with modern, interactive features and smooth animations
  */
 
 // Add global debugging flag for this module
-window.DATA_STRUCTURE_VISUALIZER_LOADED = true;
-console.log("========== Data Structure Visualizer Script Loaded ==========");
+window.ENERGY_NETWORK_VISUALIZER_LOADED = true;
+console.log("========== Energy Network Visualizer Script Loaded ==========");
 
-class DataStructureVisualizer {
+class EnergyNetworkVisualizer {
     constructor(container, options = {}) {
         // Accept either a string ID or a DOM element
         if (typeof container === 'string') {
@@ -25,7 +26,7 @@ class DataStructureVisualizer {
             return;
         }
 
-        console.log("DataStructureVisualizer initialized with options:", options);
+        console.log("EnergyNetworkVisualizer initialized with options:", options);
 
         // Process options
         // Map structureType to type if needed (for compatibility with tag attributes)
@@ -36,12 +37,17 @@ class DataStructureVisualizer {
 
         // Default options with 3D support
         this.options = Object.assign({
-            type: 'tree',
+            type: 'network',
             mode: '3d', // Default to 3D for better visualization
             data: null,
             theme: 'default',
             animation: true,
-            interactive: true
+            interactive: true,
+            // Energy-specific options
+            efficiency: 0.85,
+            costFactor: 1.0,
+            emissions: 'low',
+            capacity: 100
         }, options);
 
         console.log("Final options:", this.options);
@@ -60,17 +66,28 @@ class DataStructureVisualizer {
 
         // Add status indicator
         this.statusIndicator = document.createElement('div');
-        this.statusIndicator.className = 'data-structure-visualizer-status';
+        this.statusIndicator.className = 'energy-network-visualizer-status';
         this.statusIndicator.style.fontSize = '12px';
         this.statusIndicator.style.color = '#666';
         this.statusIndicator.style.marginTop = '4px';
         this.statusIndicator.style.marginBottom = '4px';
         this.statusIndicator.style.textAlign = 'center';
-        this.container.appendChild(this.statusIndicator);
-        this.updateStatus('Initializing data structure visualizer...');
+        
+        // Safely append the status indicator
+        try {
+            this.container.appendChild(this.statusIndicator);
+            this.updateStatus('Initializing energy network visualizer...');
+        } catch (e) {
+            console.error("Error appending status indicator:", e);
+        }
 
-        // Create mode toggle switch
-        this.createModeToggle();
+        // Create mode toggle switch (but don't append yet)
+        let modeToggle = this.createModeToggle();
+        try {
+            this.container.appendChild(modeToggle);
+        } catch (e) {
+            console.error("Error appending mode toggle:", e);
+        }
 
         // Initialize based on mode
         if (this.options.mode === '3d') {
@@ -107,7 +124,7 @@ class DataStructureVisualizer {
         text.textContent = this.options.mode === '3d' ? '3D' : '2D';
         
         const icon = document.createElement('span');
-        icon.innerHTML = this.options.mode === '3d' ? '🌐' : '📊';
+        icon.innerHTML = this.options.mode === '3d' ? '⚡' : '🔌';
         
         toggle.appendChild(icon);
         toggle.appendChild(text);
@@ -117,7 +134,7 @@ class DataStructureVisualizer {
         toggle.addEventListener('click', () => {
             this.options.mode = this.options.mode === '3d' ? '2d' : '3d';
             text.textContent = this.options.mode === '3d' ? '3D' : '2D';
-            icon.innerHTML = this.options.mode === '3d' ? '🌐' : '📊';
+            icon.innerHTML = this.options.mode === '3d' ? '⚡' : '🔌';
             
             // Reinitialize visualizer with new mode
             if (this.options.mode === '3d') {
@@ -127,8 +144,9 @@ class DataStructureVisualizer {
             }
         });
         
-        this.container.appendChild(toggleContainer);
+        // Store reference to the toggle container
         this.modeToggle = toggleContainer;
+        return toggleContainer;
     }
 
     updateStatus(message, isError = false) {
@@ -142,7 +160,7 @@ class DataStructureVisualizer {
             if (isError) {
                 this.cardStatusIndicator.textContent = 'Error';
                 this.cardStatusIndicator.className = 'viz-status-indicator badge bg-danger float-end';
-            } else if (message === 'Initializing data structure visualizer...') {
+            } else if (message === 'Initializing energy network visualizer...') {
                 this.cardStatusIndicator.textContent = 'Loading...';
                 this.cardStatusIndicator.className = 'viz-status-indicator badge bg-secondary float-end';
             } else {
@@ -156,108 +174,213 @@ class DataStructureVisualizer {
         const errorDiv = document.createElement('div');
         errorDiv.className = 'alert alert-danger mt-3';
         errorDiv.innerHTML = `
-            <h5>Visualization Error</h5>
-            <p>${error.message || 'Unknown error occurred while initializing the visualizer'}</p>
+            <h5>Energy Network Visualization Error</h5>
+            <p>${error.message || 'Unknown error occurred while initializing the energy network visualizer'}</p>
             <p>Check browser console for more details.</p>
         `;
-        this.container.appendChild(errorDiv);
         
         // Update status indicators
-        this.updateStatus('Error initializing visualizer', true);
+        this.updateStatus('Error initializing energy network visualizer', true);
+        
+        return errorDiv;
     }
     
     createStructureControls() {
-        // Create controls container
-        const controlsDiv = document.createElement('div');
-        controlsDiv.className = 'structure-controls';
-        controlsDiv.style.marginBottom = '10px';
-        controlsDiv.style.padding = '10px';
-        controlsDiv.style.backgroundColor = '#f8f9fa';
-        controlsDiv.style.borderRadius = '4px';
-        controlsDiv.style.display = 'flex';
-        controlsDiv.style.flexWrap = 'wrap';
-        controlsDiv.style.gap = '10px';
-        controlsDiv.style.alignItems = 'center';
-        controlsDiv.style.zIndex = '5';
-        
-        // Type selection control
-        const typeDiv = document.createElement('div');
-        typeDiv.style.display = 'flex';
-        typeDiv.style.alignItems = 'center';
-        typeDiv.innerHTML = `<label style="margin-right: 5px;">Structure type: </label>`;
-        const typeSelect = document.createElement('select');
-        typeSelect.className = 'form-select form-select-sm structure-type-select';
-        typeSelect.style.display = 'inline-block';
-        typeSelect.style.width = 'auto';
-        
-        ['tree', 'graph', 'linkedList', 'array'].forEach(type => {
-            const option = document.createElement('option');
-            option.value = type;
-            option.text = type.charAt(0).toUpperCase() + type.slice(1);
-            if (type === this.options.type) {
-                option.selected = true;
-            }
-            typeSelect.appendChild(option);
-        });
-        
-        typeSelect.addEventListener('change', (e) => {
-            this.options.type = e.target.value;
-            this.updateStatus(`Switching to ${this.options.type} visualization...`);
+        try {
+            // Create controls container
+            const controlsDiv = document.createElement('div');
+            controlsDiv.className = 'energy-network-controls';
+            controlsDiv.style.marginBottom = '10px';
+            controlsDiv.style.padding = '10px';
+            controlsDiv.style.backgroundColor = '#f8f9fa';
+            controlsDiv.style.borderRadius = '4px';
+            controlsDiv.style.display = 'flex';
+            controlsDiv.style.flexWrap = 'wrap';
+            controlsDiv.style.gap = '10px';
+            controlsDiv.style.alignItems = 'center';
+            controlsDiv.style.zIndex = '5';
             
-            if (this.options.mode === '3d') {
-                this.create3DStructure();
-                this.updateStatus(`3D ${this.options.type} visualization active`);
-            } else {
-                this.draw();
-                this.updateStatus(`${this.options.type} visualization active`);
-            }
-        });
-        
-        typeDiv.appendChild(typeSelect);
-        controlsDiv.appendChild(typeDiv);
-        
-        // Color theme selector
-        const themeDiv = document.createElement('div');
-        themeDiv.style.display = 'flex';
-        themeDiv.style.alignItems = 'center';
-        themeDiv.innerHTML = `<label style="margin-right: 5px;">Color theme: </label>`;
-        const themeSelect = document.createElement('select');
-        themeSelect.className = 'form-select form-select-sm color-theme-select';
-        themeSelect.style.display = 'inline-block';
-        themeSelect.style.width = 'auto';
-        
-        const themes = [
-            { value: 'default', text: 'Default' },
-            { value: 'dark', text: 'Dark' },
-            { value: 'pastel', text: 'Pastel' }
-        ];
-        
-        themes.forEach(theme => {
-            const option = document.createElement('option');
-            option.value = theme.value;
-            option.text = theme.text;
-            if (theme.value === (this.colorTheme || 'default')) {
-                option.selected = true;
-            }
-            themeSelect.appendChild(option);
-        });
-        
-        themeSelect.addEventListener('change', (e) => {
-            this.colorTheme = e.target.value;
-            if (this.options.mode === '3d') {
-                this.create3DStructure();
-            } else {
-                this.draw();
-            }
-        });
-        
-        themeDiv.appendChild(themeSelect);
-        controlsDiv.appendChild(themeDiv);
-        
-        // Store the controls div for later use
-        this.structureControls = controlsDiv;
-        
-        return controlsDiv;
+            // Type selection control
+            const typeDiv = document.createElement('div');
+            typeDiv.style.display = 'flex';
+            typeDiv.style.alignItems = 'center';
+            typeDiv.innerHTML = `<label style="margin-right: 5px;">Network type: </label>`;
+            const typeSelect = document.createElement('select');
+            typeSelect.className = 'form-select form-select-sm network-type-select';
+            typeSelect.style.display = 'inline-block';
+            typeSelect.style.width = 'auto';
+            
+            // Energy network types
+            ['network', 'grid', 'smartGrid', 'distribution', 'renewable'].forEach(type => {
+                const option = document.createElement('option');
+                option.value = type;
+                option.text = type === 'smartGrid' ? 'Smart Grid' : 
+                            (type.charAt(0).toUpperCase() + type.slice(1));
+                if (type === this.options.type) {
+                    option.selected = true;
+                }
+                typeSelect.appendChild(option);
+            });
+            
+            typeSelect.addEventListener('change', (e) => {
+                this.options.type = e.target.value;
+                this.updateStatus(`Switching to ${this.options.type} energy network...`);
+                
+                if (this.options.mode === '3d') {
+                    this.create3DStructure();
+                    this.updateStatus(`3D ${this.options.type} energy network active`);
+                } else {
+                    this.draw();
+                    this.updateStatus(`${this.options.type} energy network active`);
+                }
+            });
+            
+            typeDiv.appendChild(typeSelect);
+            controlsDiv.appendChild(typeDiv);
+            
+            // Color theme selector
+            const themeDiv = document.createElement('div');
+            themeDiv.style.display = 'flex';
+            themeDiv.style.alignItems = 'center';
+            themeDiv.innerHTML = `<label style="margin-right: 5px;">Color theme: </label>`;
+            const themeSelect = document.createElement('select');
+            themeSelect.className = 'form-select form-select-sm color-theme-select';
+            themeSelect.style.display = 'inline-block';
+            themeSelect.style.width = 'auto';
+            
+            const themes = [
+                { value: 'default', text: 'Default' },
+                { value: 'dark', text: 'Dark' },
+                { value: 'green', text: 'Green Energy' },
+                { value: 'thermal', text: 'Thermal' }
+            ];
+            
+            themes.forEach(theme => {
+                const option = document.createElement('option');
+                option.value = theme.value;
+                option.text = theme.text;
+                if (theme.value === (this.colorTheme || 'default')) {
+                    option.selected = true;
+                }
+                themeSelect.appendChild(option);
+            });
+            
+            themeSelect.addEventListener('change', (e) => {
+                this.colorTheme = e.target.value;
+                if (this.options.mode === '3d') {
+                    this.create3DStructure();
+                } else {
+                    this.draw();
+                }
+            });
+            
+            themeDiv.appendChild(themeSelect);
+            controlsDiv.appendChild(themeDiv);
+            
+            // Energy efficiency slider
+            const efficiencyDiv = document.createElement('div');
+            efficiencyDiv.style.display = 'flex';
+            efficiencyDiv.style.alignItems = 'center';
+            efficiencyDiv.style.marginLeft = '10px';
+            
+            const efficiencyLabel = document.createElement('label');
+            efficiencyLabel.textContent = 'Efficiency: ';
+            efficiencyLabel.style.marginRight = '5px';
+            efficiencyDiv.appendChild(efficiencyLabel);
+            
+            const efficiencyValue = document.createElement('span');
+            efficiencyValue.textContent = `${Math.round(this.options.efficiency * 100)}%`;
+            efficiencyValue.style.marginRight = '5px';
+            efficiencyValue.style.minWidth = '40px';
+            efficiencyValue.style.display = 'inline-block';
+            efficiencyDiv.appendChild(efficiencyValue);
+            
+            const efficiencySlider = document.createElement('input');
+            efficiencySlider.type = 'range';
+            efficiencySlider.min = '0.1';
+            efficiencySlider.max = '1';
+            efficiencySlider.step = '0.05';
+            efficiencySlider.value = this.options.efficiency;
+            efficiencySlider.style.width = '100px';
+            
+            efficiencySlider.addEventListener('input', (e) => {
+                this.options.efficiency = parseFloat(e.target.value);
+                efficiencyValue.textContent = `${Math.round(this.options.efficiency * 100)}%`;
+                
+                // Update visualization with new efficiency
+                if (this.options.mode === '3d') {
+                    this.updateNetworkEfficiency();
+                } else {
+                    this.draw();
+                }
+            });
+            
+            efficiencyDiv.appendChild(efficiencySlider);
+            controlsDiv.appendChild(efficiencyDiv);
+            
+            // Emissions type selector
+            const emissionsDiv = document.createElement('div');
+            emissionsDiv.style.display = 'flex';
+            emissionsDiv.style.alignItems = 'center';
+            emissionsDiv.style.marginLeft = '10px';
+            
+            const emissionsLabel = document.createElement('label');
+            emissionsLabel.textContent = 'Emissions: ';
+            emissionsLabel.style.marginRight = '5px';
+            emissionsDiv.appendChild(emissionsLabel);
+            
+            const emissionsSelect = document.createElement('select');
+            emissionsSelect.className = 'form-select form-select-sm';
+            emissionsSelect.style.display = 'inline-block';
+            emissionsSelect.style.width = 'auto';
+            
+            ['low', 'medium', 'high'].forEach(level => {
+                const option = document.createElement('option');
+                option.value = level;
+                option.text = level.charAt(0).toUpperCase() + level.slice(1);
+                if (level === this.options.emissions) {
+                    option.selected = true;
+                }
+                emissionsSelect.appendChild(option);
+            });
+            
+            emissionsSelect.addEventListener('change', (e) => {
+                this.options.emissions = e.target.value;
+                
+                // Update visualization with new emissions setting
+                if (this.options.mode === '3d') {
+                    this.updateNetworkEmissions();
+                } else {
+                    this.draw();
+                }
+            });
+            
+            emissionsDiv.appendChild(emissionsSelect);
+            controlsDiv.appendChild(emissionsDiv);
+            
+            // Store controlsDiv reference but return it without appending
+            this.controlsDiv = controlsDiv;
+            return controlsDiv;
+        } catch (error) {
+            console.error("Error creating structure controls:", error);
+            
+            // Return a minimal control panel in case of error
+            const minimalControls = document.createElement('div');
+            minimalControls.className = 'energy-network-controls';
+            minimalControls.style.padding = '10px';
+            minimalControls.style.backgroundColor = '#f8f9fa';
+            minimalControls.style.borderRadius = '4px';
+            minimalControls.style.marginBottom = '10px';
+            
+            const errorMessage = document.createElement('div');
+            errorMessage.textContent = 'Control panel error. Basic visualization active.';
+            errorMessage.style.color = '#dc3545';
+            errorMessage.style.fontSize = '12px';
+            
+            minimalControls.appendChild(errorMessage);
+            this.controlsDiv = minimalControls;
+            return minimalControls;
+        }
     }
     
     saveAsPNG() {
@@ -548,14 +671,28 @@ class DataStructureVisualizer {
             
             // Add status indicator back
             if (currentStatus) {
-                this.container.appendChild(currentStatus);
+                try {
+                    this.container.appendChild(currentStatus);
+                } catch (e) {
+                    console.error("Error re-appending status indicator:", e);
+                    this.statusIndicator = document.createElement('div');
+                    this.statusIndicator.className = 'energy-network-visualizer-status';
+                    this.container.appendChild(this.statusIndicator);
+                }
             }
             
-            // Add mode toggle back
+            // Add mode toggle back or create new one
+            let modeToggle;
             if (currentModeToggle) {
-                this.container.appendChild(currentModeToggle);
+                modeToggle = currentModeToggle;
             } else {
-                this.createModeToggle();
+                modeToggle = this.createModeToggle();
+            }
+            
+            try {
+                this.container.appendChild(modeToggle);
+            } catch (e) {
+                console.error("Error appending mode toggle:", e);
             }
             
             // Set up container dimensions
@@ -565,20 +702,29 @@ class DataStructureVisualizer {
             console.log(`Container dimensions: ${this.width}x${this.height}`);
             
             // Create structure controls
-            const controls = this.createStructureControls();
-            this.container.appendChild(controls);
-            
-            // Create canvas
-            this.canvas = document.createElement('canvas');
-            if (!this.canvas) {
-                throw new Error("Failed to create canvas element");
+            try {
+                const controls = this.createStructureControls();
+                this.container.appendChild(controls);
+            } catch (e) {
+                console.error("Error creating or appending structure controls:", e);
             }
             
-            this.canvas.width = this.width;
-            this.canvas.height = this.height;
-            this.canvas.style.display = 'block';
-            this.canvas.style.margin = '0 auto';
-            this.container.appendChild(this.canvas);
+            // Create canvas
+            try {
+                this.canvas = document.createElement('canvas');
+                if (!this.canvas) {
+                    throw new Error("Failed to create canvas element");
+                }
+                
+                this.canvas.width = this.width;
+                this.canvas.height = this.height;
+                this.canvas.style.display = 'block';
+                this.canvas.style.margin = '0 auto';
+                this.container.appendChild(this.canvas);
+            } catch (e) {
+                console.error("Error creating or appending canvas:", e);
+                throw new Error("Canvas initialization failed: " + e.message);
+            }
             
             // Get drawing context
             this.ctx = this.canvas.getContext('2d');
@@ -603,12 +749,17 @@ class DataStructureVisualizer {
         } catch (error) {
             console.error("Error initializing data structure visualizer:", error);
             this.updateStatus('Error initializing visualizer', true);
-            this.showError(error);
             
-            // Restore original content in case of error
-            if (this.originalContent) {
-                this.container.innerHTML = this.originalContent;
+            // Add error message to container
+            try {
+                const errorDiv = this.showError(error);
+                this.container.appendChild(errorDiv);
+            } catch (e) {
+                console.error("Error displaying error message:", e);
+                // Last resort error
+                this.container.innerHTML = `<div class="alert alert-danger">Error initializing visualizer: ${error.message}</div>`;
             }
+            
             return false;
         }
     }
@@ -625,19 +776,49 @@ class DataStructureVisualizer {
             
             // Add status indicator back
             if (currentStatus) {
-                this.container.appendChild(currentStatus);
+                try {
+                    this.container.appendChild(currentStatus);
+                } catch (e) {
+                    console.error("Error re-appending status indicator:", e);
+                    this.statusIndicator = document.createElement('div');
+                    this.statusIndicator.className = 'energy-network-visualizer-status';
+                    this.container.appendChild(this.statusIndicator);
+                }
             }
             
-            // Add the mode toggle back
+            // Add the mode toggle back or create new one
+            let modeToggle;
             if (currentModeToggle) {
-                this.container.appendChild(currentModeToggle);
+                modeToggle = currentModeToggle;
             } else {
-                this.createModeToggle();
+                modeToggle = this.createModeToggle();
+            }
+            
+            try {
+                this.container.appendChild(modeToggle);
+            } catch (e) {
+                console.error("Error appending mode toggle:", e);
             }
             
             // Create structure controls
-            const controls = this.createStructureControls();
-            this.container.appendChild(controls);
+            try {
+                const controls = this.createStructureControls();
+                this.container.appendChild(controls);
+            } catch (e) {
+                console.error("Error creating or appending structure controls:", e);
+            }
+            
+            // Create a canvas as a placeholder while loading
+            try {
+                this.canvas = document.createElement('canvas');
+                this.canvas.width = this.container.clientWidth || 500;
+                this.canvas.height = 300;
+                this.canvas.style.display = 'block';
+                this.canvas.style.margin = '0 auto';
+                this.container.appendChild(this.canvas);
+            } catch (e) {
+                console.error("Error creating or appending canvas:", e);
+            }
             
             // Update status
             this.updateStatus('Loading 3D visualization...');
@@ -646,565 +827,1085 @@ class DataStructureVisualizer {
             this.load3DLibrary()
                 .then(() => {
                     console.log("Three.js loaded successfully, creating 3D visualization");
-                    this.create3DVisualization();
+                    this.create3DStructure();
                 })
                 .catch(error => {
                     console.error("Failed to load Three.js:", error);
-                    this.updateStatus("Falling back to 2D visualization", true);
-                    // Fall back to 2D
-                    this.options.mode = '2d';
-                    this.init2D();
+                    this.updateStatus("Error loading 3D library, showing fallback", true);
+                    
+                    // Create a fallback visualization on the canvas
+                    this.createFallback3DVisualization();
                 });
         } catch (error) {
             console.error("Error in 3D initialization:", error);
-            this.updateStatus("Error initializing 3D, falling back to 2D", true);
-            // Fall back to 2D on error
-            this.options.mode = '2d';
-            this.init2D();
+            this.updateStatus("Error initializing 3D, showing fallback", true);
+            
+            // Create a fallback visualization
+            try {
+                this.createFallback3DVisualization();
+            } catch (e) {
+                console.error("Error creating fallback visualization:", e);
+                // Last resort error
+                try {
+                    this.container.innerHTML = `<div class="alert alert-danger">Error initializing visualizer: ${error.message}</div>`;
+                } catch (e2) {
+                    console.error("Complete failure in visualization:", e2);
+                }
+            }
         }
+    }
+    
+    // Create a fallback visualization when Three.js fails to load
+    createFallback3DVisualization() {
+        try {
+            // Ensure we have a canvas
+            if (!this.canvas) {
+                this.canvas = document.createElement('canvas');
+                this.canvas.width = this.container.clientWidth || 500;
+                this.canvas.height = 300;
+                this.canvas.style.display = 'block';
+                this.canvas.style.margin = '0 auto';
+                this.container.appendChild(this.canvas);
+            }
+            
+            // Get 2D context and draw a fallback visualization
+            const ctx = this.canvas.getContext('2d');
+            if (!ctx) {
+                throw new Error("Failed to get canvas context");
+            }
+            
+            // Clear canvas
+            ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+            
+            // Add background
+            ctx.fillStyle = '#f0f5ff';
+            ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+            
+            // Draw network based on type
+            const centerX = this.canvas.width / 2;
+            const centerY = this.canvas.height / 2;
+            const radius = Math.min(this.canvas.width, this.canvas.height) * 0.4;
+            
+            // Draw different network types
+            switch (this.options.type.toLowerCase()) {
+                case 'grid':
+                    this.drawFallbackPowerGrid(ctx, centerX, centerY, radius);
+                    break;
+                case 'smartgrid':
+                    this.drawFallbackSmartGrid(ctx, centerX, centerY, radius);
+                    break;
+                case 'renewable':
+                    this.drawFallbackRenewableNetwork(ctx, centerX, centerY, radius);
+                    break;
+                case 'distribution':
+                    this.drawFallbackDistributionNetwork(ctx, centerX, centerY, radius);
+                    break;
+                default:
+                    this.drawFallbackBasicNetwork(ctx, centerX, centerY, radius);
+            }
+            
+            // Add a note about fallback mode
+            ctx.fillStyle = 'rgba(0,0,0,0.7)';
+            ctx.font = 'bold 14px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('Fallback Visualization (3D mode unavailable)', centerX, 30);
+            
+            // Add error message
+            ctx.font = '12px Arial';
+            ctx.fillText('Could not load 3D visualization library', centerX, 50);
+            
+        } catch (error) {
+            console.error("Error creating fallback visualization:", error);
+            this.updateStatus("Visualization error", true);
+            
+            // Show a text error message as last resort
+            const errorMsg = document.createElement('div');
+            errorMsg.className = 'alert alert-danger';
+            errorMsg.innerHTML = '<strong>Error:</strong> Failed to create energy network visualization.';
+            this.container.appendChild(errorMsg);
+        }
+    }
+    
+    // Basic network fallback drawing
+    drawFallbackBasicNetwork(ctx, centerX, centerY, radius) {
+        // Draw generator node
+        ctx.fillStyle = '#ffcc00';
+        ctx.beginPath();
+        ctx.arc(centerX - radius/2, centerY - radius/2, radius/6, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#333';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        ctx.fillStyle = '#333';
+        ctx.font = '12px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('Generator', centerX - radius/2, centerY - radius/2 + radius/4 + 15);
+        
+        // Draw distribution node
+        ctx.fillStyle = '#4285F4';
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, radius/5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        ctx.fillStyle = '#333';
+        ctx.fillText('Distributor', centerX, centerY + radius/4 + 15);
+        
+        // Draw consumer nodes
+        ctx.fillStyle = '#34a853';
+        ctx.beginPath();
+        ctx.arc(centerX + radius/2, centerY - radius/3, radius/8, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        ctx.fillStyle = '#333';
+        ctx.fillText('Consumer 1', centerX + radius/2, centerY - radius/3 + radius/6 + 15);
+        
+        ctx.fillStyle = '#34a853';
+        ctx.beginPath();
+        ctx.arc(centerX + radius/3, centerY + radius/3, radius/8, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        ctx.fillStyle = '#333';
+        ctx.fillText('Consumer 2', centerX + radius/3, centerY + radius/3 + radius/6 + 15);
+        
+        // Draw connections
+        ctx.strokeStyle = '#666';
+        ctx.lineWidth = 2;
+        
+        // Generator to distributor
+        ctx.beginPath();
+        ctx.moveTo(centerX - radius/2 + radius/6, centerY - radius/2);
+        ctx.lineTo(centerX - radius/5, centerY);
+        ctx.stroke();
+        
+        // Distributor to consumers
+        ctx.beginPath();
+        ctx.moveTo(centerX + radius/5, centerY);
+        ctx.lineTo(centerX + radius/2 - radius/8, centerY - radius/3);
+        ctx.stroke();
+        
+        ctx.beginPath();
+        ctx.moveTo(centerX + radius/5, centerY);
+        ctx.lineTo(centerX + radius/3 - radius/8, centerY + radius/3);
+        ctx.stroke();
+    }
+    
+    // Smart grid fallback
+    drawFallbackSmartGrid(ctx, centerX, centerY, radius) {
+        // Similar to drawFallbackBasicNetwork but with smart grid features
+        // Draw renewable sources
+        ctx.fillStyle = '#20c997';
+        ctx.beginPath();
+        ctx.arc(centerX - radius/2, centerY - radius/2, radius/7, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#333';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        ctx.fillStyle = '#333';
+        ctx.font = '12px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('Solar', centerX - radius/2, centerY - radius/2 + radius/5 + 15);
+        
+        ctx.fillStyle = '#20c997';
+        ctx.beginPath();
+        ctx.arc(centerX + radius/2, centerY - radius/2, radius/7, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        ctx.fillStyle = '#333';
+        ctx.fillText('Wind', centerX + radius/2, centerY - radius/2 + radius/5 + 15);
+        
+        // Draw storage
+        ctx.fillStyle = '#ff922b';
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, radius/6, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        ctx.fillStyle = '#333';
+        ctx.fillText('Storage', centerX, centerY + radius/4 + 15);
+        
+        // Draw smart consumers
+        ctx.fillStyle = '#339af0';
+        ctx.beginPath();
+        ctx.arc(centerX - radius/3, centerY + radius/3, radius/8, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        ctx.fillStyle = '#333';
+        ctx.fillText('Smart Home', centerX - radius/3, centerY + radius/3 + radius/6 + 15);
+        
+        ctx.fillStyle = '#339af0';
+        ctx.beginPath();
+        ctx.arc(centerX + radius/3, centerY + radius/3, radius/8, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        ctx.fillStyle = '#333';
+        ctx.fillText('Smart Building', centerX + radius/3, centerY + radius/3 + radius/6 + 15);
+        
+        // Draw connections in a mesh network
+        const nodes = [
+            {x: centerX - radius/2, y: centerY - radius/2}, // Solar
+            {x: centerX + radius/2, y: centerY - radius/2}, // Wind
+            {x: centerX, y: centerY},                       // Storage
+            {x: centerX - radius/3, y: centerY + radius/3}, // Smart Home
+            {x: centerX + radius/3, y: centerY + radius/3}  // Smart Building
+        ];
+        
+        ctx.strokeStyle = '#666';
+        ctx.lineWidth = 2;
+        
+        for (let i = 0; i < nodes.length; i++) {
+            for (let j = i + 1; j < nodes.length; j++) {
+                ctx.beginPath();
+                ctx.moveTo(nodes[i].x, nodes[i].y);
+                ctx.lineTo(nodes[j].x, nodes[j].y);
+                ctx.stroke();
+            }
+        }
+    }
+    
+    // Power grid fallback
+    drawFallbackPowerGrid(ctx, centerX, centerY, radius) {
+        // Draw power plant
+        ctx.fillStyle = '#ff6b6b';
+        ctx.beginPath();
+        ctx.arc(centerX, centerY - radius/2, radius/5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#333';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        ctx.fillStyle = '#333';
+        ctx.font = '12px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('Power Plant', centerX, centerY - radius/2 + radius/4 + 15);
+        
+        // Draw substations
+        ctx.fillStyle = '#4dabf7';
+        for (let i = 0; i < 4; i++) {
+            const angle = i * Math.PI / 2;
+            const x = centerX + Math.cos(angle) * radius/2;
+            const y = centerY + Math.sin(angle) * radius/2;
+            
+            ctx.beginPath();
+            ctx.arc(x, y, radius/8, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+            ctx.fillStyle = '#333';
+            ctx.fillText(`Substation ${i+1}`, x, y + radius/6 + 15);
+            ctx.fillStyle = '#4dabf7';
+        }
+        
+        // Draw connections
+        ctx.strokeStyle = '#666';
+        ctx.lineWidth = 2;
+        
+        // Power plant to substations
+        for (let i = 0; i < 4; i++) {
+            const angle = i * Math.PI / 2;
+            const x = centerX + Math.cos(angle) * radius/2;
+            const y = centerY + Math.sin(angle) * radius/2;
+            
+            ctx.beginPath();
+            ctx.moveTo(centerX, centerY - radius/2 + radius/5);
+            ctx.lineTo(x, y);
+            ctx.stroke();
+        }
+    }
+    
+    // Distribution network fallback
+    drawFallbackDistributionNetwork(ctx, centerX, centerY, radius) {
+        // Similar to other network types but with hierarchical structure
+        // Main power source
+        ctx.fillStyle = '#e03131';
+        ctx.beginPath();
+        ctx.arc(centerX, centerY - radius/2, radius/5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#333';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        ctx.fillStyle = '#333';
+        ctx.font = '12px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('Main Source', centerX, centerY - radius/2 + radius/4 + 15);
+        
+        // Primary distributors
+        ctx.fillStyle = '#5c7cfa';
+        const primaryDist = [];
+        for (let i = 0; i < 3; i++) {
+            const angle = (i - 1) * Math.PI / 4;
+            const x = centerX + Math.cos(angle) * radius/2;
+            const y = centerY + Math.sin(angle) * radius/3;
+            
+            primaryDist.push({x, y});
+            
+            ctx.beginPath();
+            ctx.arc(x, y, radius/8, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+            ctx.fillStyle = '#333';
+            ctx.fillText(`Primary ${i+1}`, x, y + radius/6 + 15);
+            ctx.fillStyle = '#5c7cfa';
+        }
+        
+        // Connect main to primary
+        ctx.strokeStyle = '#666';
+        ctx.lineWidth = 2;
+        for (let i = 0; i < primaryDist.length; i++) {
+            ctx.beginPath();
+            ctx.moveTo(centerX, centerY - radius/2 + radius/5);
+            ctx.lineTo(primaryDist[i].x, primaryDist[i].y);
+            ctx.stroke();
+        }
+    }
+    
+    // Renewable energy network fallback
+    drawFallbackRenewableNetwork(ctx, centerX, centerY, radius) {
+        // Draw renewable sources
+        // Solar
+        ctx.fillStyle = '#fcc419';
+        ctx.beginPath();
+        ctx.arc(centerX - radius/2, centerY - radius/3, radius/7, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#333';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        ctx.fillStyle = '#333';
+        ctx.font = '12px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('Solar', centerX - radius/2, centerY - radius/3 + radius/5 + 15);
+        
+        // Wind
+        ctx.fillStyle = '#a5d8ff';
+        ctx.beginPath();
+        ctx.arc(centerX, centerY - radius/2, radius/7, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        ctx.fillStyle = '#333';
+        ctx.fillText('Wind', centerX, centerY - radius/2 + radius/5 + 15);
+        
+        // Hydro
+        ctx.fillStyle = '#15aabf';
+        ctx.beginPath();
+        ctx.arc(centerX + radius/2, centerY - radius/3, radius/7, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        ctx.fillStyle = '#333';
+        ctx.fillText('Hydro', centerX + radius/2, centerY - radius/3 + radius/5 + 15);
+        
+        // Storage
+        ctx.fillStyle = '#ff922b';
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, radius/6, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        ctx.fillStyle = '#333';
+        ctx.fillText('Storage', centerX, centerY + radius/4 + 15);
+        
+        // Consumers
+        ctx.fillStyle = '#40c057';
+        ctx.beginPath();
+        ctx.arc(centerX - radius/3, centerY + radius/3, radius/8, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        ctx.fillStyle = '#333';
+        ctx.fillText('Green Home', centerX - radius/3, centerY + radius/3 + radius/6 + 15);
+        
+        ctx.fillStyle = '#40c057';
+        ctx.beginPath();
+        ctx.arc(centerX + radius/3, centerY + radius/3, radius/8, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        ctx.fillStyle = '#333';
+        ctx.fillText('Community', centerX + radius/3, centerY + radius/3 + radius/6 + 15);
+        
+        // Draw connections
+        ctx.strokeStyle = '#666';
+        ctx.lineWidth = 2;
+        
+        // Connect renewables to storage
+        ctx.beginPath();
+        ctx.moveTo(centerX - radius/2, centerY - radius/3);
+        ctx.lineTo(centerX, centerY);
+        ctx.stroke();
+        
+        ctx.beginPath();
+        ctx.moveTo(centerX, centerY - radius/2);
+        ctx.lineTo(centerX, centerY);
+        ctx.stroke();
+        
+        ctx.beginPath();
+        ctx.moveTo(centerX + radius/2, centerY - radius/3);
+        ctx.lineTo(centerX, centerY);
+        ctx.stroke();
+        
+        // Connect storage to consumers
+        ctx.beginPath();
+        ctx.moveTo(centerX, centerY);
+        ctx.lineTo(centerX - radius/3, centerY + radius/3);
+        ctx.stroke();
+        
+        ctx.beginPath();
+        ctx.moveTo(centerX, centerY);
+        ctx.lineTo(centerX + radius/3, centerY + radius/3);
+        ctx.stroke();
     }
     
     // Helper to load Three.js library
     load3DLibrary() {
         return new Promise((resolve, reject) => {
-            if (typeof THREE !== 'undefined') {
-                console.log("Three.js already loaded");
-                resolve();
-                return;
+            // First check if Three.js is already available globally
+            if (typeof THREE !== 'undefined' && THREE.REVISION) {
+                console.log("Three.js already loaded, version:", THREE.REVISION);
+                
+                // Check if OrbitControls is also loaded
+                if (typeof THREE.OrbitControls !== 'undefined') {
+                    console.log("OrbitControls also already loaded");
+                    resolve();
+                    return;
+                } else {
+                    // Only load OrbitControls since Three.js is already available
+                    console.log("Loading OrbitControls only...");
+                    const orbitScript = document.createElement('script');
+                    orbitScript.src = 'https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/controls/OrbitControls.js';
+                    orbitScript.onload = () => {
+                        console.log('OrbitControls loaded successfully');
+                        resolve();
+                    };
+                    orbitScript.onerror = () => {
+                        console.warn('Failed to load OrbitControls, continuing with basic Three.js');
+                        // Still resolve as Three.js is available
+                        resolve();
+                    };
+                    document.head.appendChild(orbitScript);
+                    return;
+                }
             }
 
+            // If Three.js is not available, load both libraries
             console.log('Loading Three.js for 3D visualization...');
-            // First try to add the script
+            
+            // Use CDN as primary source since it's more reliable
             const script = document.createElement('script');
             script.src = 'https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js';
+            
+            // Add event handlers
             script.onload = () => {
                 console.log('Three.js loaded successfully');
-                // Add OrbitControls for better interaction
+                
+                // Load OrbitControls once Three.js is available
                 const orbitScript = document.createElement('script');
                 orbitScript.src = 'https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/controls/OrbitControls.js';
+                
                 orbitScript.onload = () => {
                     console.log('OrbitControls loaded successfully');
                     resolve();
                 };
+                
                 orbitScript.onerror = () => {
                     console.warn('Failed to load OrbitControls, continuing with basic Three.js');
-                    resolve(); // Still resolve since Three.js is loaded
+                    // Still resolve as Three.js is loaded
+                    resolve();
                 };
+                
                 document.head.appendChild(orbitScript);
             };
-            script.onerror = (e) => {
-                console.error('Failed to load Three.js:', e);
-                reject(new Error('Failed to load Three.js'));
+            
+            script.onerror = (error) => {
+                console.error('Failed to load Three.js:', error);
+                
+                // Try loading from a different CDN as fallback
+                const fallbackScript = document.createElement('script');
+                fallbackScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r132/three.min.js';
+                
+                fallbackScript.onload = () => {
+                    console.log('Three.js loaded from fallback CDN');
+                    
+                    // Load OrbitControls
+                    const orbitScript = document.createElement('script');
+                    orbitScript.src = 'https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/controls/OrbitControls.js';
+                    
+                    orbitScript.onload = () => {
+                        console.log('OrbitControls loaded successfully');
+                        resolve();
+                    };
+                    
+                    orbitScript.onerror = () => {
+                        console.warn('Failed to load OrbitControls, continuing with basic Three.js');
+                        resolve();
+                    };
+                    
+                    document.head.appendChild(orbitScript);
+                };
+                
+                fallbackScript.onerror = () => {
+                    console.error('All attempts to load Three.js failed');
+                    reject(new Error('Failed to load Three.js library after multiple attempts'));
+                };
+                
+                document.head.appendChild(fallbackScript);
             };
+            
+            // Append script to head
             document.head.appendChild(script);
         });
     }
 
     // Create 3D visualization using Three.js
-    create3DVisualization() {
-        // Clear container except status indicator, mode toggle and structure controls
-        const currentStatus = this.statusIndicator;
-        const modeToggle = this.modeToggle;
-        const structureControls = this.structureControls;
-        
-        // Keep only these elements
-        const elementsToKeep = [currentStatus, modeToggle, structureControls].filter(Boolean);
-        const tempContainer = document.createElement('div');
-        elementsToKeep.forEach(el => {
-            if (el && el.parentNode === this.container) {
-                tempContainer.appendChild(el);
-            }
-        });
-        
-        // Clear container and add back the elements
-        this.container.innerHTML = '';
-        while (tempContainer.firstChild) {
-            this.container.appendChild(tempContainer.firstChild);
-        }
-        
-        // Set up container dimensions
-        this.width = this.container.clientWidth || 500; // Fallback width
-        this.height = 350; // Taller for 3D
-        
-        console.log(`Container dimensions for 3D: ${this.width}x${this.height}`);
-        
-        try {
-            // Create scene
-            this.scene = new THREE.Scene();
-            this.scene.background = new THREE.Color(0xf8f9fa);
-            
-            // Create camera
-            this.camera = new THREE.PerspectiveCamera(50, this.width / this.height, 0.1, 1000);
-            this.camera.position.set(0, 120, 200);
-            this.camera.lookAt(0, 0, 0);
-            
-            // Create renderer
-            this.renderer = new THREE.WebGLRenderer({ antialias: true });
-            this.renderer.setSize(this.width, this.height);
-            this.renderer.setPixelRatio(window.devicePixelRatio);
-            this.container.appendChild(this.renderer.domElement);
-            
-            // Add lighting
-            const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
-            this.scene.add(ambientLight);
-            
-            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-            directionalLight.position.set(50, 100, 50);
-            this.scene.add(directionalLight);
-            
-            // Add OrbitControls if available
-            if (typeof THREE.OrbitControls !== 'undefined') {
-                this.controls = new THREE.OrbitControls(this.camera, this.renderer.domElement);
-                this.controls.enableDamping = true;
-                this.controls.dampingFactor = 0.25;
-                this.controls.screenSpacePanning = false;
-                this.controls.maxPolarAngle = Math.PI / 2;
-            }
-            
-            // Create structure based on type
-            this.create3DStructure();
-            
-            // Start animation loop
-            this.startAnimation();
-            
-            // Add a status indicator to show which visualization is active
-            const statusDiv = document.createElement('div');
-            statusDiv.style.position = 'absolute';
-            statusDiv.style.top = '45px';
-            statusDiv.style.right = '5px';
-            statusDiv.style.padding = '3px 8px';
-            statusDiv.style.backgroundColor = 'rgba(0,0,0,0.05)';
-            statusDiv.style.borderRadius = '4px';
-            statusDiv.style.fontSize = '12px';
-            statusDiv.style.color = '#333';
-            statusDiv.style.zIndex = '10';
-            statusDiv.textContent = `3D ${this.options.type} visualization active`;
-            this.container.appendChild(statusDiv);
-            
-            // Update status to show visualization is active
-            this.updateStatus(`3D ${this.options.type} visualization active`);
-            
-            // Handle window resize
-            window.addEventListener('resize', () => this.onWindowResize3D());
-            
-            console.log("3D visualization successfully initialized");
-            return true;
-        } catch (error) {
-            console.error("Error initializing 3D visualization:", error);
-            this.updateStatus('Error initializing 3D visualizer, falling back to 2D', true);
-            // Fall back to 2D
-            this.options.mode = '2d';
-            this.init2D();
-            return false;
-        }
-    }
-
-    // Animation loop for 3D visualization
-    startAnimation() {
-        if (!this.renderer || !this.scene || !this.camera) {
-            console.error("Cannot start animation: renderer, scene or camera missing");
-            return;
-        }
-        
-        const animate = () => {
-            if (!this.container.isConnected) {
-                // Container removed from DOM, stop animation
-                console.log("Container removed from DOM, stopping animation");
-                return;
-            }
-            
-            // Request next frame
-            requestAnimationFrame(animate);
-            
-            // Update controls if available
-            if (this.controls) {
-                this.controls.update();
-            }
-            
-            // Render scene
-            this.renderer.render(this.scene, this.camera);
-        };
-        
-        // Start animation loop
-        animate();
-    }
-
-    // Create 3D structure based on selected type
     create3DStructure() {
-        if (!this.scene) {
-            console.error("Cannot create 3D structure: scene is not initialized");
-            return;
-        }
-        
-        // Create a new group for the structure
-        this.structureGroup = new THREE.Group();
-        this.scene.add(this.structureGroup);
-        
-        // Choose the appropriate structure type
-        switch (this.options.type) {
-            case 'tree':
-                this.create3DTree();
-                break;
-            case 'graph':
-                this.create3DGraph();
-                break;
-            case 'linkedList':
-                this.create3DLinkedList();
-                break;
-            case 'array':
-                this.create3DArray();
-                break;
-            default:
-                console.log(`Unknown type '${this.options.type}', defaulting to tree`);
-                this.create3DTree();
-        }
-    }
-
-    // Creates a 3D tree visualization
-    create3DTree() {
-        console.log("Creating 3D tree visualization");
-        // Get theme colors
-        const colors = this.get3DThemeColors();
-        const nodeRadius = 15;
-        
-        // Create node spheres
-        const sphereGeometry = new THREE.SphereGeometry(nodeRadius, 32, 32);
-        const nodeMaterial = new THREE.MeshPhongMaterial({
-            color: colors.node,
-            shininess: 50
-        });
-        
-        // Helper to create a text sprite
-        const createTextSprite = (text) => {
-            const canvas = document.createElement('canvas');
-            canvas.width = 64;
-            canvas.height = 64;
-            const ctx = canvas.getContext('2d');
-            ctx.fillStyle = 'white';
-            ctx.font = 'Bold 32px Arial';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.fillText(text, 32, 32);
-            
-            const texture = new THREE.CanvasTexture(canvas);
-            const material = new THREE.SpriteMaterial({ map: texture });
-            const sprite = new THREE.Sprite(material);
-            sprite.scale.set(30, 30, 1);
-            return sprite;
-        };
-        
-        // Helper to create node
-        const createNode = (x, y, z, value) => {
-            const sphere = new THREE.Mesh(sphereGeometry, nodeMaterial);
-            sphere.position.set(x, y, z);
-            this.structureGroup.add(sphere);
-            
-            const label = createTextSprite(value);
-            label.position.set(x, y, z);
-            this.structureGroup.add(label);
-            
-            return sphere;
-        };
-        
-        // Helper to create edge
-        const createEdge = (startNode, endNode) => {
-            const start = startNode.position;
-            const end = endNode.position;
-            
-            const direction = new THREE.Vector3().subVectors(end, start);
-            const length = direction.length();
-            
-            const edgeGeometry = new THREE.CylinderGeometry(2, 2, length, 8);
-            const edgeMaterial = new THREE.MeshBasicMaterial({ color: colors.edge });
-            const edge = new THREE.Mesh(edgeGeometry, edgeMaterial);
-            
-            // Position at midpoint
-            edge.position.copy(start);
-            edge.position.lerp(end, 0.5);
-            
-            // Orient cylinder along direction
-            const axis = new THREE.Vector3(0, 1, 0);
-            edge.quaternion.setFromUnitVectors(axis, direction.clone().normalize());
-            edge.rotateX(Math.PI / 2);
-            
-            this.structureGroup.add(edge);
-        };
-        
-        // Create tree nodes
-        const root = createNode(0, 100, 0, '10');
-        
-        // Level 1 nodes
-        const node1 = createNode(-60, 50, 0, '5');
-        const node2 = createNode(60, 50, 0, '15');
-        
-        // Level 2 nodes
-        const node3 = createNode(-90, 0, 0, '3');
-        const node4 = createNode(-30, 0, 0, '7');
-        const node5 = createNode(30, 0, 0, '12');
-        const node6 = createNode(90, 0, 0, '20');
-        
-        // Connect nodes
-        createEdge(root, node1);
-        createEdge(root, node2);
-        createEdge(node1, node3);
-        createEdge(node1, node4);
-        createEdge(node2, node5);
-        createEdge(node2, node6);
-        
-        // Center the structure in the scene
-        this.structureGroup.position.set(0, 0, 0);
-    }
-
-    // Creates a 3D linked list visualization
-    create3DLinkedList() {
-        console.log("Creating 3D linked list visualization");
-        const colors = this.get3DThemeColors();
-        
-        // Node dimensions
-        const nodeWidth = 30;
-        const nodeHeight = 20;
-        const nodeDepth = 10;
-        const spacing = 50;
-        
-        // Set up materials
-        const nodeMaterial = new THREE.MeshPhongMaterial({
-            color: colors.node,
-            shininess: 60
-        });
-        
-        const arrowMaterial = new THREE.MeshBasicMaterial({
-            color: colors.edge
-        });
-        
-        // Helper to create a text sprite
-        const createTextSprite = (text) => {
-            const canvas = document.createElement('canvas');
-            canvas.width = 64;
-            canvas.height = 64;
-            const ctx = canvas.getContext('2d');
-            ctx.fillStyle = 'white';
-            ctx.font = 'Bold 32px Arial';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.fillText(text, 32, 32);
-            
-            const texture = new THREE.CanvasTexture(canvas);
-            const material = new THREE.SpriteMaterial({ map: texture });
-            const sprite = new THREE.Sprite(material);
-            sprite.scale.set(25, 25, 1);
-            return sprite;
-        };
-        
-        // Create nodes
-        const nodes = [];
-        const startX = -150;
-        
-        for (let i = 0; i < 6; i++) {
-            const x = startX + i * spacing;
-            
-            // Create node box
-            const nodeGeometry = new THREE.BoxGeometry(nodeWidth, nodeHeight, nodeDepth);
-            const node = new THREE.Mesh(nodeGeometry, nodeMaterial);
-            node.position.set(x, 0, 0);
-            this.structureGroup.add(node);
-            nodes.push(node);
-            
-            // Add label
-            const label = createTextSprite(String(i + 1));
-            label.position.set(x, 0, nodeDepth/2 + 5);
-            this.structureGroup.add(label);
-            
-            // Create arrow to next node (except for last node)
-            if (i < 5) {
-                // Arrow body
-                const arrowLen = spacing - nodeWidth - 10;
-                const arrowGeometry = new THREE.CylinderGeometry(2, 2, arrowLen, 8);
-                const arrow = new THREE.Mesh(arrowGeometry, arrowMaterial);
-                arrow.position.set(x + nodeWidth/2 + arrowLen/2, 0, 0);
-                arrow.rotation.z = Math.PI / 2;
-                this.structureGroup.add(arrow);
-                
-                // Arrow head
-                const headGeometry = new THREE.ConeGeometry(5, 10, 8);
-                const arrowHead = new THREE.Mesh(headGeometry, arrowMaterial);
-                arrowHead.position.set(x + nodeWidth/2 + arrowLen - 2, 0, 0);
-                arrowHead.rotation.z = -Math.PI / 2;
-                this.structureGroup.add(arrowHead);
+        try {
+            // Clear existing structure
+            if (this.scene) {
+                try {
+                    // Remove all objects except lights and camera
+                    const objectsToRemove = [];
+                    this.scene.traverse(object => {
+                        if (object.type !== 'Scene' && 
+                            object.type !== 'AmbientLight' && 
+                            object.type !== 'DirectionalLight' &&
+                            object.type !== 'HemisphereLight' &&
+                            object !== this.camera) {
+                            objectsToRemove.push(object);
+                        }
+                    });
+                    
+                    objectsToRemove.forEach(object => {
+                        this.scene.remove(object);
+                    });
+                } catch (e) {
+                    console.error("Error clearing scene:", e);
+                }
             }
-        }
-    }
-
-    // Creates a 3D graph visualization
-    create3DGraph() {
-        console.log("Creating 3D graph visualization");
-        const colors = this.get3DThemeColors();
-        const nodeRadius = 15;
-        
-        // Create materials
-        const nodeMaterial = new THREE.MeshPhongMaterial({
-            color: colors.node,
-            shininess: 50
-        });
-        
-        const edgeMaterial = new THREE.MeshBasicMaterial({
-            color: colors.edge
-        });
-        
-        // Helper to create text sprite
-        const createTextSprite = (text) => {
-            const canvas = document.createElement('canvas');
-            canvas.width = 64;
-            canvas.height = 64;
-            const ctx = canvas.getContext('2d');
-            ctx.fillStyle = 'white';
-            ctx.font = 'Bold 32px Arial';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.fillText(text, 32, 32);
             
-            const texture = new THREE.CanvasTexture(canvas);
-            const material = new THREE.SpriteMaterial({ map: texture });
-            const sprite = new THREE.Sprite(material);
-            sprite.scale.set(25, 25, 1);
-            return sprite;
-        };
-        
-        // Create node
-        const createNode = (x, y, z, label) => {
-            const geometry = new THREE.SphereGeometry(nodeRadius, 32, 32);
-            const sphere = new THREE.Mesh(geometry, nodeMaterial);
-            sphere.position.set(x, y, z);
-            this.structureGroup.add(sphere);
+            // Check if THREE is available
+            if (typeof THREE === 'undefined') {
+                throw new Error("THREE.js library not loaded");
+            }
             
-            const sprite = createTextSprite(label);
-            sprite.position.set(x, y, z);
-            this.structureGroup.add(sprite);
+            // Reset collections
+            this.networkNodes = [];
+            this.networkEdges = [];
             
-            return sphere;
-        };
-        
-        // Create edge between nodes
-        const createEdge = (start, end) => {
-            const startPosition = start.position;
-            const endPosition = end.position;
+            // If scene doesn't exist, create it
+            if (!this.scene) {
+                this.scene = new THREE.Scene();
+                this.scene.background = new THREE.Color(0xf0f5ff);
+                
+                // Create camera if it doesn't exist
+                if (!this.camera) {
+                    const aspectRatio = this.canvas.width / this.canvas.height;
+                    this.camera = new THREE.PerspectiveCamera(60, aspectRatio, 0.1, 1000);
+                    this.camera.position.set(0, 15, 25);
+                    this.camera.lookAt(0, 0, 0);
+                }
+                
+                // Add lighting
+                const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+                this.scene.add(ambientLight);
+                
+                const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+                directionalLight.position.set(10, 20, 15);
+                this.scene.add(directionalLight);
+                
+                // Add renderer
+                try {
+                    this.renderer = new THREE.WebGLRenderer({ canvas: this.canvas, antialias: true });
+                    this.renderer.setSize(this.canvas.width, this.canvas.height);
+                    this.renderer.shadowMap.enabled = true;
+                } catch (e) {
+                    console.error("WebGL renderer creation failed:", e);
+                    // Fallback to canvas renderer or handle error
+                    throw new Error("Could not create WebGL renderer: " + e.message);
+                }
+                
+                // Add orbit controls if available
+                if (THREE.OrbitControls) {
+                    try {
+                        this.controls = new THREE.OrbitControls(this.camera, this.renderer.domElement);
+                        this.controls.enableDamping = true;
+                        this.controls.dampingFactor = 0.25;
+                        this.controls.enableZoom = true;
+                        this.controls.maxDistance = 100;
+                    } catch (e) {
+                        console.error("Error creating OrbitControls:", e);
+                    }
+                }
+                
+                // Start animation loop
+                this.animate = this.animate.bind(this);
+                this.animate();
+                
+                // Handle window resizing
+                window.addEventListener('resize', () => this.onWindowResize3D());
+            }
             
-            // Direction vector
-            const direction = new THREE.Vector3().subVectors(endPosition, startPosition);
-            const length = direction.length() - nodeRadius * 2;
+            // Create based on network type
+            try {
+                switch (this.options.type) {
+                    case 'network':
+                        this.createEnergyNetwork();
+                        break;
+                    case 'grid':
+                        this.createPowerGrid();
+                        break;
+                    case 'smartGrid':
+                        this.createSmartGrid();
+                        break;
+                    case 'distribution':
+                        this.createDistributionNetwork();
+                        break;
+                    case 'renewable':
+                        this.createRenewableNetwork();
+                        break;
+                    default:
+                        this.createEnergyNetwork();
+                }
+                
+                // Update efficiency and emissions
+                this.updateNetworkEfficiency();
+                this.updateNetworkEmissions();
+                
+                // Update status
+                this.updateStatus(`3D ${this.options.type} energy network active`);
+            } catch (typeError) {
+                console.error("Error creating network structure:", typeError);
+                // Attempt to create a basic network as fallback
+                try {
+                    this.createEnergyNetwork();
+                    this.updateStatus(`3D energy network active (fallback mode)`, false);
+                } catch (fallbackError) {
+                    console.error("Fallback network creation also failed:", fallbackError);
+                    this.updateStatus(`Error creating 3D structure`, true);
+                    throw new Error("Failed to create any 3D network structure");
+                }
+            }
+        } catch (error) {
+            console.error("Error in create3DStructure:", error);
+            this.updateStatus("Error creating 3D visualization", true);
             
-            // Create cylinder for edge
-            const edgeGeometry = new THREE.CylinderGeometry(2, 2, length, 8);
-            const edge = new THREE.Mesh(edgeGeometry, edgeMaterial);
-            
-            // Position edge - use midpoint
-            const midpoint = new THREE.Vector3().addVectors(startPosition, endPosition).multiplyScalar(0.5);
-            edge.position.copy(midpoint);
-            
-            // Orient along direction
-            const dirNorm = direction.clone().normalize();
-            const quaternion = new THREE.Quaternion().setFromUnitVectors(
-                new THREE.Vector3(0, 1, 0), dirNorm
-            );
-            edge.setRotationFromQuaternion(quaternion);
-            
-            this.structureGroup.add(edge);
-        };
-        
-        // Create nodes in a more interesting pattern
-        const nodes = [];
-        const radius = 80;
-        
-        // Create nodes in a circular pattern plus one in center
-        // Center node
-        const centerNode = createNode(0, 0, 0, 'A');
-        nodes.push(centerNode);
-        
-        // Create nodes in a circle
-        for (let i = 0; i < 5; i++) {
-            const angle = (i / 5) * Math.PI * 2;
-            const x = Math.cos(angle) * radius;
-            const z = Math.sin(angle) * radius;
-            const y = (i % 2 === 0) ? 20 : -20; // Alternate height
-            
-            const node = createNode(x, y, z, String.fromCharCode(66 + i)); // 'B', 'C', etc.
-            nodes.push(node);
-        }
-        
-        // Create edges to form a connected graph
-        // Connect center to all others
-        for (let i = 1; i < nodes.length; i++) {
-            createEdge(nodes[0], nodes[i]);
-        }
-        
-        // Connect nodes in a ring
-        for (let i = 1; i < nodes.length; i++) {
-            createEdge(nodes[i], nodes[i === nodes.length - 1 ? 1 : i + 1]);
+            // Create a fallback 2D visualization
+            this.createFallback3DVisualization();
         }
     }
     
-    // Creates a 3D array visualization
-    create3DArray() {
-        console.log("Creating 3D array visualization");
+    // Animation loop for 3D rendering
+    animate() {
+        try {
+            if (this.renderer && this.scene && this.camera) {
+                requestAnimationFrame(this.animate);
+                
+                // Update controls if they exist
+                if (this.controls && this.controls.update) {
+                    this.controls.update();
+                }
+                
+                // Render scene
+                this.renderer.render(this.scene, this.camera);
+                
+                // Update any animations in the scene
+                if (this.animatableObjects) {
+                    this.animatableObjects.forEach(obj => {
+                        if (obj.animate) obj.animate();
+                    });
+                }
+            }
+        } catch (e) {
+            console.error("Error in animation loop:", e);
+            // Don't call requestAnimationFrame again if there was an error
+        }
+    }
+    
+    // Create basic energy network
+    createEnergyNetwork() {
+        if (!this.scene) return;
+        
         const colors = this.get3DThemeColors();
         
-        // Array dimensions
-        const cellWidth = 40;
-        const cellHeight = 30;
-        const cellDepth = 20;
-        const spacing = 5;
-        const totalWidth = cellWidth + spacing;
-        
-        // Cell materials
-        const cellMaterial = new THREE.MeshPhongMaterial({
-            color: colors.node,
-            shininess: 30,
-            transparent: true,
-            opacity: 0.9
-        });
-        
-        // Helper to create text sprite
-        const createTextSprite = (text) => {
-            const canvas = document.createElement('canvas');
-            canvas.width = 64;
-            canvas.height = 64;
-            const ctx = canvas.getContext('2d');
-            ctx.fillStyle = 'white';
-            ctx.font = 'Bold 32px Arial';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.fillText(text, 32, 32);
-            
-            const texture = new THREE.CanvasTexture(canvas);
-            const material = new THREE.SpriteMaterial({ map: texture });
-            const sprite = new THREE.Sprite(material);
-            sprite.scale.set(25, 25, 1);
-            return sprite;
+        // Create a standard energy network with generators, distributors and consumers
+        const networkData = {
+            nodes: [
+                { id: 'gen1', type: 'generator', label: 'G1', x: -5, y: 0, z: -5, capacity: 100, efficiency: 0.85 },
+                { id: 'gen2', type: 'generator', label: 'G2', x: 5, y: 0, z: -5, capacity: 80, efficiency: 0.9 },
+                { id: 'dist1', type: 'distributor', label: 'D1', x: 0, y: 0, z: 0, capacity: 150 },
+                { id: 'cons1', type: 'consumer', label: 'C1', x: -6, y: 0, z: 2, demand: 40 },
+                { id: 'cons2', type: 'consumer', label: 'C2', x: -2, y: 0, z: 4, demand: 30 },
+                { id: 'cons3', type: 'consumer', label: 'C3', x: 2, y: 0, z: 4, demand: 50 },
+                { id: 'cons4', type: 'consumer', label: 'C4', x: 6, y: 0, z: 2, demand: 45 }
+            ],
+            edges: [
+                { from: 'gen1', to: 'dist1', capacity: 0.8 },
+                { from: 'gen2', to: 'dist1', capacity: 0.7 },
+                { from: 'dist1', to: 'cons1', capacity: 0.5 },
+                { from: 'dist1', to: 'cons2', capacity: 0.6 },
+                { from: 'dist1', to: 'cons3', capacity: 0.5 },
+                { from: 'dist1', to: 'cons4', capacity: 0.4 }
+            ]
         };
         
-        // Create array cells
-        const cellGeometry = new THREE.BoxGeometry(cellWidth, cellHeight, cellDepth);
-        const arraySize = 7;
-        const startX = -(arraySize * totalWidth) / 2 + totalWidth/2;
+        // Create nodes
+        const nodes = {};
         
-        for (let i = 0; i < arraySize; i++) {
-            // Create cell cube
-            const cell = new THREE.Mesh(cellGeometry, cellMaterial);
-            const x = startX + i * totalWidth;
-            cell.position.set(x, 0, 0);
-            this.structureGroup.add(cell);
+        networkData.nodes.forEach(nodeData => {
+            let node;
             
-            // Add value text
-            const value = Math.floor(Math.random() * 100);
-            const valueSprite = createTextSprite(String(value));
-            valueSprite.position.set(x, 0, cellDepth/2 + 2);
-            this.structureGroup.add(valueSprite);
+            if (nodeData.type === 'generator') {
+                node = this.createGeneratorNode(nodeData, colors);
+            } else if (nodeData.type === 'distributor') {
+                node = this.createDistributorNode(nodeData, colors);
+            } else if (nodeData.type === 'consumer') {
+                node = this.createConsumerNode(nodeData, colors);
+            }
             
-            // Add index below
-            const indexSprite = createTextSprite(`[${i}]`);
-            indexSprite.position.set(x, -cellHeight/2 - 15, 0);
-            indexSprite.scale.set(20, 20, 1);
-            this.structureGroup.add(indexSprite);
+            if (node) {
+                nodes[nodeData.id] = node;
+                this.scene.add(node);
+                this.networkNodes.push(node);
+            }
+        });
+        
+        // Create edges
+        networkData.edges.forEach(edgeData => {
+            if (nodes[edgeData.from] && nodes[edgeData.to]) {
+                const edge = this.createEnergyFlow(
+                    nodes[edgeData.from],
+                    nodes[edgeData.to],
+                    edgeData.capacity,
+                    colors
+                );
+                
+                if (edge) {
+                    this.scene.add(edge);
+                    this.networkEdges.push(edge);
+                }
+            }
+        });
+        
+        // Add ground grid
+        const gridSize = 20;
+        const gridDivisions = 20;
+        const gridHelper = new THREE.GridHelper(gridSize, gridDivisions, 0x555555, 0x333333);
+        gridHelper.position.y = -1;
+        this.scene.add(gridHelper);
+        
+        // Update camera position
+        this.camera.position.set(0, 15, 20);
+        this.camera.lookAt(0, 0, 0);
+    }
+    
+    // Create generator node (power plant)
+    createGeneratorNode(nodeData, colors) {
+        const group = new THREE.Group();
+        group.position.set(nodeData.x, nodeData.y, nodeData.z);
+        
+        // Efficiency determines color
+        const efficiency = nodeData.efficiency || this.options.efficiency;
+        const color = this.getNodeColorByEfficiency(efficiency, 'generator');
+        
+        // Base cylinder
+        const baseGeometry = new THREE.CylinderGeometry(0.8, 1, 1.5, 16);
+        const baseMaterial = new THREE.MeshPhongMaterial({ 
+            color: color,
+            shininess: 70
+        });
+        const base = new THREE.Mesh(baseGeometry, baseMaterial);
+        base.position.y = -0.25;
+        group.add(base);
+        
+        // Chimney
+        const chimneyGeometry = new THREE.CylinderGeometry(0.3, 0.4, 2, 16);
+        const chimneyMaterial = new THREE.MeshPhongMaterial({ 
+            color: 0x666666,
+            shininess: 50
+        });
+        const chimney = new THREE.Mesh(chimneyGeometry, chimneyMaterial);
+        chimney.position.y = 1;
+        chimney.position.x = 0.4;
+        group.add(chimney);
+        
+        // Generator building
+        const buildingGeometry = new THREE.BoxGeometry(1.5, 1, 1.5);
+        const buildingMaterial = new THREE.MeshPhongMaterial({ 
+            color: 0x8888aa,
+            shininess: 60
+        });
+        const building = new THREE.Mesh(buildingGeometry, buildingMaterial);
+        building.position.y = 0.5;
+        group.add(building);
+        
+        // Label
+        const label = this.createTextSprite(nodeData.label || 'G', 0.8);
+        label.position.set(0, 2, 0);
+        group.add(label);
+        
+        // Add userData for interactions
+        group.userData = {
+            type: 'generator',
+            id: nodeData.id,
+            capacity: nodeData.capacity || 100,
+            efficiency: efficiency,
+            label: nodeData.label || 'G',
+            baseEmissionFactor: (1 - efficiency) * 0.8 + 0.2
+        };
+        
+        // Add glow/light effect for generator
+        const light = new THREE.PointLight(0xffcc22, 0.5 + efficiency * 2, 5);
+        light.position.set(0, 1, 0);
+        group.add(light);
+        group.userData.glow = light;
+        
+        // Add smoke effect for non-clean generators
+        if (efficiency < 0.9) {
+            const smokeGeometry = new THREE.SphereGeometry(0.2, 8, 8);
+            const smokeMaterial = new THREE.MeshBasicMaterial({
+                color: 0x999999,
+                transparent: true,
+                opacity: (1 - efficiency) * 0.5
+            });
+            const smoke = new THREE.Mesh(smokeGeometry, smokeMaterial);
+            smoke.position.set(0.4, 2.5, 0);
+            group.add(smoke);
+            group.userData.smokeEffect = smoke;
         }
+        
+        return group;
+    }
+    
+    // Create distributor node (substation)
+    createDistributorNode(nodeData, colors) {
+        const group = new THREE.Group();
+        group.position.set(nodeData.x, nodeData.y, nodeData.z);
+        
+        // Base platform
+        const baseGeometry = new THREE.BoxGeometry(2, 0.3, 2);
+        const baseMaterial = new THREE.MeshPhongMaterial({ 
+            color: 0x888888,
+            shininess: 50
+        });
+        const base = new THREE.Mesh(baseGeometry, baseMaterial);
+        base.position.y = -0.5;
+        group.add(base);
+        
+        // Transformer
+        const transformerGeometry = new THREE.BoxGeometry(1, 1, 1);
+        const transformerMaterial = new THREE.MeshPhongMaterial({ 
+            color: this.getNodeColorByEfficiency(this.options.efficiency, 'distributor'),
+            shininess: 70
+        });
+        const transformer = new THREE.Mesh(transformerGeometry, transformerMaterial);
+        transformer.position.y = 0.2;
+        group.add(transformer);
+        
+        // Transmission towers
+        const createTower = (x, z) => {
+            const towerGeometry = new THREE.CylinderGeometry(0.1, 0.1, 1.5, 8);
+            const towerMaterial = new THREE.MeshPhongMaterial({ color: 0x666666 });
+            const tower = new THREE.Mesh(towerGeometry, towerMaterial);
+            tower.position.set(x, 0.5, z);
+            return tower;
+        };
+        
+        const towers = [
+            createTower(0.7, 0.7),
+            createTower(-0.7, 0.7),
+            createTower(0.7, -0.7),
+            createTower(-0.7, -0.7)
+        ];
+        
+        towers.forEach(tower => group.add(tower));
+        
+        // Label
+        const label = this.createTextSprite(nodeData.label || 'D', 0.8);
+        label.position.set(0, 1.5, 0);
+        group.add(label);
+        
+        // Add userData for interactions
+        group.userData = {
+            type: 'distributor',
+            id: nodeData.id,
+            capacity: nodeData.capacity || 100,
+            label: nodeData.label || 'D'
+        };
+        
+        return group;
+    }
+    
+    // Create consumer node (building)
+    createConsumerNode(nodeData, colors) {
+        const group = new THREE.Group();
+        group.position.set(nodeData.x, nodeData.y, nodeData.z);
+        
+        // Building geometry
+        const buildingHeight = 1 + (nodeData.demand / 50);
+        const buildingGeometry = new THREE.BoxGeometry(1.2, buildingHeight, 1.2);
+        const buildingMaterial = new THREE.MeshPhongMaterial({ 
+            color: this.getNodeColorByEfficiency(this.options.efficiency, 'consumer'),
+            shininess: 50
+        });
+        const building = new THREE.Mesh(buildingGeometry, buildingMaterial);
+        building.position.y = buildingHeight/2 - 0.5;
+        group.add(building);
+        
+        // Windows
+        const addWindows = () => {
+            const rows = Math.ceil(buildingHeight * 2);
+            const windowGeometry = new THREE.PlaneGeometry(0.15, 0.15);
+            const windowMaterial = new THREE.MeshBasicMaterial({ 
+                color: 0xffffcc,
+                side: THREE.DoubleSide
+            });
+            
+            // Add windows on each side of the building
+            for (let side = 0; side < 4; side++) {
+                for (let row = 0; row < rows; row++) {
+                    for (let col = 0; col < 3; col++) {
+                        const window = new THREE.Mesh(windowGeometry, windowMaterial);
+                        
+                        const angle = side * Math.PI/2;
+                        const x = Math.sin(angle) * 0.61;
+                        const z = Math.cos(angle) * 0.61;
+                        
+                        window.position.set(
+                            x,
+                            row * 0.3 - 0.4 + buildingHeight/2,
+                            z
+                        );
+                        
+                        window.rotation.set(0, angle, 0);
+                        
+                        // Offset the middle column
+                        if (col === 1) {
+                            window.position.x += Math.sin(angle + Math.PI/2) * 0.3;
+                            window.position.z += Math.cos(angle + Math.PI/2) * 0.3;
+                        } else if (col === 2) {
+                            window.position.x += Math.sin(angle + Math.PI/2) * 0.6;
+                            window.position.z += Math.cos(angle + Math.PI/2) * 0.6;
+                        }
+                        
+                        group.add(window);
+                    }
+                }
+            }
+        };
+        
+        addWindows();
+        
+        // Label
+        const label = this.createTextSprite(nodeData.label || 'C', 0.8);
+        label.position.set(0, buildingHeight + 0.5, 0);
+        group.add(label);
+        
+        // Add userData for interactions
+        group.userData = {
+            type: 'consumer',
+            id: nodeData.id,
+            demand: nodeData.demand || 50,
+            label: nodeData.label || 'C'
+        };
+        
+        return group;
+    }
+    
+    // Create energy flow connection between nodes
+    createEnergyFlow(fromNode, toNode, capacity, colors) {
+        if (!fromNode || !toNode) return null;
+        
+        const fromPosition = new THREE.Vector3();
+        fromNode.getWorldPosition(fromPosition);
+        
+        const toPosition = new THREE.Vector3();
+        toNode.getWorldPosition(toPosition);
+        
+        // Create curve for the flow
+        const points = [];
+        const curveHeight = 1 + Math.random() * 0.5;
+        
+        points.push(fromPosition);
+        
+        // Middle control point
+        const midPoint = new THREE.Vector3().addVectors(fromPosition, toPosition).multiplyScalar(0.5);
+        midPoint.y += curveHeight;
+        points.push(midPoint);
+        
+        points.push(toPosition);
+        
+        const curve = new THREE.CatmullRomCurve3(points);
+        const geometry = new THREE.TubeGeometry(curve, 20, 0.1, 8, false);
+        
+        // Color based on efficiency and capacity
+        const color = this.getEdgeColorByEfficiency(this.options.efficiency, capacity);
+        
+        const material = new THREE.MeshBasicMaterial({ 
+            color: color,
+            transparent: true,
+            opacity: 0.3 + (capacity * 0.7)
+        });
+        
+        const tube = new THREE.Mesh(geometry, material);
+        
+        // Add animated energy particles along the tube
+        if (capacity > 0.2) {
+            const particleCount = Math.floor(capacity * 10);
+            const particleGeometry = new THREE.SphereGeometry(0.1, 8, 8);
+            const particleMaterial = new THREE.MeshBasicMaterial({
+                color: 0xffff00,
+                transparent: true,
+                opacity: 0.8
+            });
+            
+            for (let i = 0; i < particleCount; i++) {
+                const particle = new THREE.Mesh(particleGeometry, particleMaterial);
+                const position = i / particleCount;
+                
+                const point = curve.getPoint(position);
+                particle.position.copy(point);
+                
+                tube.add(particle);
+                
+                // Store animation data
+                particle.userData = {
+                    position,
+                    speed: 0.005 + (Math.random() * 0.005),
+                    curve
+                };
+                
+                // Store particles for animation
+                if (!this.energyParticles) this.energyParticles = [];
+                this.energyParticles.push(particle);
+            }
+        }
+        
+        // Store userData for the tube
+        tube.userData = {
+            type: 'energyFlow',
+            from: fromNode.userData.id,
+            to: toNode.userData.id,
+            capacity: capacity
+        };
+        
+        return tube;
+    }
+    
+    // Text sprite creation helper
+    createTextSprite(text, size = 1) {
+        const canvas = document.createElement('canvas');
+        const context = canvas.getContext('2d');
+        canvas.width = 256;
+        canvas.height = 256;
+        
+        // Background
+        context.fillStyle = 'rgba(0, 0, 0, 0.6)';
+        context.fillRect(0, 0, canvas.width, canvas.height);
+        
+        // Text
+        context.font = '48px Arial';
+        context.fillStyle = 'white';
+        context.textAlign = 'center';
+        context.textBaseline = 'middle';
+        context.fillText(text, canvas.width / 2, canvas.height / 2);
+        
+        // Create texture and sprite
+        const texture = new THREE.CanvasTexture(canvas);
+        const material = new THREE.SpriteMaterial({ map: texture });
+        const sprite = new THREE.Sprite(material);
+        sprite.scale.set(size, size, 1);
+        
+        return sprite;
     }
 
     // Get theme colors for 3D visualization
@@ -1253,43 +1954,1350 @@ class DataStructureVisualizer {
         this.container.appendChild(controls);
         return controls;
     }
-}
 
-// Helper function to initialize the data structure visualizer
-function initDataStructureVisualizer(container, options = {}) {
-    console.log("Creating data structure visualizer for", container, "with options:", options);
-    try {
-        // Extract structureType from config if present and map to internal type
-        if (options.structureType && !options.type) {
-            options.type = options.structureType;
+    // Update network efficiency in 3D mode
+    updateNetworkEfficiency() {
+        if (!this.scene || !this.networkNodes) return;
+        
+        // Update node colors based on efficiency
+        this.networkNodes.forEach(node => {
+            if (node.userData && node.userData.type) {
+                const nodeType = node.userData.type;
+                
+                // Different node types have different efficiency representations
+                if (nodeType === 'generator') {
+                    // Higher efficiency = more vibrant color
+                    const material = node.material || (node.children[0] && node.children[0].material);
+                    if (material) {
+                        const color = this.getNodeColorByEfficiency(this.options.efficiency, nodeType);
+                        material.color.set(color);
+                        
+                        // Also adjust glow intensity
+                        if (node.userData.glow) {
+                            node.userData.glow.intensity = 0.5 + this.options.efficiency * 2;
+                        }
+                    }
+                } else if (nodeType === 'distributor' || nodeType === 'consumer') {
+                    // Update consumer/distributor node indicators
+                    const material = node.material || (node.children[0] && node.children[0].material);
+                    if (material) {
+                        const color = this.getNodeColorByEfficiency(this.options.efficiency, nodeType);
+                        material.color.set(color);
+                    }
+                }
+            }
+        });
+        
+        // Update edge colors based on efficiency
+        if (this.networkEdges) {
+            this.networkEdges.forEach(edge => {
+                if (edge.material) {
+                    // More efficient = more intense color
+                    const opacity = 0.3 + (this.options.efficiency * 0.7);
+                    edge.material.opacity = opacity;
+                    
+                    // Change color based on flow capacity and efficiency
+                    const flowCapacity = edge.userData && edge.userData.capacity 
+                        ? edge.userData.capacity 
+                        : 1.0;
+                    const color = this.getEdgeColorByEfficiency(this.options.efficiency, flowCapacity);
+                    edge.material.color.set(color);
+                }
+            });
         }
         
-        return new DataStructureVisualizer(container, options);
-    } catch (error) {
-        console.error("Failed to initialize data structure visualizer:", error);
-        // Try to update status if possible
-        if (container) {
-            const errorDiv = document.createElement('div');
-            errorDiv.className = 'alert alert-danger';
-            errorDiv.textContent = `Visualization error: ${error.message}`;
+        // Add efficiency indicators
+        this.updateEfficiencyDisplay();
+    }
+    
+    // Update network emissions in 3D mode
+    updateNetworkEmissions() {
+        if (!this.scene || !this.networkNodes) return;
+        
+        // Emission particles
+        if (this.emissionParticles) {
+            this.scene.remove(this.emissionParticles);
+            this.emissionParticles = null;
+        }
+        
+        // Only add particles for medium or high emissions
+        if (this.options.emissions !== 'low') {
+            // Create particle system for emissions
+            const particleCount = this.options.emissions === 'high' ? 500 : 200;
+            const particleGeometry = new THREE.BufferGeometry();
+            const particlePositions = new Float32Array(particleCount * 3);
             
-            // Clear and append error
-            container.innerHTML = '';
-            container.appendChild(errorDiv);
+            // Create positions for emission particles near power generators
+            let particleIndex = 0;
+            this.networkNodes.forEach(node => {
+                if (node.userData && node.userData.type === 'generator' && 
+                    node.userData.emissionFactor > 0.2) {
+                    
+                    const nodePos = new THREE.Vector3();
+                    node.getWorldPosition(nodePos);
+                    
+                    // Number of particles based on emission factor
+                    const nodeParts = Math.floor(particleCount * node.userData.emissionFactor / this.networkNodes.length);
+                    
+                    for (let i = 0; i < nodeParts && particleIndex < particleCount; i++) {
+                        particlePositions[particleIndex * 3] = nodePos.x + (Math.random() - 0.5) * 3;
+                        particlePositions[particleIndex * 3 + 1] = nodePos.y + (Math.random() * 2);
+                        particlePositions[particleIndex * 3 + 2] = nodePos.z + (Math.random() - 0.5) * 3;
+                        particleIndex++;
+                    }
+                }
+            });
             
-            // Update card status if exists
-            const parentCard = container.closest('.card');
-            if (parentCard) {
-                const statusBadge = parentCard.querySelector('.viz-status-indicator');
-                if (statusBadge) {
-                    statusBadge.textContent = 'Error';
-                    statusBadge.className = 'viz-status-indicator badge bg-danger float-end';
+            particleGeometry.setAttribute('position', new THREE.BufferAttribute(particlePositions, 3));
+            
+            // Emission material
+            const particleMaterial = new THREE.PointsMaterial({
+                color: this.options.emissions === 'high' ? 0x666666 : 0x999999,
+                size: this.options.emissions === 'high' ? 0.2 : 0.1,
+                transparent: true,
+                opacity: this.options.emissions === 'high' ? 0.8 : 0.4,
+                depthWrite: false
+            });
+            
+            this.emissionParticles = new THREE.Points(particleGeometry, particleMaterial);
+            this.emissionParticles.userData = {
+                type: 'emission',
+                animationSpeed: this.options.emissions === 'high' ? 0.02 : 0.01
+            };
+            
+            this.scene.add(this.emissionParticles);
+        }
+        
+        // Update generator appearance based on emissions
+        this.networkNodes.forEach(node => {
+            if (node.userData && node.userData.type === 'generator') {
+                // Set emission factor based on global setting
+                if (this.options.emissions === 'high') {
+                    node.userData.emissionFactor = node.userData.baseEmissionFactor || 0.8;
+                } else if (this.options.emissions === 'medium') {
+                    node.userData.emissionFactor = (node.userData.baseEmissionFactor || 0.8) * 0.6;
+                } else {
+                    node.userData.emissionFactor = (node.userData.baseEmissionFactor || 0.8) * 0.2;
+                }
+                
+                // Update generator visual indicators
+                if (node.userData.smokeEffect) {
+                    const smokeOpacity = node.userData.emissionFactor * 0.8;
+                    node.userData.smokeEffect.material.opacity = smokeOpacity;
+                }
+            }
+        });
+    }
+    
+    // Create efficiency display overlay
+    updateEfficiencyDisplay() {
+        // Remove existing display if any
+        if (this.efficiencyDisplay) {
+            this.container.removeChild(this.efficiencyDisplay);
+        }
+        
+        // Create new display
+        this.efficiencyDisplay = document.createElement('div');
+        this.efficiencyDisplay.className = 'efficiency-display';
+        this.efficiencyDisplay.style.position = 'absolute';
+        this.efficiencyDisplay.style.bottom = '10px';
+        this.efficiencyDisplay.style.right = '10px';
+        this.efficiencyDisplay.style.backgroundColor = 'rgba(0, 0, 0, 0.6)';
+        this.efficiencyDisplay.style.color = 'white';
+        this.efficiencyDisplay.style.padding = '8px 12px';
+        this.efficiencyDisplay.style.borderRadius = '4px';
+        this.efficiencyDisplay.style.fontSize = '12px';
+        this.efficiencyDisplay.style.zIndex = '100';
+        
+        // Calculate network statistics
+        const efficiency = this.options.efficiency;
+        const networkLoss = 1 - efficiency;
+        const co2Impact = this.getEmissionsFactor();
+        
+        // Set display content
+        this.efficiencyDisplay.innerHTML = `
+            <div><strong>Network Efficiency:</strong> ${Math.round(efficiency * 100)}%</div>
+            <div><strong>Energy Loss:</strong> ${Math.round(networkLoss * 100)}%</div>
+            <div><strong>CO<sub>2</sub> Impact:</strong> ${co2Impact}</div>
+        `;
+        
+        this.container.appendChild(this.efficiencyDisplay);
+    }
+    
+    // Get color for node based on efficiency
+    getNodeColorByEfficiency(efficiency, nodeType) {
+        if (nodeType === 'generator') {
+            // Generators: Red (low efficiency) to Green (high efficiency)
+            const r = Math.floor(255 * (1 - efficiency));
+            const g = Math.floor(200 * efficiency);
+            const b = 50;
+            return `rgb(${r}, ${g}, ${b})`;
+        } else if (nodeType === 'distributor') {
+            // Distributors: Efficiency impacts brightness
+            const baseValue = 100 + Math.floor(155 * efficiency);
+            return `rgb(${baseValue}, ${baseValue}, ${baseValue})`;
+        } else if (nodeType === 'consumer') {
+            // Consumers: Blue with efficiency-based brightness
+            const b = 100 + Math.floor(155 * efficiency);
+            return `rgb(50, 100, ${b})`;
+        }
+        
+        // Default
+        return '#ffffff';
+    }
+    
+    // Get color for energy flow edge based on efficiency
+    getEdgeColorByEfficiency(efficiency, capacity) {
+        // Blend between red (low efficiency) and blue (high efficiency)
+        // with intensity based on capacity
+        const intensityFactor = 0.5 + (capacity * 0.5);
+        
+        const r = Math.floor(200 * (1 - efficiency) * intensityFactor);
+        const g = Math.floor(100 * intensityFactor);
+        const b = Math.floor(200 * efficiency * intensityFactor);
+        
+        return `rgb(${r}, ${g}, ${b})`;
+    }
+    
+    // Get text description of emissions factor
+    getEmissionsFactor() {
+        switch (this.options.emissions) {
+            case 'low':
+                return 'Low';
+            case 'medium':
+                return 'Moderate';
+            case 'high':
+                return 'High';
+            default:
+                return 'Medium';
+        }
+    }
+
+    // Create power grid visualization
+    createPowerGrid() {
+        if (!this.scene) return;
+        
+        const colors = this.get3DThemeColors();
+        
+        // Create a grid-based power distribution network
+        const gridSize = 4;
+        const nodeSpacing = 5;
+        
+        // Initialize nodes and edges
+        const nodes = {};
+        const nodeData = [];
+        const edgeData = [];
+        
+        // Create power plant at the center
+        nodeData.push({
+            id: 'plant1',
+            type: 'generator',
+            label: 'P1',
+            x: 0,
+            y: 0,
+            z: 0,
+            capacity: 200,
+            efficiency: this.options.efficiency
+        });
+        
+        // Create substations in a grid pattern
+        for (let i = 0; i < gridSize; i++) {
+            for (let j = 0; j < gridSize; j++) {
+                // Skip the center where the power plant is
+                if (i === Math.floor(gridSize/2) && j === Math.floor(gridSize/2)) continue;
+                
+                const x = (i - gridSize/2 + 0.5) * nodeSpacing;
+                const z = (j - gridSize/2 + 0.5) * nodeSpacing;
+                
+                // Create substation node
+                const substationId = `sub_${i}_${j}`;
+                nodeData.push({
+                    id: substationId,
+                    type: 'distributor',
+                    label: `S${i}${j}`,
+                    x: x,
+                    y: 0,
+                    z: z,
+                    capacity: 50 + Math.random() * 50
+                });
+                
+                // Connect to power plant
+                edgeData.push({
+                    from: 'plant1',
+                    to: substationId,
+                    capacity: 0.6 + Math.random() * 0.3
+                });
+                
+                // Create consumers around each substation
+                const consumerCount = 1 + Math.floor(Math.random() * 3);
+                const radius = 2;
+                
+                for (let k = 0; k < consumerCount; k++) {
+                    const angle = (k / consumerCount) * Math.PI * 2;
+                    const consumerId = `con_${i}_${j}_${k}`;
+                    
+                    // Position in a circle around the substation
+                    const consumerX = x + Math.cos(angle) * radius;
+                    const consumerZ = z + Math.sin(angle) * radius;
+                    
+                    nodeData.push({
+                        id: consumerId,
+                        type: 'consumer',
+                        label: `C${i}${j}${k}`,
+                        x: consumerX,
+                        y: 0,
+                        z: consumerZ,
+                        demand: 20 + Math.random() * 30
+                    });
+                    
+                    // Connect consumer to its substation
+                    edgeData.push({
+                        from: substationId,
+                        to: consumerId,
+                        capacity: 0.4 + Math.random() * 0.3
+                    });
                 }
             }
         }
+        
+        // Create nodes
+        nodeData.forEach(data => {
+            let node;
+            
+            if (data.type === 'generator') {
+                node = this.createGeneratorNode(data, colors);
+            } else if (data.type === 'distributor') {
+                node = this.createDistributorNode(data, colors);
+            } else if (data.type === 'consumer') {
+                node = this.createConsumerNode(data, colors);
+            }
+            
+            if (node) {
+                nodes[data.id] = node;
+                this.scene.add(node);
+                this.networkNodes.push(node);
+            }
+        });
+        
+        // Create edges
+        edgeData.forEach(data => {
+            if (nodes[data.from] && nodes[data.to]) {
+                const edge = this.createEnergyFlow(
+                    nodes[data.from],
+                    nodes[data.to],
+                    data.capacity,
+                    colors
+                );
+                
+                if (edge) {
+                    this.scene.add(edge);
+                    this.networkEdges.push(edge);
+                }
+            }
+        });
+        
+        // Add ground grid
+        const groundSize = nodeSpacing * (gridSize + 1);
+        const groundDivisions = gridSize * 2;
+        const gridHelper = new THREE.GridHelper(groundSize, groundDivisions, 0x555555, 0x333333);
+        gridHelper.position.y = -1;
+        this.scene.add(gridHelper);
+        
+        // Update camera position
+        this.camera.position.set(0, 25, 30);
+        this.camera.lookAt(0, 0, 0);
+    }
+
+    // Create smart grid visualization
+    createSmartGrid() {
+        if (!this.scene) return;
+        
+        const colors = this.get3DThemeColors();
+        
+        // Create a smart grid with renewable sources and storage
+        const nodeData = [];
+        const edgeData = [];
+        const nodes = {};
+        
+        // Main power plant
+        nodeData.push({
+            id: 'plant1',
+            type: 'generator',
+            label: 'P1',
+            x: -8,
+            y: 0,
+            z: -8,
+            capacity: 180,
+            efficiency: this.options.efficiency * 0.9  // Slightly less efficient
+        });
+        
+        // Renewable sources (solar and wind)
+        nodeData.push({
+            id: 'solar1',
+            type: 'renewable',
+            subtype: 'solar',
+            label: 'S1',
+            x: 8,
+            y: 0,
+            z: -8,
+            capacity: 80,
+            efficiency: 0.95
+        });
+        
+        nodeData.push({
+            id: 'wind1',
+            type: 'renewable',
+            subtype: 'wind',
+            label: 'W1',
+            x: 0,
+            y: 0,
+            z: -8,
+            capacity: 60,
+            efficiency: 0.9
+        });
+        
+        // Battery storage
+        nodeData.push({
+            id: 'battery1',
+            type: 'storage',
+            label: 'B1',
+            x: 4,
+            y: 0,
+            z: -4,
+            capacity: 100,
+            efficiency: 0.98
+        });
+        
+        // Smart distribution substations
+        for (let i = 0; i < 3; i++) {
+            const x = -8 + i * 8;
+            
+            nodeData.push({
+                id: `smart_sub${i}`,
+                type: 'smartDistributor',
+                label: `SD${i}`,
+                x: x,
+                y: 0,
+                z: 0,
+                capacity: 100
+            });
+        }
+        
+        // Consumer buildings
+        for (let i = 0; i < 6; i++) {
+            const x = -10 + i * 4;
+            
+            nodeData.push({
+                id: `consumer${i}`,
+                type: 'consumer',
+                label: `C${i}`,
+                x: x,
+                y: 0,
+                z: 6,
+                demand: 20 + Math.random() * 40
+            });
+        }
+        
+        // Smart home with generation
+        nodeData.push({
+            id: 'smart_home',
+            type: 'smartHome',
+            label: 'SH',
+            x: 8,
+            y: 0,
+            z: 3,
+            demand: 30,
+            generation: 20,
+            efficiency: 0.9
+        });
+        
+        // Create connections
+        // Connect generators to substations
+        edgeData.push({ from: 'plant1', to: 'smart_sub0', capacity: 0.8 });
+        edgeData.push({ from: 'solar1', to: 'smart_sub2', capacity: 0.7 });
+        edgeData.push({ from: 'wind1', to: 'smart_sub1', capacity: 0.6 });
+        
+        // Connect battery
+        edgeData.push({ from: 'battery1', to: 'smart_sub1', capacity: 0.9 });
+        edgeData.push({ from: 'solar1', to: 'battery1', capacity: 0.5 });
+        
+        // Interconnect substations (grid)
+        edgeData.push({ from: 'smart_sub0', to: 'smart_sub1', capacity: 0.4 });
+        edgeData.push({ from: 'smart_sub1', to: 'smart_sub2', capacity: 0.4 });
+        
+        // Connect consumers to nearest substation
+        for (let i = 0; i < 6; i++) {
+            const subIndex = Math.floor(i / 2);
+            edgeData.push({
+                from: `smart_sub${subIndex}`,
+                to: `consumer${i}`,
+                capacity: 0.4 + Math.random() * 0.3
+            });
+        }
+        
+        // Connect smart home
+        edgeData.push({ from: 'smart_sub2', to: 'smart_home', capacity: 0.5 });
+        edgeData.push({ from: 'smart_home', to: 'smart_sub2', capacity: 0.3 }); // Bidirectional flow
+        
+        // Create nodes
+        nodeData.forEach(data => {
+            let node;
+            
+            if (data.type === 'generator') {
+                node = this.createGeneratorNode(data, colors);
+            } else if (data.type === 'distributor' || data.type === 'smartDistributor') {
+                node = this.createSmartDistributorNode(data, colors);
+            } else if (data.type === 'consumer') {
+                node = this.createConsumerNode(data, colors);
+            } else if (data.type === 'renewable') {
+                node = this.createRenewableNode(data, colors);
+            } else if (data.type === 'storage') {
+                node = this.createStorageNode(data, colors);
+            } else if (data.type === 'smartHome') {
+                node = this.createSmartHomeNode(data, colors);
+            }
+            
+            if (node) {
+                nodes[data.id] = node;
+                this.scene.add(node);
+                this.networkNodes.push(node);
+            }
+        });
+        
+        // Create edges with smart grid properties (bidirectional, smart monitoring)
+        edgeData.forEach(data => {
+            if (nodes[data.from] && nodes[data.to]) {
+                const edge = this.createSmartEnergyFlow(
+                    nodes[data.from],
+                    nodes[data.to],
+                    data.capacity,
+                    colors
+                );
+                
+                if (edge) {
+                    this.scene.add(edge);
+                    this.networkEdges.push(edge);
+                }
+            }
+        });
+        
+        // Add ground
+        const groundSize = 30;
+        const groundDivisions = 30;
+        const gridHelper = new THREE.GridHelper(groundSize, groundDivisions, 0x555555, 0x333333);
+        gridHelper.position.y = -1;
+        this.scene.add(gridHelper);
+        
+        // Update camera position
+        this.camera.position.set(0, 20, 25);
+        this.camera.lookAt(0, 0, 0);
+    }
+    
+    // Create smart distributor node
+    createSmartDistributorNode(nodeData, colors) {
+        // Base node is similar to a distributor but with added "smart" features
+        const node = this.createDistributorNode(nodeData, colors);
+        
+        if (node) {
+            // Add smart monitoring features
+            const monitorGeometry = new THREE.SphereGeometry(0.3, 16, 16);
+            const monitorMaterial = new THREE.MeshPhongMaterial({
+                color: 0x00ffff,
+                shininess: 100,
+                emissive: 0x003333
+            });
+            const monitor = new THREE.Mesh(monitorGeometry, monitorMaterial);
+            monitor.position.set(0, 1.5, 0);
+            node.add(monitor);
+            
+            // Create glowing effect
+            const glowLight = new THREE.PointLight(0x00ffff, 0.5, 3);
+            glowLight.position.set(0, 1.5, 0);
+            node.add(glowLight);
+            
+            // Update userData
+            node.userData.type = 'smartDistributor';
+            node.userData.isSmart = true;
+        }
+        
+        return node;
+    }
+    
+    // Create renewable energy source node
+    createRenewableNode(nodeData, colors) {
+        const group = new THREE.Group();
+        group.position.set(nodeData.x, nodeData.y, nodeData.z);
+        
+        const subtype = nodeData.subtype || 'solar';
+        const efficiency = nodeData.efficiency || 0.95;
+        
+        if (subtype === 'solar') {
+            // Create solar panel structure
+            const baseGeometry = new THREE.BoxGeometry(3, 0.2, 3);
+            const baseMaterial = new THREE.MeshPhongMaterial({
+                color: 0x444444,
+                shininess: 50
+            });
+            const base = new THREE.Mesh(baseGeometry, baseMaterial);
+            base.position.y = -0.5;
+            group.add(base);
+            
+            // Solar panels
+            const panelGeometry = new THREE.BoxGeometry(2.8, 0.1, 2.8);
+            const panelMaterial = new THREE.MeshPhongMaterial({
+                color: 0x1a3c5a,
+                shininess: 100,
+                emissive: 0x0a1c2a
+            });
+            const panel = new THREE.Mesh(panelGeometry, panelMaterial);
+            panel.position.y = -0.3;
+            group.add(panel);
+            
+            // Add reflective surface
+            const solarCellsGeometry = new THREE.PlaneGeometry(2.6, 2.6);
+            const solarCellsMaterial = new THREE.MeshPhongMaterial({
+                color: 0x2244aa,
+                shininess: 200,
+                emissive: 0x112244,
+                specular: 0x6688cc
+            });
+            const solarCells = new THREE.Mesh(solarCellsGeometry, solarCellsMaterial);
+            solarCells.rotation.x = -Math.PI / 2;
+            solarCells.position.y = -0.25;
+            group.add(solarCells);
+            
+        } else if (subtype === 'wind') {
+            // Create wind turbine
+            const poleGeometry = new THREE.CylinderGeometry(0.15, 0.2, 4, 8);
+            const poleMaterial = new THREE.MeshPhongMaterial({
+                color: 0xaaaaaa,
+                shininess: 70
+            });
+            const pole = new THREE.Mesh(poleGeometry, poleMaterial);
+            pole.position.y = 1;
+            group.add(pole);
+            
+            // Turbine head
+            const headGeometry = new THREE.BoxGeometry(1, 0.5, 0.5);
+            const headMaterial = new THREE.MeshPhongMaterial({
+                color: 0xeeeeee,
+                shininess: 80
+            });
+            const head = new THREE.Mesh(headGeometry, headMaterial);
+            head.position.y = 3.2;
+            head.position.z = 0.1;
+            group.add(head);
+            
+            // Turbine blades
+            const bladeGroup = new THREE.Group();
+            bladeGroup.position.y = 3.2;
+            
+            const createBlade = () => {
+                const bladeGeometry = new THREE.BoxGeometry(0.1, 0.05, 1.5);
+                const bladeMaterial = new THREE.MeshPhongMaterial({
+                    color: 0xffffff,
+                    shininess: 90
+                });
+                return new THREE.Mesh(bladeGeometry, bladeMaterial);
+            };
+            
+            const blade1 = createBlade();
+            blade1.position.z = 0.75;
+            blade1.position.x = 0.5;
+            
+            const blade2 = createBlade();
+            blade2.position.z = 0.75;
+            blade2.position.x = -0.5;
+            blade2.rotation.y = Math.PI / 2;
+            
+            const blade3 = createBlade();
+            blade3.position.z = 0.75;
+            blade3.rotation.y = -Math.PI / 4;
+            blade3.position.x = 0.4;
+            blade3.position.z = 0.4;
+            
+            bladeGroup.add(blade1);
+            bladeGroup.add(blade2);
+            bladeGroup.add(blade3);
+            
+            // Add animation data
+            bladeGroup.userData = {
+                rotationSpeed: 0.02,
+                rotationAxis: 'z'
+            };
+            
+            group.add(bladeGroup);
+            group.userData.blades = bladeGroup;
+        }
+        
+        // Label
+        const label = this.createTextSprite(nodeData.label || (subtype === 'solar' ? 'S' : 'W'), 0.8);
+        label.position.set(0, 2, 0);
+        group.add(label);
+        
+        // Add userData for interactions
+        group.userData = {
+            type: 'renewable',
+            subtype: subtype,
+            id: nodeData.id,
+            capacity: nodeData.capacity || 80,
+            efficiency: efficiency,
+            label: nodeData.label || (subtype === 'solar' ? 'S' : 'W'),
+            baseEmissionFactor: 0.1  // Very low emissions for renewables
+        };
+        
+        return group;
+    }
+    
+    // Create energy storage node (battery)
+    createStorageNode(nodeData, colors) {
+        const group = new THREE.Group();
+        group.position.set(nodeData.x, nodeData.y, nodeData.z);
+        
+        // Battery base
+        const baseGeometry = new THREE.BoxGeometry(2, 0.5, 2);
+        const baseMaterial = new THREE.MeshPhongMaterial({
+            color: 0x444444,
+            shininess: 60
+        });
+        const base = new THREE.Mesh(baseGeometry, baseMaterial);
+        base.position.y = -0.75;
+        group.add(base);
+        
+        // Battery cells
+        const batteryCellGeometry = new THREE.CylinderGeometry(0.4, 0.4, 1.5, 16);
+        const batteryCellMaterial = new THREE.MeshPhongMaterial({
+            color: 0x22aa22,
+            shininess: 80
+        });
+        
+        // Create multiple cells
+        for (let i = 0; i < 4; i++) {
+            const x = (i % 2 === 0) ? -0.5 : 0.5;
+            const z = (i < 2) ? -0.5 : 0.5;
+            
+            const cell = new THREE.Mesh(batteryCellGeometry, batteryCellMaterial);
+            cell.position.set(x, 0, z);
+            group.add(cell);
+        }
+        
+        // Battery status indicator
+        const indicatorGeometry = new THREE.BoxGeometry(1.5, 0.2, 1.5);
+        const indicatorMaterial = new THREE.MeshPhongMaterial({
+            color: 0x22ff22,
+            shininess: 100,
+            emissive: 0x115511
+        });
+        const indicator = new THREE.Mesh(indicatorGeometry, indicatorMaterial);
+        indicator.position.y = 1;
+        group.add(indicator);
+        
+        // Add glow effect
+        const glow = new THREE.PointLight(0x33ff33, 1, 3);
+        glow.position.y = 1;
+        group.add(glow);
+        
+        // Label
+        const label = this.createTextSprite(nodeData.label || 'B', 0.8);
+        label.position.set(0, 2, 0);
+        group.add(label);
+        
+        // Add userData for interactions
+        group.userData = {
+            type: 'storage',
+            id: nodeData.id,
+            capacity: nodeData.capacity || 100,
+            efficiency: nodeData.efficiency || 0.95,
+            label: nodeData.label || 'B',
+            chargeLevel: 0.8,  // Initial charge level (80%)
+            baseEmissionFactor: 0.05
+        };
+        
+        return group;
+    }
+    
+    // Create smart home with generation
+    createSmartHomeNode(nodeData, colors) {
+        const group = new THREE.Group();
+        group.position.set(nodeData.x, nodeData.y, nodeData.z);
+        
+        // Base consumer building with solar panels
+        const consumerNode = this.createConsumerNode(nodeData, colors);
+        group.add(consumerNode);
+        
+        // Add small solar panel
+        const panelGeometry = new THREE.BoxGeometry(1, 0.1, 1);
+        const panelMaterial = new THREE.MeshPhongMaterial({
+            color: 0x1a3c5a,
+            shininess: 100
+        });
+        const panel = new THREE.Mesh(panelGeometry, panelMaterial);
+        panel.position.y = 1.5;
+        group.add(panel);
+        
+        // Add smart meter
+        const meterGeometry = new THREE.BoxGeometry(0.4, 0.4, 0.2);
+        const meterMaterial = new THREE.MeshPhongMaterial({
+            color: 0x00ffff,
+            emissive: 0x00aaaa,
+            shininess: 120
+        });
+        const meter = new THREE.Mesh(meterGeometry, meterMaterial);
+        meter.position.set(0.7, 0, 0.6);
+        group.add(meter);
+        
+        // Smart home label
+        const label = this.createTextSprite(nodeData.label || 'SH', 0.8);
+        label.position.set(0, 2.5, 0);
+        group.add(label);
+        
+        // Add userData for interactions
+        group.userData = {
+            type: 'smartHome',
+            id: nodeData.id,
+            demand: nodeData.demand || 30,
+            generation: nodeData.generation || 20,
+            efficiency: nodeData.efficiency || 0.9,
+            label: nodeData.label || 'SH',
+            isSmart: true
+        };
+        
+        return group;
+    }
+    
+    // Create smart energy flow with bidirectional capabilities
+    createSmartEnergyFlow(fromNode, toNode, capacity, colors) {
+        const flow = this.createEnergyFlow(fromNode, toNode, capacity, colors);
+        
+        if (flow) {
+            // Add smart grid features
+            flow.userData.isSmart = true;
+            
+            // Add data monitoring points
+            const curve = flow.geometry.parameters.path;
+            const points = curve.getPoints(4);
+            
+            // Add data point in the middle
+            const midPoint = points[2];
+            
+            const monitorGeometry = new THREE.SphereGeometry(0.15, 8, 8);
+            const monitorMaterial = new THREE.MeshBasicMaterial({
+                color: 0x00ffff,
+                transparent: true,
+                opacity: 0.8
+            });
+            const monitor = new THREE.Mesh(monitorGeometry, monitorMaterial);
+            monitor.position.copy(midPoint);
+            flow.add(monitor);
+            
+            // Add pulsing light effect
+            const light = new THREE.PointLight(0x00ffff, 0.5, 1);
+            light.position.copy(midPoint);
+            flow.add(light);
+            
+            // Add animation data
+            light.userData = {
+                pulseSpeed: 0.05,
+                minIntensity: 0.2,
+                maxIntensity: 0.8
+            };
+            
+            flow.userData.monitor = monitor;
+            flow.userData.monitorLight = light;
+        }
+        
+        return flow;
+    }
+
+    // Create distribution network visualization
+    createDistributionNetwork() {
+        if (!this.scene) return;
+        
+        const colors = this.get3DThemeColors();
+        
+        // Create a hierarchical distribution network
+        const nodeData = [];
+        const edgeData = [];
+        const nodes = {};
+        
+        // Main power plant
+        nodeData.push({
+            id: 'mainPlant',
+            type: 'generator',
+            label: 'MP',
+            x: 0,
+            y: 0,
+            z: -10,
+            capacity: 250,
+            efficiency: this.options.efficiency
+        });
+        
+        // Main transformer stations
+        const mainStationCount = 3;
+        for (let i = 0; i < mainStationCount; i++) {
+            const angle = (i / mainStationCount) * Math.PI - Math.PI/2;
+            const x = Math.cos(angle) * 8;
+            const z = Math.sin(angle) * 8;
+            
+            nodeData.push({
+                id: `mainSub${i}`,
+                type: 'distributor',
+                label: `MS${i}`,
+                x: x,
+                y: 0,
+                z: z,
+                capacity: 120
+            });
+            
+            // Connect to main plant
+            edgeData.push({
+                from: 'mainPlant',
+                to: `mainSub${i}`,
+                capacity: 0.9
+            });
+            
+            // Secondary distribution nodes
+            const secondaryCount = 2 + Math.floor(Math.random() * 2);
+            const radius = 6;
+            
+            for (let j = 0; j < secondaryCount; j++) {
+                const subAngle = angle + (j / secondaryCount - 0.5) * Math.PI/2;
+                const subX = x + Math.cos(subAngle) * radius;
+                const subZ = z + Math.sin(subAngle) * radius;
+                
+                nodeData.push({
+                    id: `secondarySub${i}_${j}`,
+                    type: 'distributor',
+                    label: `S${i}${j}`,
+                    x: subX,
+                    y: 0,
+                    z: subZ,
+                    capacity: 60
+                });
+                
+                // Connect to main substation
+                edgeData.push({
+                    from: `mainSub${i}`,
+                    to: `secondarySub${i}_${j}`,
+                    capacity: 0.7
+                });
+                
+                // Create consumer clusters
+                const consumerCount = 3 + Math.floor(Math.random() * 3);
+                
+                for (let k = 0; k < consumerCount; k++) {
+                    const consumerAngle = subAngle + (k / consumerCount - 0.5) * Math.PI/3;
+                    const distance = 3 + Math.random() * 2;
+                    const consumerX = subX + Math.cos(consumerAngle) * distance;
+                    const consumerZ = subZ + Math.sin(consumerAngle) * distance;
+                    
+                    nodeData.push({
+                        id: `consumer${i}_${j}_${k}`,
+                        type: 'consumer',
+                        label: `C${i}${j}${k}`,
+                        x: consumerX,
+                        y: 0,
+                        z: consumerZ,
+                        demand: 20 + Math.random() * 30
+                    });
+                    
+                    // Connect to secondary substation
+                    edgeData.push({
+                        from: `secondarySub${i}_${j}`,
+                        to: `consumer${i}_${j}_${k}`,
+                        capacity: 0.5
+                    });
+                }
+            }
+        }
+        
+        // Create nodes
+        nodeData.forEach(data => {
+            let node;
+            
+            if (data.type === 'generator') {
+                node = this.createGeneratorNode(data, colors);
+            } else if (data.type === 'distributor') {
+                node = this.createDistributorNode(data, colors);
+            } else if (data.type === 'consumer') {
+                node = this.createConsumerNode(data, colors);
+            }
+            
+            if (node) {
+                nodes[data.id] = node;
+                this.scene.add(node);
+                this.networkNodes.push(node);
+            }
+        });
+        
+        // Create edges
+        edgeData.forEach(data => {
+            if (nodes[data.from] && nodes[data.to]) {
+                const edge = this.createEnergyFlow(
+                    nodes[data.from],
+                    nodes[data.to],
+                    data.capacity,
+                    colors
+                );
+                
+                if (edge) {
+                    this.scene.add(edge);
+                    this.networkEdges.push(edge);
+                }
+            }
+        });
+        
+        // Add ground grid
+        const gridSize = 35;
+        const gridDivisions = 35;
+        const gridHelper = new THREE.GridHelper(gridSize, gridDivisions, 0x555555, 0x333333);
+        gridHelper.position.y = -1;
+        this.scene.add(gridHelper);
+        
+        // Update camera position
+        this.camera.position.set(0, 25, 25);
+        this.camera.lookAt(0, 0, 0);
+    }
+    
+    // Create renewable energy network
+    createRenewableNetwork() {
+        if (!this.scene) return;
+        
+        const colors = this.get3DThemeColors();
+        
+        // Create a network focused on renewable energy sources
+        const nodeData = [];
+        const edgeData = [];
+        const nodes = {};
+        
+        // Small backup power plant
+        nodeData.push({
+            id: 'backupPlant',
+            type: 'generator',
+            label: 'BP',
+            x: -12,
+            y: 0,
+            z: -7,
+            capacity: 100,
+            efficiency: this.options.efficiency * 0.8 // Less efficient
+        });
+        
+        // Solar farm
+        for (let i = 0; i < 6; i++) {
+            const row = Math.floor(i / 3);
+            const col = i % 3;
+            
+            nodeData.push({
+                id: `solar${i}`,
+                type: 'renewable',
+                subtype: 'solar',
+                label: `S${i}`,
+                x: -5 + col * 4,
+                y: 0,
+                z: -10 + row * 4,
+                capacity: 40 + Math.random() * 20,
+                efficiency: 0.9 + Math.random() * 0.08
+            });
+        }
+        
+        // Wind farm
+        for (let i = 0; i < 4; i++) {
+            const angle = (i / 4) * Math.PI * 2;
+            const x = Math.cos(angle) * 10;
+            const z = Math.sin(angle) * 10;
+            
+            nodeData.push({
+                id: `wind${i}`,
+                type: 'renewable',
+                subtype: 'wind',
+                label: `W${i}`,
+                x: x + 8,
+                y: 0,
+                z: z - 8,
+                capacity: 30 + Math.random() * 20,
+                efficiency: 0.85 + Math.random() * 0.1
+            });
+        }
+        
+        // Main storage array
+        nodeData.push({
+            id: 'mainStorage',
+            type: 'storage',
+            label: 'MS',
+            x: 5,
+            y: 0,
+            z: 0,
+            capacity: 200,
+            efficiency: 0.95
+        });
+        
+        // Distribution nodes
+        for (let i = 0; i < 3; i++) {
+            nodeData.push({
+                id: `distrib${i}`,
+                type: 'smartDistributor',
+                label: `D${i}`,
+                x: -8 + i * 8,
+                y: 0,
+                z: 5,
+                capacity: 80
+            });
+        }
+        
+        // Consumers
+        for (let i = 0; i < 8; i++) {
+            const x = -14 + i * 4;
+            
+            nodeData.push({
+                id: `consumer${i}`,
+                type: 'consumer',
+                label: `C${i}`,
+                x: x,
+                y: 0,
+                z: 12,
+                demand: 20 + Math.random() * 30
+            });
+        }
+        
+        // Add smart homes with local generation
+        for (let i = 0; i < 2; i++) {
+            nodeData.push({
+                id: `smartHome${i}`,
+                type: 'smartHome',
+                label: `SH${i}`,
+                x: 5 + i * 6,
+                y: 0,
+                z: 7,
+                demand: 25,
+                generation: 15,
+                efficiency: 0.92
+            });
+        }
+        
+        // Create connections
+        // Connect renewable sources to storage and distribution
+        for (let i = 0; i < 6; i++) {
+            // Connect solar panels to main storage
+            edgeData.push({
+                from: `solar${i}`,
+                to: 'mainStorage',
+                capacity: 0.7 + Math.random() * 0.2
+            });
+        }
+        
+        for (let i = 0; i < 4; i++) {
+            // Connect wind turbines to main storage
+            edgeData.push({
+                from: `wind${i}`,
+                to: 'mainStorage',
+                capacity: 0.6 + Math.random() * 0.3
+            });
+        }
+        
+        // Connect storage to distribution
+        for (let i = 0; i < 3; i++) {
+            edgeData.push({
+                from: 'mainStorage',
+                to: `distrib${i}`,
+                capacity: 0.8
+            });
+        }
+        
+        // Connect backup plant to distribution
+        edgeData.push({
+            from: 'backupPlant',
+            to: 'distrib0',
+            capacity: 0.7
+        });
+        
+        // Connect distribution to consumers
+        for (let i = 0; i < 8; i++) {
+            const distribIndex = Math.min(2, Math.floor(i / 3));
+            edgeData.push({
+                from: `distrib${distribIndex}`,
+                to: `consumer${i}`,
+                capacity: 0.6
+            });
+        }
+        
+        // Connect smart homes
+        for (let i = 0; i < 2; i++) {
+            // Connect to get power when needed
+            edgeData.push({
+                from: 'distrib2',
+                to: `smartHome${i}`,
+                capacity: 0.5
+            });
+            
+            // Connect to give power back to grid
+            edgeData.push({
+                from: `smartHome${i}`,
+                to: 'distrib2',
+                capacity: 0.3
+            });
+        }
+        
+        // Create nodes
+        nodeData.forEach(data => {
+            let node;
+            
+            if (data.type === 'generator') {
+                node = this.createGeneratorNode(data, colors);
+            } else if (data.type === 'distributor') {
+                node = this.createDistributorNode(data, colors);
+            } else if (data.type === 'smartDistributor') {
+                node = this.createSmartDistributorNode(data, colors);
+            } else if (data.type === 'consumer') {
+                node = this.createConsumerNode(data, colors);
+            } else if (data.type === 'renewable') {
+                node = this.createRenewableNode(data, colors);
+            } else if (data.type === 'storage') {
+                node = this.createStorageNode(data, colors);
+            } else if (data.type === 'smartHome') {
+                node = this.createSmartHomeNode(data, colors);
+            }
+            
+            if (node) {
+                nodes[data.id] = node;
+                this.scene.add(node);
+                this.networkNodes.push(node);
+            }
+        });
+        
+        // Create edges
+        edgeData.forEach(data => {
+            if (nodes[data.from] && nodes[data.to]) {
+                // Use smart flows for all connections in the renewable network
+                const edge = this.createSmartEnergyFlow(
+                    nodes[data.from],
+                    nodes[data.to],
+                    data.capacity,
+                    colors
+                );
+                
+                if (edge) {
+                    this.scene.add(edge);
+                    this.networkEdges.push(edge);
+                }
+            }
+        });
+        
+        // Add terrain base (green for renewable emphasis)
+        const groundGeometry = new THREE.PlaneGeometry(50, 50, 20, 20);
+        const groundMaterial = new THREE.MeshLambertMaterial({
+            color: 0x337733,
+            side: THREE.DoubleSide
+        });
+        const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+        ground.rotation.x = -Math.PI / 2;
+        ground.position.y = -1;
+        this.scene.add(ground);
+        
+        // Update camera position
+        this.camera.position.set(0, 30, 30);
+        this.camera.lookAt(0, 0, 0);
+    }
+}
+
+// Helper function to initialize the Energy Network Visualizer
+function initEnergyNetworkVisualizer(container, options = {}) {
+    console.log("Initializing Energy Network Visualizer for", container);
+    
+    try {
+        // Handle both string ID or DOM element
+        if (typeof container === 'string' || container instanceof HTMLElement) {
+            return new EnergyNetworkVisualizer(container, options);
+        } else {
+            console.error("Container must be a string ID or a DOM element");
+            return null;
+        }
+    } catch (error) {
+        console.error("Failed to initialize energy network visualizer:", error);
+        
+        // Create error message
+        const containerElement = typeof container === 'string' ? 
+            document.getElementById(container) : container;
+            
+        if (containerElement) {
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'alert alert-danger mt-3';
+            errorDiv.innerHTML = `
+                <h5>Energy Network Visualization Error</h5>
+                <p>${error.message || 'Failed to initialize energy network visualizer'}</p>
+                <p>Check browser console for more details.</p>
+            `;
+            containerElement.appendChild(errorDiv);
+        }
+        
         return null;
     }
 }
+
+// For backwards compatibility
+function initDataStructureVisualizer(container, options = {}) {
+    console.warn("initDataStructureVisualizer is deprecated. Use initEnergyNetworkVisualizer instead.");
+    return initEnergyNetworkVisualizer(container, options);
+}
+
+// Auto-initialize all energy network visualizers when the document loads
+document.addEventListener('DOMContentLoaded', function() {
+    console.log("Auto-initializing Energy Network Visualizers");
+    
+    // Find all containers with the visualizer class/attribute
+    const containers = document.querySelectorAll('.energy-network-visualizer, [data-visualizer-type="energy-network"]');
+    
+    containers.forEach(container => {
+        // Skip if already initialized
+        if (container.hasAttribute('data-viz-initialized')) return;
+        
+        // Get configuration from data attribute
+        let options = {};
+        const configAttr = container.getAttribute('data-visualizer-config');
+        
+        if (configAttr) {
+            try {
+                options = JSON.parse(configAttr);
+            } catch (e) {
+                console.error("Invalid configuration JSON:", e);
+            }
+        }
+        
+        // Initialize visualizer
+        initEnergyNetworkVisualizer(container, options);
+        
+        // Mark as initialized
+        container.setAttribute('data-viz-initialized', 'true');
+    });
+    
+    // For backwards compatibility
+    const oldContainers = document.querySelectorAll('.data-structure-visualizer, [data-visualizer-type="data-structure"], [data-visualizer-type="datastructure"]');
+    
+    oldContainers.forEach(container => {
+        // Skip if already initialized
+        if (container.hasAttribute('data-viz-initialized')) return;
+        
+        // Get configuration from data attribute
+        let options = {};
+        const configAttr = container.getAttribute('data-visualizer-config');
+        
+        if (configAttr) {
+            try {
+                options = JSON.parse(configAttr);
+            } catch (e) {
+                console.error("Invalid configuration JSON:", e);
+            }
+        }
+        
+        // Initialize visualizer
+        initEnergyNetworkVisualizer(container, options);
+        
+        // Mark as initialized
+        container.setAttribute('data-viz-initialized', 'true');
+    });
+});
+
+// Expose the initializer function globally
+window.initEnergyNetworkVisualizer = initEnergyNetworkVisualizer;
 
 // Example data
 const EXAMPLE_DATA = {

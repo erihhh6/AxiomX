@@ -11,9 +11,6 @@ class MolecularEnergyChainVisualizer {
             return;
         }
 
-        // Force 3D mode by default
-        options.mode = '3d';
-        
         // Default options
         this.options = {
             sequence: '',
@@ -40,6 +37,9 @@ class MolecularEnergyChainVisualizer {
             showEnergyData: false,
             ...options
         };
+
+        // Explicitly set to 3D mode to override any passed options
+        this.options.mode = '3d';
 
         // Add a visual indicator that this is the 3D version
         const versionIndicator = document.createElement('div');
@@ -351,494 +351,244 @@ class MolecularEnergyChainVisualizer {
         this.threeDContainer.style.position = 'relative';
         this.visualizerContainer.appendChild(this.threeDContainer);
         
-        // Add loading indicator
-        const loadingIndicator = document.createElement('div');
-        loadingIndicator.className = 'loading-indicator';
-        loadingIndicator.innerHTML = `
-            <div style="text-align: center; padding: 40px;">
-                <div class="spinner-border text-primary" role="status">
-                    <span class="visually-hidden">Loading...</span>
-                </div>
-                <p class="mt-2">Loading 3D visualization...</p>
-            </div>
-        `;
-        this.threeDContainer.appendChild(loadingIndicator);
-        
         // Load Three.js dynamically if not already available
         this.loadThreeJS()
             .then(() => {
-                // Remove loading indicator
-                loadingIndicator.remove();
-                // Setup 3D visualization
                 this.setup3DVisualization();
             })
             .catch(error => {
                 console.error("Error loading Three.js:", error);
                 this.updateStatus('Could not load 3D visualization library', true);
-                
-                // Remove loading indicator
-                loadingIndicator.remove();
-                
-                // Create error message
                 const errorMsg = document.createElement('div');
                 errorMsg.className = 'alert alert-warning';
                 errorMsg.innerHTML = `
                     <h5>3D Visualization Unavailable</h5>
-                    <p>Could not load Three.js library. Using simplified 2D view instead.</p>
+                    <p>Could not load Three.js library. Switching to text view.</p>
                 `;
                 this.threeDContainer.appendChild(errorMsg);
-                
-                // Create simplified 2D visualization as fallback
-                this.createSimplified2DVisualization();
+                // Fall back to text mode
+                this.options.mode = 'text';
+                this.switchView('text');
             });
-    }
-    
-    createSimplified2DVisualization() {
-        // Create a simple 2D visualization of the molecule using SVG or Canvas
-        const chainType = this.getChainType().toLowerCase();
-        const sequence = this.options.sequence.toUpperCase();
-        
-        // Create container for 2D visualization
-        const canvas = document.createElement('canvas');
-        canvas.width = this.threeDContainer.clientWidth;
-        canvas.height = 200;
-        canvas.style.display = 'block';
-        canvas.style.margin = '20px auto';
-        
-        // Get context and draw
-        const ctx = canvas.getContext('2d');
-        
-        // Fill background
-        ctx.fillStyle = '#f8f9fa';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        
-        // Draw title
-        ctx.fillStyle = '#333';
-        ctx.font = 'bold 14px Arial';
-        ctx.textAlign = 'center';
-        ctx.fillText(`${this.getChainType()} Molecular Chain (2D View)`, canvas.width / 2, 20);
-        
-        // Draw atoms
-        const atoms = sequence.split('');
-        const totalWidth = Math.min(canvas.width - 40, atoms.length * 30);
-        const startX = (canvas.width - totalWidth) / 2;
-        
-        // Draw connecting lines first
-        ctx.strokeStyle = '#666';
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        for (let i = 0; i < atoms.length - 1; i++) {
-            const x1 = startX + (i * totalWidth / (atoms.length - 1));
-            const x2 = startX + ((i + 1) * totalWidth / (atoms.length - 1));
-            const y = canvas.height / 2;
-            ctx.moveTo(x1, y);
-            ctx.lineTo(x2, y);
-        }
-        ctx.stroke();
-        
-        // Draw atoms on top
-        atoms.forEach((atom, index) => {
-            const x = startX + (index * totalWidth / (atoms.length - 1));
-            const y = canvas.height / 2;
-            const radius = 15;
-            
-            // Get color for this atom
-            let color = this.options.moleculeColors[atom] || '#ccc';
-            
-            // Draw circle for atom
-            ctx.beginPath();
-            ctx.arc(x, y, radius, 0, Math.PI * 2);
-            ctx.fillStyle = color;
-            ctx.fill();
-            ctx.strokeStyle = '#333';
-            ctx.lineWidth = 1;
-            ctx.stroke();
-            
-            // Draw atom label
-            ctx.fillStyle = this.hexToRgb(color) > 600 ? '#000' : '#fff';
-            ctx.font = 'bold 12px Arial';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.fillText(atom, x, y);
-        });
-        
-        // Draw energy info
-        if (this.options.showEnergyData) {
-            this.drawEnergyData(ctx, canvas.width, canvas.height);
-        }
-        
-        // Add canvas to container
-        this.threeDContainer.appendChild(canvas);
-        
-        // Add toggle button for energy data
-        const toggleButton = document.createElement('button');
-        toggleButton.className = 'btn btn-sm btn-outline-primary';
-        toggleButton.textContent = 'Toggle Energy Data';
-        toggleButton.style.display = 'block';
-        toggleButton.style.margin = '10px auto';
-        toggleButton.onclick = () => {
-            this.options.showEnergyData = !this.options.showEnergyData;
-            // Redraw canvas
-            this.threeDContainer.removeChild(canvas);
-            this.createSimplified2DVisualization();
-        };
-        this.threeDContainer.appendChild(toggleButton);
-    }
-    
-    drawEnergyData(ctx, width, height) {
-        const chainType = this.getChainType().toLowerCase();
-        let energyContent = 0;
-        let efficiency = this.options.energyEfficiency;
-        
-        switch(chainType) {
-            case 'hydrocarbon':
-                energyContent = 45; // MJ/kg
-                break;
-            case 'biofuel':
-                energyContent = 38; // MJ/kg
-                break;
-            case 'polymer':
-                energyContent = 25; // MJ/kg
-                break;
-            default:
-                energyContent = 30;
-        }
-        
-        // Calculate usable energy based on efficiency
-        const usableEnergy = energyContent * efficiency;
-        
-        // Draw energy info box
-        const boxWidth = 180;
-        const boxHeight = 90;
-        const boxX = width - boxWidth - 20;
-        const boxY = height - boxHeight - 20;
-        
-        // Box background
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-        ctx.fillRect(boxX, boxY, boxWidth, boxHeight);
-        
-        // Energy info text
-        ctx.fillStyle = '#fff';
-        ctx.font = '12px Arial';
-        ctx.textAlign = 'left';
-        ctx.fillText(`Chain Type: ${this.getChainType()}`, boxX + 10, boxY + 20);
-        ctx.fillText(`Energy Content: ${energyContent.toFixed(1)} MJ/kg`, boxX + 10, boxY + 40);
-        ctx.fillText(`Efficiency: ${(efficiency * 100).toFixed(1)}%`, boxX + 10, boxY + 60);
-        ctx.fillText(`Usable Energy: ${usableEnergy.toFixed(1)} MJ/kg`, boxX + 10, boxY + 80);
     }
     
     loadThreeJS() {
         return new Promise((resolve, reject) => {
             // Check if Three.js is already loaded
             if (window.THREE) {
-                // Check if OrbitControls is available
-                if (window.THREE.OrbitControls) {
-                    resolve();
-                    return;
-                } else {
-                    // Load OrbitControls only
-                    const controlsScript = document.createElement('script');
-                    controlsScript.src = 'https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/controls/OrbitControls.js';
-                    controlsScript.onload = resolve;
-                    controlsScript.onerror = reject;
-                    document.head.appendChild(controlsScript);
-                    return;
-                }
+                resolve();
+                return;
             }
             
             // Load Three.js from CDN
             const script = document.createElement('script');
             script.src = 'https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js';
             script.onload = () => {
-                console.log("Three.js loaded successfully");
-                // Make sure THREE is available globally
-                window.THREE = THREE;
-                
-                // Wait a moment to ensure Three.js is fully loaded
-                setTimeout(() => {
-                    // Load OrbitControls after Three.js is loaded
-                    const controlsScript = document.createElement('script');
-                    controlsScript.src = 'https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/controls/OrbitControls.js';
-                    controlsScript.onload = () => {
-                        console.log("OrbitControls loaded successfully");
-                        resolve();
-                    };
-                    controlsScript.onerror = (err) => {
-                        console.error("Failed to load OrbitControls:", err);
-                        reject(err);
-                    };
-                    document.head.appendChild(controlsScript);
-                }, 200);
+                // Load OrbitControls after Three.js is loaded
+                const controlsScript = document.createElement('script');
+                controlsScript.src = 'https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/controls/OrbitControls.js';
+                controlsScript.onload = resolve;
+                controlsScript.onerror = reject;
+                document.head.appendChild(controlsScript);
             };
-            script.onerror = (err) => {
-                console.error("Failed to load Three.js:", err);
-                reject(err);
-            };
+            script.onerror = reject;
             document.head.appendChild(script);
         });
     }
     
     setup3DVisualization() {
-        // Verificăm mai întâi dacă THREE există global
-        if (!window.THREE) {
-            console.error("THREE is not available globally");
-            throw new Error("THREE is not available globally");
-        }
-
-        try {
-            // Get container dimensions
-            const width = this.threeDContainer.clientWidth;
-            const height = this.threeDContainer.clientHeight;
-            
-            // Create scene
-            this.scene = new THREE.Scene();
-            this.scene.background = new THREE.Color(0xf0f8ff);
-            
-            // Create camera
-            this.camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
-            this.camera.position.set(0, 5, 20);
-            
-            // Create renderer
-            this.renderer = new THREE.WebGLRenderer({ antialias: true });
-            this.renderer.setSize(width, height);
-            this.threeDContainer.appendChild(this.renderer.domElement);
-            
-            // Create orbit controls - verificăm mai întâi dacă OrbitControls există
-            if (typeof THREE.OrbitControls === 'function') {
-                this.controls = new THREE.OrbitControls(this.camera, this.renderer.domElement);
-                this.controls.enableDamping = true;
-                this.controls.dampingFactor = 0.05;
-            } else {
-                console.warn("OrbitControls not available, using simple controls");
-                // Implementăm controale simple pentru rotație
-                this.setupSimpleControls();
+        // Get container dimensions
+        const width = this.threeDContainer.clientWidth;
+        const height = this.threeDContainer.clientHeight;
+        
+        // Create scene
+        this.scene = new THREE.Scene();
+        this.scene.background = new THREE.Color(0xf0f8ff);
+        
+        // Create camera
+        this.camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
+        this.camera.position.set(0, 5, 20);
+        
+        // Create renderer
+        this.renderer = new THREE.WebGLRenderer({ antialias: true });
+        this.renderer.setSize(width, height);
+        this.threeDContainer.appendChild(this.renderer.domElement);
+        
+        // Create orbit controls
+        this.controls = new THREE.OrbitControls(this.camera, this.renderer.domElement);
+        this.controls.enableDamping = true;
+        this.controls.dampingFactor = 0.05;
+        
+        // Add ambient light
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+        this.scene.add(ambientLight);
+        
+        // Add directional light
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        directionalLight.position.set(1, 1, 1);
+        this.scene.add(directionalLight);
+        
+        // Create molecular chain
+        this.createMolecularChain();
+        
+        // Add energy efficiency display
+        this.updateEnergyEfficiencyDisplay();
+        
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            if (this.options.mode === '3d') {
+                const width = this.threeDContainer.clientWidth;
+                const height = this.threeDContainer.clientHeight;
+                this.camera.aspect = width / height;
+                this.camera.updateProjectionMatrix();
+                this.renderer.setSize(width, height);
             }
-            
-            // Add ambient light
-            const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
-            this.scene.add(ambientLight);
-            
-            // Add directional light
-            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-            directionalLight.position.set(1, 1, 1);
-            this.scene.add(directionalLight);
-            
-            // Create molecular chain
-            this.createMolecularChain();
-            
-            // Add energy efficiency display
-            this.updateEnergyEfficiencyDisplay();
-            
-            // Handle window resize
-            window.addEventListener('resize', () => {
-                if (this.options.mode === '3d') {
-                    const width = this.threeDContainer.clientWidth;
-                    const height = this.threeDContainer.clientHeight;
-                    if (this.camera) {
-                        this.camera.aspect = width / height;
-                        this.camera.updateProjectionMatrix();
-                    }
-                    if (this.renderer) {
-                        this.renderer.setSize(width, height);
-                    }
-                }
-            });
-            
-            // Start animation
-            this.startAnimation();
-        } catch (error) {
-            console.error("Error in setup3DVisualization:", error);
-            throw error;
-        }
-    }
-    
-    setupSimpleControls() {
-        // Implementează controale simple pentru rotație folosind evenimente mouse
-        let isDragging = false;
-        let previousMousePosition = { x: 0, y: 0 };
+        });
         
-        const handleMouseDown = (e) => {
-            isDragging = true;
-            previousMousePosition = { x: e.clientX, y: e.clientY };
-        };
-        
-        const handleMouseMove = (e) => {
-            if (!isDragging || !this.molecularGroup) return;
-            
-            const deltaMove = {
-                x: e.clientX - previousMousePosition.x,
-                y: e.clientY - previousMousePosition.y
-            };
-            
-            // Rotirea moleculei bazată pe mișcarea mouse-ului
-            this.molecularGroup.rotation.y += deltaMove.x * 0.01;
-            this.molecularGroup.rotation.x += deltaMove.y * 0.01;
-            
-            previousMousePosition = { x: e.clientX, y: e.clientY };
-        };
-        
-        const handleMouseUp = () => {
-            isDragging = false;
-        };
-        
-        // Adăugăm event listeners
-        if (this.renderer && this.renderer.domElement) {
-            this.renderer.domElement.addEventListener('mousedown', handleMouseDown);
-            this.renderer.domElement.addEventListener('mousemove', handleMouseMove);
-            window.addEventListener('mouseup', handleMouseUp);
-        }
+        // Start animation
+        this.startAnimation();
     }
     
     createMolecularChain() {
-        try {
-            // Define molecular chain parameters
-            const sequence = this.options.sequence.toUpperCase();
-            const length = Math.min(sequence.length, 100); // Limit to 100 atoms for performance
-            const atomRadius = 0.3;
-            const bondLength = 0.8;
-            const bondRadius = 0.1;
-            
-            // Create molecular group
-            this.molecularGroup = new THREE.Group();
-            
-            // Get chain type for specific formatting
-            const chainType = this.getChainType().toLowerCase();
-            
-            // Create materials for different atom types
-            const atomMaterials = {};
-            for (const [atom, color] of Object.entries(this.options.moleculeColors)) {
-                atomMaterials[atom] = new THREE.MeshPhongMaterial({ 
-                    color: this.hexToRgbNumber(color), 
-                    shininess: 100 
+        // Define molecular chain parameters
+        const sequence = this.options.sequence.toUpperCase();
+        const length = Math.min(sequence.length, 100); // Limit to 100 atoms for performance
+        const atomRadius = 0.3;
+        const bondLength = 0.8;
+        const bondRadius = 0.1;
+        
+        // Create molecular group
+        this.molecularGroup = new THREE.Group();
+        
+        // Get chain type for specific formatting
+        const chainType = this.getChainType().toLowerCase();
+        
+        // Create materials for different atom types
+        const atomMaterials = {};
+        for (const [atom, color] of Object.entries(this.options.moleculeColors)) {
+            atomMaterials[atom] = new THREE.MeshPhongMaterial({ 
+                color: this.hexToRgbNumber(color), 
+                shininess: 100 
+            });
+        }
+        
+        // Default material for unknown atoms
+        const defaultMaterial = new THREE.MeshPhongMaterial({ 
+            color: 0xcccccc, 
+            shininess: 80 
+        });
+        
+        // Bond material
+        const bondMaterial = new THREE.MeshPhongMaterial({ 
+            color: 0x444444, 
+            shininess: 30 
+        });
+        
+        // Create molecular structure based on chain type
+        let atomPositions = [];
+        
+        if (chainType === 'hydrocarbon') {
+            // Create a linear hydrocarbon chain with zigzag pattern
+            for (let i = 0; i < length; i++) {
+                const atom = sequence[i] || 'C';
+                const x = (i * bondLength) - (length * bondLength / 2);
+                const y = (i % 2 === 0) ? 0 : 0.3;
+                const z = 0;
+                
+                atomPositions.push({
+                    atom: atom,
+                    position: new THREE.Vector3(x, y, z)
                 });
             }
-            
-            // Default material for unknown atoms
-            const defaultMaterial = new THREE.MeshPhongMaterial({ 
-                color: 0xcccccc, 
-                shininess: 80 
-            });
-            
-            // Bond material
-            const bondMaterial = new THREE.MeshPhongMaterial({ 
-                color: 0x444444, 
-                shininess: 30 
-            });
-            
-            // Create molecular structure based on chain type
-            let atomPositions = [];
-            
-            if (chainType === 'hydrocarbon') {
-                // Create a linear hydrocarbon chain with zigzag pattern
-                for (let i = 0; i < length; i++) {
-                    const atom = sequence[i] || 'C';
-                    const x = (i * bondLength) - (length * bondLength / 2);
-                    const y = (i % 2 === 0) ? 0 : 0.3;
-                    const z = 0;
-                    
-                    atomPositions.push({
-                        atom: atom,
-                        position: new THREE.Vector3(x, y, z)
-                    });
-                }
-            } else if (chainType === 'biofuel') {
-                // Create a biofuel molecule with oxygen groups
-                for (let i = 0; i < length; i++) {
-                    const atom = sequence[i] || 'C';
-                    let x, y, z;
-                    
-                    if (atom === 'O') {
-                        // Position oxygen atoms slightly above the chain
-                        const baseIndex = Math.floor(i / 3);
-                        x = (baseIndex * bondLength * 1.5) - (length * bondLength / 4);
-                        y = 1.0;
-                        z = (i % 2 === 0) ? 0.5 : -0.5;
-                    } else {
-                        // Position carbon and hydrogen in the main chain
-                        x = (Math.floor(i / 2) * bondLength) - (length * bondLength / 4);
-                        y = (atom === 'C') ? 0 : (i % 2 === 0 ? -0.7 : 0.7);
-                        z = (i % 3 === 0) ? 0.2 : (i % 3 === 1 ? -0.2 : 0);
-                    }
-                    
-                    atomPositions.push({
-                        atom: atom,
-                        position: new THREE.Vector3(x, y, z)
-                    });
-                }
-            } else {
-                // Create a circular/ring structure for polymer
-                const radius = length * 0.1;
-                const twists = Math.ceil(length / 10);
+        } else if (chainType === 'biofuel') {
+            // Create a biofuel molecule with oxygen groups
+            for (let i = 0; i < length; i++) {
+                const atom = sequence[i] || 'C';
+                let x, y, z;
                 
-                for (let i = 0; i < length; i++) {
-                    const atom = sequence[i] || 'C';
-                    const angle = (i / length) * Math.PI * 2 * twists;
-                    const elevation = (i / length) * 2 - 1;
-                    
-                    const x = radius * Math.cos(angle);
-                    const y = elevation * 3;
-                    const z = radius * Math.sin(angle);
-                    
-                    atomPositions.push({
-                        atom: atom,
-                        position: new THREE.Vector3(x, y, z)
-                    });
+                if (atom === 'O') {
+                    // Position oxygen atoms slightly above the chain
+                    const baseIndex = Math.floor(i / 3);
+                    x = (baseIndex * bondLength * 1.5) - (length * bondLength / 4);
+                    y = 1.0;
+                    z = (i % 2 === 0) ? 0.5 : -0.5;
+                } else {
+                    // Position carbon and hydrogen in the main chain
+                    x = (Math.floor(i / 2) * bondLength) - (length * bondLength / 4);
+                    y = (atom === 'C') ? 0 : (i % 2 === 0 ? -0.7 : 0.7);
+                    z = (i % 3 === 0) ? 0.2 : (i % 3 === 1 ? -0.2 : 0);
                 }
-            }
-            
-            // Create atoms and bonds
-            for (let i = 0; i < atomPositions.length; i++) {
-                const {atom, position} = atomPositions[i];
                 
-                // Create atom sphere
-                const atomGeometry = new THREE.SphereGeometry(
-                    atom === 'H' ? atomRadius * 0.8 : atomRadius, 
-                    16, 16
-                );
-                const atomMesh = new THREE.Mesh(
-                    atomGeometry, 
-                    atomMaterials[atom] || defaultMaterial
-                );
-                atomMesh.position.copy(position);
-                this.molecularGroup.add(atomMesh);
+                atomPositions.push({
+                    atom: atom,
+                    position: new THREE.Vector3(x, y, z)
+                });
+            }
+        } else {
+            // Create a circular/ring structure for polymer
+            const radius = length * 0.1;
+            const twists = Math.ceil(length / 10);
+            
+            for (let i = 0; i < length; i++) {
+                const atom = sequence[i] || 'C';
+                const angle = (i / length) * Math.PI * 2 * twists;
+                const elevation = (i / length) * 2 - 1;
                 
-                // Add bond to next atom if not the last one
-                if (i < atomPositions.length - 1) {
-                    const nextPos = atomPositions[i + 1].position;
-                    const bondLength = position.distanceTo(nextPos);
-                    
-                    // Create bond cylinder
-                    const bondGeometry = new THREE.CylinderGeometry(
-                        bondRadius, bondRadius, bondLength, 8
-                    );
-                    const bond = new THREE.Mesh(bondGeometry, bondMaterial);
-                    
-                    // Position bond between atoms
-                    const midpoint = new THREE.Vector3().addVectors(position, nextPos).multiplyScalar(0.5);
-                    bond.position.copy(midpoint);
-                    
-                    // Rotate bond to point from this atom to next atom
-                    bond.lookAt(nextPos);
-                    bond.rotateX(Math.PI / 2);
-                    
-                    this.molecularGroup.add(bond);
-                }
+                const x = radius * Math.cos(angle);
+                const y = elevation * 3;
+                const z = radius * Math.sin(angle);
+                
+                atomPositions.push({
+                    atom: atom,
+                    position: new THREE.Vector3(x, y, z)
+                });
             }
-            
-            // Add a small indicator of energy based on the chain type
-            this.addEnergyIndicator(chainType);
-            
-            // Add molecular group to scene
-            if (this.scene) {
-                this.scene.add(this.molecularGroup);
-            } else {
-                console.error("Scene not initialized when adding molecular group");
-            }
-        } catch (error) {
-            console.error("Error creating molecular chain:", error);
-            // Dacă avem eroare, trecem la vizualizarea 2D simplificată
-            this.createSimplified2DVisualization();
         }
+        
+        // Create atoms and bonds
+        for (let i = 0; i < atomPositions.length; i++) {
+            const {atom, position} = atomPositions[i];
+            
+            // Create atom sphere
+            const atomGeometry = new THREE.SphereGeometry(
+                atom === 'H' ? atomRadius * 0.8 : atomRadius, 
+                16, 16
+            );
+            const atomMesh = new THREE.Mesh(
+                atomGeometry, 
+                atomMaterials[atom] || defaultMaterial
+            );
+            atomMesh.position.copy(position);
+            this.molecularGroup.add(atomMesh);
+            
+            // Add bond to next atom if not the last one
+            if (i < atomPositions.length - 1) {
+                const nextPos = atomPositions[i + 1].position;
+                const bondLength = position.distanceTo(nextPos);
+                
+                // Create bond cylinder
+                const bondGeometry = new THREE.CylinderGeometry(
+                    bondRadius, bondRadius, bondLength, 8
+                );
+                const bond = new THREE.Mesh(bondGeometry, bondMaterial);
+                
+                // Position bond between atoms
+                const midpoint = new THREE.Vector3().addVectors(position, nextPos).multiplyScalar(0.5);
+                bond.position.copy(midpoint);
+                
+                // Rotate bond to point from this atom to next atom
+                bond.lookAt(nextPos);
+                bond.rotateX(Math.PI / 2);
+                
+                this.molecularGroup.add(bond);
+            }
+        }
+        
+        // Add a small indicator of energy based on the chain type
+        this.addEnergyIndicator(chainType);
+        
+        // Add molecular group to scene
+        this.scene.add(this.molecularGroup);
     }
     
     addEnergyIndicator(chainType) {
@@ -925,15 +675,12 @@ class MolecularEnergyChainVisualizer {
             
             if (chainType === 'hydrocarbon' || chainType === 'biofuel') {
                 // Add subtle movement for molecular vibration
-                if (this.molecularGroup.children && this.molecularGroup.children.length > 0) {
-                    this.molecularGroup.children.forEach((child, index) => {
-                        if (child && child.geometry && typeof child.geometry.type === 'string') {
-                            if (child.geometry.type === 'SphereGeometry') {
-                                child.position.y += Math.sin(time * 3 + index * 0.2) * 0.003;
-                            }
-                        }
-                    });
-                }
+                this.molecularGroup.children.forEach((child, index) => {
+                    // Only apply to atoms (spheres), not bonds (cylinders)
+                    if (child.geometry.type === 'SphereGeometry') {
+                        child.position.y += Math.sin(time * 3 + index * 0.2) * 0.003;
+                    }
+                });
             }
             
             // Update controls
@@ -942,9 +689,7 @@ class MolecularEnergyChainVisualizer {
             }
             
             // Render the scene
-            if (this.renderer && this.scene && this.camera) {
-                this.renderer.render(this.scene, this.camera);
-            }
+            this.renderer.render(this.scene, this.camera);
         }
         
         // Continue animation
@@ -1222,57 +967,18 @@ const EXAMPLE_SEQUENCES = {
 // Helper function to initialize the molecular chain visualizer
 function initMolecularEnergyChainVisualizer(containerId, options = {}) {
     console.log("Creating Molecular Energy Chain visualizer for", containerId);
-    
-    try {
-        // Initialize the visualizer with provided options
-        return new MolecularEnergyChainVisualizer(containerId, options);
-    } catch (error) {
-        console.error("Error initializing Molecular Energy Chain visualizer:", error);
-        
-        // Find container and show error message
-        const container = document.getElementById(containerId);
-        if (container) {
-            container.innerHTML = `
-                <div class="alert alert-danger">
-                    <h5>Error Initializing Molecular Chain Visualizer</h5>
-                    <p>Could not initialize the molecular chain visualizer. Please try again later.</p>
-                    <pre class="mt-2 bg-light p-2" style="font-size: 0.8rem;">${error.message}</pre>
-                </div>
-            `;
-        }
-        
-        // Return null to indicate initialization failed
-        return null;
+    // Force reload of Three.js to ensure it's available
+    if (!window.THREE) {
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js?t=' + new Date().getTime();
+        document.head.appendChild(script);
     }
+    
+    // Force 3D mode
+    options.mode = '3d';
+    
+    return new MolecularEnergyChainVisualizer(containerId, options);
 }
 
 // Export the initializer globally
-window.initMolecularEnergyChainVisualizer = initMolecularEnergyChainVisualizer;
-
-// Initialize automatically when DOM is ready
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('[MOLECULAR-CHAIN] DOM ready, looking for containers to initialize');
-    
-    // Find all molecular chain containers and initialize them
-    const containers = document.querySelectorAll([
-        '.visualizer-container[data-visualizer-type="molecular-energy-chain"]',
-        '.visualizer-container[data-visualizer-type="dna-visualizer"]'
-    ].join(', '));
-    
-    console.log('[MOLECULAR-CHAIN] Found containers:', containers.length);
-    
-    containers.forEach(container => {
-        if (!container.hasAttribute('data-viz-initialized')) {
-            const id = container.id;
-            const configStr = container.getAttribute('data-visualizer-config') || '{}';
-            try {
-                const config = JSON.parse(configStr);
-                window.initMolecularEnergyChainVisualizer(id, config);
-                container.setAttribute('data-viz-initialized', 'true');
-                console.log('[MOLECULAR-CHAIN] Initialized container:', id);
-            } catch (e) {
-                console.error('[MOLECULAR-CHAIN] Error initializing:', e);
-            }
-        }
-    });
-}); 
+window.initMolecularEnergyChainVisualizer = initMolecularEnergyChainVisualizer; 

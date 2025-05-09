@@ -164,7 +164,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             renderer.setSize(window.innerWidth, window.innerHeight);
             const qualityFactor = adjustRenderQuality(renderer, isMobile);
-            renderer.setClearColor(0x000022, 1); // Slightly blue background instead of pure black
+            renderer.setClearColor(0x151530, 1); // Dark stormy blue background
             timeMarker = logTime("Scene setup", timeMarker);
 
             // CONTROLS
@@ -180,104 +180,155 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.warn('OrbitControls not available, using static camera');
             }
 
-            // LIGHTING
-            const ambientLight = new THREE.AmbientLight(0x404040);
+            // LIGHTING - Dynamic lightning effects
+            const ambientLight = new THREE.AmbientLight(0x404060); // Darker blue ambient
             scene.add(ambientLight);
 
-            const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+            const directionalLight = new THREE.DirectionalLight(0x8090ff, 0.8); // Blueish light
             directionalLight.position.set(10, 10, 10);
             scene.add(directionalLight);
 
-            const pointLight = new THREE.PointLight(0x00ffff, 1, 100);
-            pointLight.position.set(0, 0, 0);
-            scene.add(pointLight);
+            // Lightning flash light
+            const flashLight = new THREE.PointLight(0xaaccff, 0, 100); // Initially off (intensity 0)
+            flashLight.position.set(0, 15, -10);
+            scene.add(flashLight);
 
             // CAMERA POSITION
             camera.position.z = 20;
             timeMarker = logTime("Lighting setup", timeMarker);
 
-            // PARTICLE SYSTEM - Sistem îmbunătățit de particule
-            const particleCount = isMobile ? 1200 : 2000; // Increase particles since we removed other elements
+            // PARTICLE SYSTEM - Lightning storm particles
+            const particleCount = isMobile ? 1200 : 2000;
             const particleSystem = createEnhancedParticleSystem(particleCount);
             scene.add(particleSystem.particles);
             timeMarker = logTime("Particle system created", timeMarker);
 
-            // Create static starfield background
-            function createStarfield() {
-                const starCount = 800; // Increase star count for better background
-                const starGeometry = new THREE.BufferGeometry();
-                const starPositions = new Float32Array(starCount * 3);
-                const starColors = new Float32Array(starCount * 3);
-                const starSizes = new Float32Array(starCount);
+            // Create storm cloud background instead of starfield
+            function createStormClouds() {
+                const cloudCount = 600;
+                const cloudGeometry = new THREE.BufferGeometry();
+                const cloudPositions = new Float32Array(cloudCount * 3);
+                const cloudColors = new Float32Array(cloudCount * 3);
+                const cloudSizes = new Float32Array(cloudCount);
                 
-                // Create stars at random positions far away from center
-                for (let i = 0; i < starCount; i++) {
+                // Create clouds distributed in a dome above and around
+                for (let i = 0; i < cloudCount; i++) {
                     const i3 = i * 3;
-                    // Place stars in a large sphere around the scene
-                    const radius = 80 + Math.random() * 40;
-                    const theta = Math.random() * Math.PI * 2;
-                    const phi = Math.random() * Math.PI;
+                    
+                    // Place clouds in a dome formation
+                    const theta = Math.random() * Math.PI * 2; // Around circle
+                    const phi = Math.random() * Math.PI * 0.6; // Partial dome (0 to 108 degrees)
+                    const radius = 30 + Math.random() * 20; // Far away for background
                     
                     // Convert spherical to cartesian coordinates
-                    starPositions[i3] = radius * Math.sin(phi) * Math.cos(theta);
-                    starPositions[i3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
-                    starPositions[i3 + 2] = radius * Math.cos(phi);
+                    cloudPositions[i3] = radius * Math.sin(phi) * Math.cos(theta);
+                    cloudPositions[i3 + 1] = Math.abs(radius * Math.cos(phi)) - 5; // Mostly above
+                    cloudPositions[i3 + 2] = radius * Math.sin(phi) * Math.sin(theta) - 20; // Push back
                     
-                    // Random star colors - mostly white/blue with occasional yellow/red
-                    const colorType = Math.random();
-                    if (colorType > 0.8) { // Reddish/yellow stars
-                        starColors[i3] = 0.9 + Math.random() * 0.1; // Red
-                        starColors[i3 + 1] = 0.7 + Math.random() * 0.3; // Green
-                        starColors[i3 + 2] = 0.5 + Math.random() * 0.2; // Blue
-                    } else if (colorType > 0.6) { // Bluish stars
-                        starColors[i3] = 0.5 + Math.random() * 0.2; // Red
-                        starColors[i3 + 1] = 0.5 + Math.random() * 0.3; // Green
-                        starColors[i3 + 2] = 0.8 + Math.random() * 0.2; // Blue
-                    } else { // White/blue stars (most common)
-                        starColors[i3] = 0.8 + Math.random() * 0.2; // Red
-                        starColors[i3 + 1] = 0.8 + Math.random() * 0.2; // Green
-                        starColors[i3 + 2] = 0.9 + Math.random() * 0.1; // Blue
+                    // Dark stormy cloud colors
+                    const shade = 0.2 + Math.random() * 0.3; // Darker shades
+                    
+                    // Different cloud types
+                    if (Math.random() > 0.7) {
+                        // Darker storm clouds
+                        cloudColors[i3] = shade * 0.7; // Less red
+                        cloudColors[i3 + 1] = shade * 0.8; // Less green
+                        cloudColors[i3 + 2] = shade * 0.9; // More blue
+                    } else {
+                        // Lightning-illuminated clouds
+                        cloudColors[i3] = shade * 0.8;
+                        cloudColors[i3 + 1] = shade * 0.9;
+                        cloudColors[i3 + 2] = shade;
                     }
                     
-                    // Varied star sizes
-                    starSizes[i] = 0.2 + Math.random() * 0.8;
+                    // Varied cloud particle sizes
+                    cloudSizes[i] = 0.3 + Math.random() * 0.7;
                 }
                 
-                starGeometry.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
-                starGeometry.setAttribute('color', new THREE.BufferAttribute(starColors, 3));
+                cloudGeometry.setAttribute('position', new THREE.BufferAttribute(cloudPositions, 3));
+                cloudGeometry.setAttribute('color', new THREE.BufferAttribute(cloudColors, 3));
+                cloudGeometry.setAttribute('size', new THREE.BufferAttribute(cloudSizes, 1));
                 
-                const starMaterial = new THREE.PointsMaterial({
-                    size: 0.5,
+                const cloudMaterial = new THREE.PointsMaterial({
+                    size: 2.0,
                     vertexColors: true,
                     transparent: true,
-                    opacity: 0.8,
+                    opacity: 0.7,
                     blending: THREE.AdditiveBlending
                 });
                 
-                // Add texture to make stars look like actual stars
+                // Use a cloud-like texture
                 const textureLoader = new THREE.TextureLoader();
-                const starTexture = 'https://raw.githubusercontent.com/baronwatts/models/master/snowflake.png';
-                textureLoader.load(starTexture, (texture) => {
-                    starMaterial.map = texture;
-                    starMaterial.needsUpdate = true;
+                textureLoader.load('https://raw.githubusercontent.com/baronwatts/models/master/snowflake.png', (texture) => {
+                    cloudMaterial.map = texture;
+                    cloudMaterial.needsUpdate = true;
+                }, null, () => {
+                    // Fallback if texture loading fails
+                    const canvas = document.createElement('canvas');
+                    canvas.width = 128;
+                    canvas.height = 128;
+                    const ctx = canvas.getContext('2d');
+                    
+                    const gradient = ctx.createRadialGradient(64, 64, 0, 64, 64, 64);
+                    gradient.addColorStop(0, 'rgba(220, 220, 255, 0.8)');
+                    gradient.addColorStop(0.3, 'rgba(180, 180, 220, 0.4)');
+                    gradient.addColorStop(1, 'rgba(100, 100, 150, 0)');
+                    
+                    ctx.fillStyle = gradient;
+                    ctx.fillRect(0, 0, 128, 128);
+                    
+                    const cloudTexture = new THREE.CanvasTexture(canvas);
+                    cloudMaterial.map = cloudTexture;
+                    cloudMaterial.needsUpdate = true;
                 });
                 
-                const starPoints = new THREE.Points(starGeometry, starMaterial);
+                const stormClouds = new THREE.Points(cloudGeometry, cloudMaterial);
+                
                 return {
-                    particles: starPoints,
-                    positions: starPositions,
-                    colors: starColors,
-                    sizes: starSizes,
-                    count: starCount
+                    clouds: stormClouds,
+                    positions: cloudPositions,
+                    colors: cloudColors,
+                    count: cloudCount,
+                    update: function(time, flashIntensity) {
+                        // Subtle cloud movement
+                        for (let i = 0; i < cloudCount; i++) {
+                            const i3 = i * 3;
+                            
+                            // Wind movement - subtle drift
+                            cloudPositions[i3] += Math.sin(time * 0.05 + i * 0.1) * 0.01;
+                            cloudPositions[i3 + 1] += Math.cos(time * 0.05 + i * 0.05) * 0.005;
+                            
+                            // Brighten clouds during lightning flashes
+                            if (flashIntensity > 0) {
+                                cloudColors[i3] = Math.min(0.7, 0.2 + flashIntensity * 0.7);
+                                cloudColors[i3 + 1] = Math.min(0.8, 0.3 + flashIntensity * 0.7);
+                                cloudColors[i3 + 2] = Math.min(1.0, 0.4 + flashIntensity * 0.7);
+                            } else {
+                                // Return to normal cloud color gradually
+                                const shade = 0.2 + Math.random() * 0.1;
+                                cloudColors[i3] = lerp(cloudColors[i3], shade * 0.8, 0.01);
+                                cloudColors[i3 + 1] = lerp(cloudColors[i3 + 1], shade * 0.9, 0.01);
+                                cloudColors[i3 + 2] = lerp(cloudColors[i3 + 2], shade, 0.01);
+                            }
+                        }
+                        
+                        stormClouds.geometry.attributes.position.needsUpdate = true;
+                        stormClouds.geometry.attributes.color.needsUpdate = true;
+                    }
                 };
             }
             
-            // Add starfield to scene
-            const starfield = createStarfield();
-            scene.add(starfield.particles);
-            timeMarker = logTime("Starfield created", timeMarker);
+            // Helper function for linear interpolation
+            function lerp(a, b, t) {
+                return a + (b - a) * t;
+            }
+            
+            // Create and add storm clouds
+            const stormClouds = createStormClouds();
+            scene.add(stormClouds.clouds);
+            timeMarker = logTime("Storm clouds created", timeMarker);
 
-            // LOGO PARTICLES - keep the AxiomX logo
+            // LOGO PARTICLES - keep the ElectraX logo
             const logoParticles = createLogoParticles();
             scene.add(logoParticles.particleSystem);
             timeMarker = logTime("Logo particles created", timeMarker);
@@ -286,6 +337,12 @@ document.addEventListener('DOMContentLoaded', () => {
             let animationProgress = 0;
             let introStarted = false;
             let introCompleted = false;
+            
+            // Lightning flash effect variables
+            let flashIntensity = 0;
+            let flashDecay = 0.05;
+            let timeToNextFlash = 2 + Math.random() * 3;
+            let lastFlashTime = 0;
 
             // Show intro text immediately for better UX
             introText.style.opacity = 1;
@@ -342,35 +399,35 @@ document.addEventListener('DOMContentLoaded', () => {
                         controls.update();
                     }
                     
-                    // Animate starfield with subtle twinkle effect
-                    if (starfield && starfield.particles) {
-                        const starPositions = starfield.particles.geometry.attributes.position.array;
-                        const starColors = starfield.particles.geometry.attributes.color.array;
+                    // Lightning flash effect
+                    lastFlashTime += deltaTime;
+                    flashIntensity = Math.max(0, flashIntensity - flashDecay);
+                    
+                    // Create a new lightning flash
+                    if (lastFlashTime > timeToNextFlash) {
+                        flashIntensity = 0.7 + Math.random() * 0.3; // Stronger flash
+                        flashLight.intensity = flashIntensity * 3; // Brighter flash
                         
-                        // Make stars twinkle by slightly modifying their colors
-                        for (let i = 0; i < starfield.count; i++) {
-                            const i3 = i * 3;
-                            // Subtle position movement for some stars (distant ones)
-                            if (i % 5 === 0) {
-                                starPositions[i3] += Math.sin(time * 0.0001 + i) * 0.01;
-                                starPositions[i3 + 1] += Math.cos(time * 0.0001 + i) * 0.01;
-                            }
-                            
-                            // Color/brightness twinkling
-                            const twinkle = 0.1 * Math.sin(time * 0.001 + i * 10);
-                            starColors[i3] = Math.max(0.5, Math.min(1.0, starColors[i3] + twinkle));
-                            starColors[i3 + 1] = Math.max(0.5, Math.min(1.0, starColors[i3 + 1] + twinkle));
-                            starColors[i3 + 2] = Math.max(0.5, Math.min(1.0, starColors[i3 + 2] + twinkle));
-                        }
+                        // Yellow-white light for flashes
+                        flashLight.color.set(Math.random() < 0.7 ? 0xffffaa : 0xffff00);
                         
-                        starfield.particles.geometry.attributes.position.needsUpdate = true;
-                        starfield.particles.geometry.attributes.color.needsUpdate = true;
-                        starfield.particles.rotation.y += 0.0001;
+                        flashLight.position.set(
+                            (Math.random() - 0.5) * 40,
+                            10 + Math.random() * 10,
+                            -10 + Math.random() * 10
+                        );
+                        
+                        lastFlashTime = 0;
+                        timeToNextFlash = 1.5 + Math.random() * 3.5; // 1.5-5 seconds between flashes
+                        flashDecay = 0.03 + Math.random() * 0.04; // Random decay rate
                     }
                     
-                    // Rotate particle system
-                    if (particleSystem && particleSystem.particles) {
-                        particleSystem.particles.rotation.y += 0.01;
+                    // Update flash light intensity
+                    flashLight.intensity = flashIntensity * 3;
+                    
+                    // Update storm clouds
+                    if (stormClouds && stormClouds.update) {
+                        stormClouds.update(time * 0.001, flashIntensity);
                     }
                     
                     // Animate logo particles
@@ -397,7 +454,12 @@ document.addEventListener('DOMContentLoaded', () => {
                             }, 5000);
                         }
                         
-                        const positions = logoParticles.particleSystem.geometry.attributes.position.array;
+                        // Update dynamic lightning lines (new!)
+                        if (logoParticles.updateLightning) {
+                            logoParticles.updateLightning(time * 0.001);
+                        }
+                        
+                        const positions = logoParticles.particleSystem.children[0].geometry.attributes.position.array;
                         const originalPositions = logoParticles.positions;
                         const targetPositions = logoParticles.targetPositions;
                         
@@ -408,16 +470,19 @@ document.addEventListener('DOMContentLoaded', () => {
                                 positions[i + 1] = originalPositions[i + 1] + (targetPositions[i + 1] - originalPositions[i + 1]) * easeInOutCubic(animationProgress);
                                 positions[i + 2] = originalPositions[i + 2] + (targetPositions[i + 2] - originalPositions[i + 2]) * easeInOutCubic(animationProgress);
                             } else if (!introCompleted) {
-                                // Small subtle movement once in position
+                                // Small subtle movement once in position, enhanced during lightning flashes
                                 const time = Date.now() * 0.001;
                                 const idx = Math.floor(i / 3);
-                                positions[i] = targetPositions[i] + Math.sin(time + idx * 0.1) * 0.03;
-                                positions[i + 1] = targetPositions[i + 1] + Math.cos(time + idx * 0.1) * 0.03;
-                                positions[i + 2] = targetPositions[i + 2] + Math.sin(time + idx * 0.05) * 0.03;
+                                const flashEffect = flashIntensity * 0.1; // Increased effect
+                                
+                                // More energetic movement during flashes
+                                positions[i] = targetPositions[i] + Math.sin(time + idx * 0.1) * (0.05 + flashEffect);
+                                positions[i + 1] = targetPositions[i + 1] + Math.cos(time + idx * 0.1) * (0.05 + flashEffect);
+                                positions[i + 2] = targetPositions[i + 2] + Math.sin(time + idx * 0.05) * (0.05 + flashEffect);
                             }
                         }
                         
-                        logoParticles.particleSystem.geometry.attributes.position.needsUpdate = true;
+                        logoParticles.particleSystem.children[0].geometry.attributes.position.needsUpdate = true;
                     }
 
                     // Update particle system animation
