@@ -93,3 +93,99 @@ INFO 2025-05-07 22:04:45,878 utils 17180 4772 SECURITY EVENT: {'event_type': 'pr
 INFO 2025-05-07 22:04:46,837 utils 17180 12568 SECURITY EVENT: {'event_type': 'profile_access', 'username': 'eric', 'ip': '127.0.0.*', 'access_type': 'self'}
 INFO 2025-05-07 22:04:50,661 utils 17180 12568 SECURITY EVENT: {'event_type': 'profile_access', 'username': 'eric', 'ip': '127.0.0.*', 'access_type': 'self'}
 INFO 2025-05-08 21:33:43,347 views 9988 14836 Successful login for user 'eric' from IP 127.0.0.1
+INFO 2025-05-09 00:32:39,076 utils 13540 2748 SECURITY EVENT: {'event_type': 'profile_access', 'username': 'testuser', 'ip': '127.0.0.*', 'access_type': 'self'}
+INFO 2025-05-09 00:32:39,523 utils 13540 2748 SECURITY EVENT: {'event_type': 'profile_access', 'username': 'testuser', 'ip': '127.0.0.*', 'access_type': 'self'}
+WARNING 2025-05-09 00:34:33,096 database 5000 3704 AXES: New login failure by {username: "********************", ip_address: "********************", user_agent: "python-requests/2.32.3", path_info: "/accounts/login/"}. Created new record in the database.
+WARNING 2025-05-09 00:34:33,104 views 5000 3704 Failed login attempt for username 'test_user' from IP 127.0.0.1
+WARNING 2025-05-09 00:34:33,883 database 5000 3704 AXES: Repeated login failure by {username: "********************", ip_address: "********************", user_agent: "python-requests/2.32.3", path_info: "/accounts/login/"}. Updated existing record in the database.
+WARNING 2025-05-09 00:34:33,889 views 5000 3704 Failed login attempt for username 'test_user' from IP 127.0.0.1
+WARNING 2025-05-09 00:34:34,691 database 5000 3704 AXES: Repeated login failure by {username: "********************", ip_address: "********************", user_agent: "python-requests/2.32.3", path_info: "/accounts/login/"}. Updated existing record in the database.
+WARNING 2025-05-09 00:34:34,696 views 5000 3704 Failed login attempt for username 'test_user' from IP 127.0.0.1
+WARNING 2025-05-09 00:34:35,374 database 5000 3704 AXES: Repeated login failure by {username: "********************", ip_address: "********************", user_agent: "python-requests/2.32.3", path_info: "/accounts/login/"}. Updated existing record in the database.
+WARNING 2025-05-09 00:34:35,379 views 5000 3704 Failed login attempt for username 'test_user' from IP 127.0.0.1
+WARNING 2025-05-09 00:34:36,188 database 5000 3704 AXES: Repeated login failure by {username: "********************", ip_address: "********************", user_agent: "python-requests/2.32.3", path_info: "/accounts/login/"}. Updated existing record in the database.
+WARNING 2025-05-09 00:34:36,193 database 5000 3704 AXES: Locking out {username: "********************", ip_address: "********************", user_agent: "python-requests/2.32.3", path_info: "/accounts/login/"} after repeated login failures.
+WARNING 2025-05-09 00:34:36,194 views 5000 3704 Failed login attempt for username 'test_user' from IP 127.0.0.1
+WARNING 2025-05-09 00:34:36,218 database 5000 3704 AXES: Repeated login failure by {username: "********************", ip_address: "********************", user_agent: "python-requests/2.32.3", path_info: "/accounts/login/"}. Updated existing record in the database.
+WARNING 2025-05-09 00:34:36,223 database 5000 3704 AXES: Locking out {username: "********************", ip_address: "********************", user_agent: "python-requests/2.32.3", path_info: "/accounts/login/"} after repeated login failures.
+WARNING 2025-05-09 00:34:36,224 views 5000 3704 Failed login attempt for username 'test_user' from IP 127.0.0.1
+WARNING 2025-05-09 00:34:42,825 log 5000 5688 Forbidden (CSRF cookie not set.): /accounts/login/
+INFO 2025-05-09 00:35:50,728 utils 2912 16460 SECURITY EVENT: {'event_type': 'profile_access', 'username': 'testuser', 'ip': '127.0.0.*', 'access_type': 'self'}
+INFO 2025-05-09 00:35:51,096 utils 2912 16460 SECURITY EVENT: {'event_type': 'profile_access', 'username': 'testuser', 'ip': '127.0.0.*', 'access_type': 'self'}
+WARNING 2025-05-09 00:39:58,081 database 3780 5588 AXES: New login failure by {username: "********************", ip_address: "********************", user_agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36", path_info: "/accounts/login/"}. Created new record in the database.
+WARNING 2025-05-09 00:39:58,088 views 3780 5588 Failed login attempt for username 'eric' from IP 127.0.0.1
+INFO 2025-05-09 00:40:07,768 views 3780 6312 Successful login for user 'eric' from IP 127.0.0.1
+WARNING 2025-05-09 00:41:37,681 database 3780 5108 AXES: New login failure by {username: "********************", ip_address: "********************", user_agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36", path_info: "/admin/login/"}. Created new record in the database.
+WARNING 2025-05-09 00:41:47,253 database 3780 5108 AXES: Repeated login failure by {username: "********************", ip_address: "********************", user_agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36", path_info: "/admin/login/"}. Updated existing record in the database.
+WARNING 2025-05-09 00:41:52,310 database 3780 5108 AXES: Repeated login failure by {username: "********************", ip_address: "********************", user_agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36", path_info: "/admin/login/"}. Updated existing record in the database.
+WARNING 2025-05-09 00:44:06,661 database 3780 5108 AXES: Repeated login failure by {username: "********************", ip_address: "********************", user_agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36", path_info: "/admin/login/"}. Updated existing record in the database.
+WARNING 2025-05-09 00:44:08,442 database 3780 5108 AXES: Repeated login failure by {username: "********************", ip_address: "********************", user_agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36", path_info: "/admin/login/"}. Updated existing record in the database.
+WARNING 2025-05-09 00:44:08,453 database 3780 5108 AXES: Locking out {username: "********************", ip_address: "********************", user_agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36", path_info: "/admin/login/"} after repeated login failures.
+WARNING 2025-05-09 00:44:21,574 database 3780 3600 AXES: New login failure by {username: "********************", ip_address: "********************", user_agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36", path_info: "/admin/login/"}. Created new record in the database.
+WARNING 2025-05-09 01:46:00,541 database 6484 10444 AXES: New login failure by {username: "********************", ip_address: "********************", user_agent: "python-requests/2.32.3", path_info: "/accounts/login/"}. Created new record in the database.
+WARNING 2025-05-09 01:46:00,548 views 6484 10444 Failed login attempt for username 'test_user' from IP 127.0.0.1
+WARNING 2025-05-09 01:46:01,188 database 6484 10444 AXES: Repeated login failure by {username: "********************", ip_address: "********************", user_agent: "python-requests/2.32.3", path_info: "/accounts/login/"}. Updated existing record in the database.
+WARNING 2025-05-09 01:46:01,194 views 6484 10444 Failed login attempt for username 'test_user' from IP 127.0.0.1
+WARNING 2025-05-09 01:46:01,793 database 6484 10444 AXES: Repeated login failure by {username: "********************", ip_address: "********************", user_agent: "python-requests/2.32.3", path_info: "/accounts/login/"}. Updated existing record in the database.
+WARNING 2025-05-09 01:46:01,797 views 6484 10444 Failed login attempt for username 'test_user' from IP 127.0.0.1
+WARNING 2025-05-09 01:46:02,408 database 6484 10444 AXES: Repeated login failure by {username: "********************", ip_address: "********************", user_agent: "python-requests/2.32.3", path_info: "/accounts/login/"}. Updated existing record in the database.
+WARNING 2025-05-09 01:46:02,413 views 6484 10444 Failed login attempt for username 'test_user' from IP 127.0.0.1
+WARNING 2025-05-09 01:46:03,027 database 6484 10444 AXES: Repeated login failure by {username: "********************", ip_address: "********************", user_agent: "python-requests/2.32.3", path_info: "/accounts/login/"}. Updated existing record in the database.
+WARNING 2025-05-09 01:46:03,033 database 6484 10444 AXES: Locking out {username: "********************", ip_address: "********************", user_agent: "python-requests/2.32.3", path_info: "/accounts/login/"} after repeated login failures.
+WARNING 2025-05-09 01:46:03,034 views 6484 10444 Failed login attempt for username 'test_user' from IP 127.0.0.1
+WARNING 2025-05-09 01:46:03,057 database 6484 10444 AXES: Repeated login failure by {username: "********************", ip_address: "********************", user_agent: "python-requests/2.32.3", path_info: "/accounts/login/"}. Updated existing record in the database.
+WARNING 2025-05-09 01:46:03,062 database 6484 10444 AXES: Locking out {username: "********************", ip_address: "********************", user_agent: "python-requests/2.32.3", path_info: "/accounts/login/"} after repeated login failures.
+WARNING 2025-05-09 01:46:03,063 views 6484 10444 Failed login attempt for username 'test_user' from IP 127.0.0.1
+WARNING 2025-05-09 01:46:09,297 log 6484 9276 Forbidden (CSRF cookie not set.): /accounts/login/
+WARNING 2025-05-09 01:46:47,624 database 6684 13576 AXES: Repeated login failure by {username: "********************", ip_address: "********************", user_agent: "python-requests/2.32.3", path_info: "/accounts/login/"}. Updated existing record in the database.
+WARNING 2025-05-09 01:46:47,630 database 6684 13576 AXES: Locking out {username: "********************", ip_address: "********************", user_agent: "python-requests/2.32.3", path_info: "/accounts/login/"} after repeated login failures.
+WARNING 2025-05-09 01:46:47,631 views 6684 13576 Failed login attempt for username 'test_user' from IP 127.0.0.1
+WARNING 2025-05-09 01:46:47,658 database 6684 13576 AXES: Repeated login failure by {username: "********************", ip_address: "********************", user_agent: "python-requests/2.32.3", path_info: "/accounts/login/"}. Updated existing record in the database.
+WARNING 2025-05-09 01:46:47,664 database 6684 13576 AXES: Locking out {username: "********************", ip_address: "********************", user_agent: "python-requests/2.32.3", path_info: "/accounts/login/"} after repeated login failures.
+WARNING 2025-05-09 01:46:47,666 views 6684 13576 Failed login attempt for username 'test_user' from IP 127.0.0.1
+WARNING 2025-05-09 01:46:53,890 log 6684 7228 Forbidden (CSRF cookie not set.): /accounts/login/
+INFO 2025-05-09 01:47:43,167 views 6684 16540 Successful login for user 'eric' from IP 127.0.0.1
+INFO 2025-05-09 01:47:49,307 views 6684 3600 User 'eric' logged out from IP 127.0.0.1
+INFO 2025-05-09 10:03:59,531 views 11724 17160 Successful login for user 'eric' from IP 127.0.0.1
+INFO 2025-05-09 10:05:35,127 utils 11724 14852 SECURITY EVENT: {'event_type': 'profile_access', 'username': 'eric', 'ip': '127.0.0.*', 'access_type': 'self'}
+INFO 2025-05-09 10:06:08,361 utils 11724 13232 SECURITY EVENT: {'event_type': 'profile_access', 'username': 'eric', 'ip': '127.0.0.*', 'access_type': 'self'}
+INFO 2025-05-09 10:12:09,621 views 11724 13232 User 'eric' logged out from IP 127.0.0.1
+INFO 2025-05-09 10:12:23,439 views 11724 14852 Successful login for user 'eric' from IP 127.0.0.1
+INFO 2025-05-09 10:14:01,189 views 11724 9416 User 'eric' logged out from IP 127.0.0.1
+WARNING 2025-05-09 10:46:52,612 database 4248 11100 AXES: New login failure by {username: "********************", ip_address: "********************", user_agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36", path_info: "/accounts/login/"}. Created new record in the database.
+WARNING 2025-05-09 10:46:52,619 views 4248 11100 Failed login attempt for username 'eric' from IP 127.0.0.1
+WARNING 2025-05-09 10:59:04,803 database 4248 16656 AXES: Repeated login failure by {username: "********************", ip_address: "********************", user_agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36", path_info: "/accounts/login/"}. Updated existing record in the database.
+WARNING 2025-05-09 10:59:04,808 views 4248 16656 Failed login attempt for username 'eric' from IP 127.0.0.1
+INFO 2025-05-09 10:59:11,356 views 4248 11100 Successful login for user 'eric' from IP 127.0.0.1
+INFO 2025-05-09 11:00:01,090 utils 4248 16656 SECURITY EVENT: {'event_type': 'profile_access', 'username': 'eric', 'ip': '127.0.0.*', 'access_type': 'self'}
+INFO 2025-05-09 11:20:30,812 utils 4248 15404 SECURITY EVENT: {'event_type': 'profile_access', 'username': 'eric', 'ip': '127.0.0.*', 'access_type': 'self'}
+INFO 2025-05-09 11:21:32,784 views 4248 15404 User 'eric' logged out from IP 127.0.0.1
+INFO 2025-05-09 11:26:24,353 views 14448 7608 Successful login for user 'eric' from IP 127.0.0.1
+INFO 2025-05-09 11:29:39,826 utils 14448 5388 SECURITY EVENT: {'event_type': 'profile_access', 'username': 'eric', 'ip': '127.0.0.*', 'access_type': 'self'}
+INFO 2025-05-09 11:29:44,629 utils 14448 5388 SECURITY EVENT: {'event_type': 'profile_access', 'username': 'eric', 'ip': '127.0.0.*', 'access_type': 'self'}
+INFO 2025-05-09 11:29:58,002 utils 14448 5388 SECURITY EVENT: {'event_type': 'profile_access', 'username': 'eric', 'ip': '127.0.0.*', 'access_type': 'self'}
+INFO 2025-05-09 11:30:30,470 utils 14448 6676 SECURITY EVENT: {'event_type': 'profile_access', 'username': 'eric', 'ip': '127.0.0.*', 'access_type': 'self'}
+INFO 2025-05-09 11:30:30,491 utils 14448 6676 SECURITY EVENT: {'event_type': 'profile_update', 'username': 'eric', 'ip': '127.0.0.*'}
+INFO 2025-05-09 11:30:30,528 utils 14448 6676 SECURITY EVENT: {'event_type': 'profile_access', 'username': 'eric', 'ip': '127.0.0.*', 'access_type': 'self'}
+WARNING 2025-05-09 11:33:31,975 database 14448 14996 AXES: New login failure by {username: "********************", ip_address: "********************", user_agent: "python-requests/2.32.3", path_info: "/accounts/login/"}. Created new record in the database.
+WARNING 2025-05-09 11:33:31,990 views 14448 14996 Failed login attempt for username 'test_user' from IP 127.0.0.1
+WARNING 2025-05-09 11:33:32,586 database 14448 14996 AXES: Repeated login failure by {username: "********************", ip_address: "********************", user_agent: "python-requests/2.32.3", path_info: "/accounts/login/"}. Updated existing record in the database.
+WARNING 2025-05-09 11:33:32,600 views 14448 14996 Failed login attempt for username 'test_user' from IP 127.0.0.1
+WARNING 2025-05-09 11:33:33,245 database 14448 14996 AXES: Repeated login failure by {username: "********************", ip_address: "********************", user_agent: "python-requests/2.32.3", path_info: "/accounts/login/"}. Updated existing record in the database.
+WARNING 2025-05-09 11:33:33,256 views 14448 14996 Failed login attempt for username 'test_user' from IP 127.0.0.1
+WARNING 2025-05-09 11:33:33,963 database 14448 14996 AXES: Repeated login failure by {username: "********************", ip_address: "********************", user_agent: "python-requests/2.32.3", path_info: "/accounts/login/"}. Updated existing record in the database.
+WARNING 2025-05-09 11:33:33,970 views 14448 14996 Failed login attempt for username 'test_user' from IP 127.0.0.1
+WARNING 2025-05-09 11:33:34,635 database 14448 14996 AXES: Repeated login failure by {username: "********************", ip_address: "********************", user_agent: "python-requests/2.32.3", path_info: "/accounts/login/"}. Updated existing record in the database.
+WARNING 2025-05-09 11:33:34,653 database 14448 14996 AXES: Locking out {username: "********************", ip_address: "********************", user_agent: "python-requests/2.32.3", path_info: "/accounts/login/"} after repeated login failures.
+WARNING 2025-05-09 11:33:34,655 views 14448 14996 Failed login attempt for username 'test_user' from IP 127.0.0.1
+WARNING 2025-05-09 11:33:34,698 database 14448 14996 AXES: Repeated login failure by {username: "********************", ip_address: "********************", user_agent: "python-requests/2.32.3", path_info: "/accounts/login/"}. Updated existing record in the database.
+WARNING 2025-05-09 11:33:34,712 database 14448 14996 AXES: Locking out {username: "********************", ip_address: "********************", user_agent: "python-requests/2.32.3", path_info: "/accounts/login/"} after repeated login failures.
+WARNING 2025-05-09 11:33:34,712 views 14448 14996 Failed login attempt for username 'test_user' from IP 127.0.0.1
+WARNING 2025-05-09 11:33:40,940 log 14448 15428 Forbidden (CSRF cookie not set.): /accounts/login/
+INFO 2025-05-09 11:34:02,993 views 14448 17308 User 'admin' logged out from IP 127.0.0.1
+WARNING 2025-05-09 11:34:09,872 database 14448 4948 AXES: New login failure by {username: "********************", ip_address: "********************", user_agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36", path_info: "/accounts/login/"}. Created new record in the database.
+WARNING 2025-05-09 11:34:09,883 database 14448 4948 AXES: Locking out {username: "********************", ip_address: "********************", user_agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36", path_info: "/accounts/login/"} after repeated login failures.
+WARNING 2025-05-09 11:34:09,884 views 14448 4948 Failed login attempt for username 'eric' from IP 127.0.0.1
+INFO 2025-05-09 11:34:35,646 views 14448 11256 Successful login for user 'eric' from IP 127.0.0.1
+INFO 2025-05-09 11:37:10,074 utils 5540 6604 SECURITY EVENT: {'event_type': 'profile_access', 'username': 'testuser', 'ip': '127.0.0.*', 'access_type': 'self'}
+INFO 2025-05-09 11:37:10,383 utils 5540 6604 SECURITY EVENT: {'event_type': 'profile_access', 'username': 'testuser', 'ip': '127.0.0.*', 'access_type': 'self'}

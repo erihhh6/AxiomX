@@ -4,31 +4,29 @@ from discussions.models import Forum
 class Command(BaseCommand):
     help = 'Creates initial forums for the discussions app'
 
+    
+
     def handle(self, *args, **options):
+
+        deleted_count, _ = Forum.objects.all().delete()
+        self.stdout.write(self.style.WARNING(f'Forums deleted: {deleted_count}'))
+
         forums = [
             {
-                'name': 'Physics',
-                'description': 'Discuss physics topics including quantum mechanics, relativity, particle physics, and more.'
+                'name': 'Energy',
+                'description': 'General discussions about energy, including concepts, sources, and applications.'
             },
             {
-                'name': 'Biology',
-                'description': 'Share insights about genetics, evolution, ecology, molecular biology, and related topics.'
+                'name': 'Physical Energy',
+                'description': 'Explore the principles of physical energy, including kinetic and potential energy, and energy conservation.'
             },
             {
-                'name': 'Chemistry',
-                'description': 'Exchange ideas about organic chemistry, biochemistry, analytical chemistry, and chemical engineering.'
+                'name': 'Chemical Energy',
+                'description': 'Discuss the chemical processes that release or store energy, including combustion and reactions.'
             },
             {
-                'name': 'Mathematics',
-                'description': 'Discuss pure and applied mathematics, including algebra, calculus, statistics, and computational methods.'
-            },
-            {
-                'name': 'Computer Science',
-                'description': 'Talk about algorithms, artificial intelligence, machine learning, data science, and software engineering.'
-            },
-            {
-                'name': 'Interdisciplinary Research',
-                'description': 'A place for cross-disciplinary discussions and collaborations that span multiple scientific fields.'
+                'name': 'Nuclear Energy',
+                'description': 'Conversations about nuclear energy, including fission, fusion, and nuclear reactors.'
             },
         ]
         

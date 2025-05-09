@@ -21,7 +21,7 @@ class SecurityHeadersMiddleware:
         
         # X-Frame-Options prevents clickjacking by frame/iframe embedding
         # Changed from DENY to ALLOW-FROM to permit specific sites like TryHackMe
-        response['X-Frame-Options'] = 'SAMEORIGIN'
+        response['X-Frame-Options'] = 'DENY'
         
         # X-XSS-Protection for older browsers that don't fully support CSP
         response['X-XSS-Protection'] = '1; mode=block'
